@@ -128,6 +128,15 @@ tabla aparte, unida por el número de estudio (`estudio_id`).
 | post_clinica | texto | postesfuerzo 5' |
 | cargado_por | identificador de usuario | trazabilidad |
 | creado_en | fecha y hora | fecha/hora de **carga** al sistema, automática (distinta de fecha_estudio) |
+| modificado_por | identificador de usuario | trazabilidad: quién hizo la **última edición**. Automático; vacío si nunca se editó |
+| modificado_en | fecha y hora | trazabilidad: cuándo fue la **última edición**. Automático; vacío si nunca se editó |
+
+**Trazabilidad de ediciones:** la Constitución pide registrar quién **carga y
+modifica** cada planilla. `cargado_por`/`creado_en` dicen quién la cargó y cuándo;
+`modificado_por`/`modificado_en` dicen quién la editó por última vez y cuándo. Los
+cuatro son automáticos. `modificado_por`/`modificado_en` los fuerza la base de
+datos (un trigger), así la app no puede falsearlos; `cargado_por` se protege con
+la política de Row Level Security (T012).
 
 ### Tabla `etapas` (varias filas por estudio)
 
@@ -230,7 +239,8 @@ proyecto/
 - **Simplicidad entendible:** vanilla, tres tablas claras, sin piezas de más. ✔
 - **Privacidad por diseño:** TLS + RLS + bucket privado + clave en servidor. ✔
 - **Bajo costo:** Vercel y Supabase en plan gratuito; sin Railway ni n8n. ✔
-- **Trazabilidad:** `cargado_por` y `creado_en`. ✔
+- **Trazabilidad:** `cargado_por` y `creado_en` (quién cargó y cuándo);
+  `modificado_por` y `modificado_en` (quién editó por última vez y cuándo). ✔
 
 ---
 

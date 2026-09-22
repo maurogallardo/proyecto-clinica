@@ -44,6 +44,11 @@ Meta de la demo: llegar con la Fase 2 sólida. Si sobra tiempo, Fase 3 y 4.
 - **T011** Dar de alta el usuario administrador (Mauro).
 - **T012** Configurar Row Level Security básica (cada usuario ve lo que le
   corresponde; en la demo, un solo usuario).
+  - *No olvidar (trazabilidad):* la política de `estudios` tiene que exigir que
+    `cargado_por` sea el usuario logueado. Hoy tiene ese valor por defecto, pero
+    la app podría mandar otro. También evitar que al editar se cambien
+    `cargado_por` y `creado_en`. (`modificado_por`/`modificado_en` ya los
+    protege un trigger en `schema.sql`.)
 
 ## Fase 2 — Historia 1 (P1): cargar por voz y confirmar  ★ corazón de la demo
 
@@ -94,6 +99,10 @@ Meta de la demo: llegar con la Fase 2 sólida. Si sobra tiempo, Fase 3 y 4.
   fecha.
 - **T031** Abrir un estudio completo con todos sus datos e imágenes.
 - **T032** Editar un estudio ya guardado.
+  - *No olvidar (trazabilidad):* al guardar una edición, guardar también la fila
+    de `estudios` aunque solo hayan cambiado etapas o imágenes. Así el trigger
+    registra `modificado_por`/`modificado_en` (el trigger solo mira la tabla
+    `estudios`).
 - **T033** Imprimir / exportar a PDF con el mismo aspecto que la planilla original
   en papel.
 
