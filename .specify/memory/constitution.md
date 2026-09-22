@@ -221,4 +221,4 @@ estudio.
 - Cuando este documento cambie, se revisa que la especificación y el plan sigan
   siendo coherentes con él.
 
-**Versión:** 1.0.0 | **Ratificada:** 2026-09-21 | **Última modificación:** 2026-09-21
+**Versión:** 1.2.0 | **Ratificada:** 2026-09-21 | **Última modificación:** 2026-09-21
