@@ -185,7 +185,9 @@ imprimir/exportar con el formato de la planilla original.
 - **RF-013:** El sistema no debe guardar nada de forma definitiva sin una
   confirmación explícita del profesional.
 - **RF-014:** El sistema debe permitir adjuntar imágenes tomadas en el momento
-  (foto) y archivos ya existentes en el dispositivo.
+  (foto) y archivos ya existentes en el dispositivo. En la demo solo se adjuntan
+  **imágenes** (se guardan en WebP, ver RF-026); adjuntar otros archivos, como
+  PDF, queda para después de la demo.
 - **RF-015:** El sistema debe guardar el estudio confirmado de forma persistente
   y asociarle sus imágenes.
 - **RF-016:** El sistema debe registrar quién cargó cada estudio y la fecha/hora

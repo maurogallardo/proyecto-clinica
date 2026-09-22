@@ -76,6 +76,10 @@ Meta de la demo: llegar con la Fase 2 sólida. Si sobra tiempo, Fase 3 y 4.
   incompleto el resto.
 - **T024** Confirmar y guardar el estudio en Supabase (con `cargado_por` y
   `creado_en` automáticos).
+  - *Orden de guardado:* nada se sube antes de confirmar (RF-013). Al confirmar:
+    1) guardar la fila de `estudios` (así existe su `id`); 2) guardar sus
+    `etapas`; 3) subir las imágenes al bucket, en la carpeta del estudio
+    (T027); 4) guardar las filas de `imagenes` con su ruta (T028).
 - **T042** Diseño adaptativo: que la app se vea bien y muestre la vista correcta
   según el dispositivo (carga en celular, dashboard en computadora). *(cubre
   RF-018)*
@@ -89,6 +93,10 @@ Meta de la demo: llegar con la Fase 2 sólida. Si sobra tiempo, Fase 3 y 4.
 - **T025** Sacar foto en el momento y elegir archivos ya guardados en el celular.
 - **T026** Convertir las imágenes a formato WebP.
 - **T027** Subir las imágenes al bucket privado.
+  - *Orden de guardado:* se suben recién después de guardar la fila de
+    `estudios` (ver T024), en la carpeta de ese estudio:
+    `imagenes-estudios/<estudio_id>/<archivo>.webp`. Las reglas del bucket
+    (`seguridad.sql`) rechazan cualquier archivo fuera de esa carpeta.
 - **T028** Guardar la ruta de cada imagen en la tabla `imagenes`.
 - **T029** Mostrar las imágenes con enlaces firmados que caducan (en celular y
   computadora).
