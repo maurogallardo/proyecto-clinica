@@ -59,6 +59,34 @@
   --curva: cubic-bezier(0.4, 0, 0.2, 1);
   --duracion-corta: 150ms;
   --duracion-media: 250ms;
+  /* Curva de entrada del splash, igual que LoMar ("sale disparada, frena muy suave") */
+  --curva-entrada: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* --- Splash (copia de LoMar): halo blanco difuminado detrás del logo --- */
+  --splash-halo: radial-gradient(circle,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.14) 38%,
+    rgba(255, 255, 255, 0) 70%);
+
+  /* --- Login (copia de LoMar). En claro: tarjeta blanca sobre el menta --- */
+  --login-resplandor: radial-gradient(circle,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.05) 40%,
+    rgba(255, 255, 255, 0) 72%);
+  --login-titulo: var(--casi-negro);
+  --login-etiqueta: var(--casi-negro);
+  --login-tarjeta-fondo: var(--blanco);
+  --login-tarjeta-borde: transparent;
+  --login-tarjeta-sombra: 0 8px 24px rgba(4, 7, 7, 0.08);
+  --login-campo-fondo: var(--blanco);
+  --login-campo-borde: #D5E3E1;
+  --login-campo-sombra: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --login-anillo-foco: 0 0 0 2px rgba(0, 171, 150, 0.55);
+  --icono-campo: var(--gris-texto);
+  --icono-campo-activo: var(--casi-negro);
+  --error-fondo: rgba(217, 63, 63, 0.9);
+  --error-texto: var(--blanco);
+  --borde-suave: #D5E3E1;
 }
 
 /* --- Modo oscuro: la receta de LoMar con otra noche --- */
@@ -74,4 +102,14 @@
   --texto: rgba(255, 255, 255, 0.94);
   --texto-secundario: rgba(255, 255, 255, 0.72);
   --acento: #12B8A0;   /* el verde un poco más luminoso para que resalte */
+
+  /* Login: valores exactos de LoMar (tarjeta de vidrio, campos blancos) */
+  --login-titulo: var(--blanco);
+  --login-etiqueta: rgba(255, 255, 255, 0.88);
+  --login-tarjeta-fondo: rgba(255, 255, 255, 0.16);
+  --login-tarjeta-borde: rgba(255, 255, 255, 0.18);
+  --login-tarjeta-sombra: 0 20px 50px rgba(0, 0, 0, 0.35);
+  --login-campo-fondo: rgba(255, 255, 255, 0.90);
+  --login-campo-borde: transparent;
+  --borde-suave: rgba(255, 255, 255, 0.30);
 }

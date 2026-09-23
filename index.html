@@ -27,14 +27,61 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap">
 
   <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/splash.css">
+  <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
-  <!-- MUESTRA PROVISORIA de la base visual (T045).
-       Se reemplaza por el splash y el login (T047 y T048). -->
-  <main class="muestra">
+  <!-- Splash (T047): visible desde el primer instante; js/splash.js lo cambia a los 2,5 s -->
+  <section id="splash" class="pantalla">
+    <div class="splash__escena">
+      <div class="splash__halo"></div>
+      <img class="splash__logo solo-tema-claro" src="assets/logos/logo-completo.svg"
+           alt="Sanatorio de la Cañada - Sanatorio Privado Río Tercero">
+      <img class="splash__logo solo-tema-oscuro" src="assets/logos/logo-completo-claro.svg"
+           alt="Sanatorio de la Cañada - Sanatorio Privado Río Tercero">
+    </div>
+  </section>
+
+  <!-- Login (T048): copia del de LoMar. Sin "crear cuenta": el alta la hace el administrador -->
+  <section id="login" class="pantalla" hidden>
+    <div class="login__contenedor">
+      <img class="login__logo solo-tema-claro" src="assets/logos/logo-completo.svg"
+           alt="Sanatorio de la Cañada - Sanatorio Privado Río Tercero">
+      <img class="login__logo solo-tema-oscuro" src="assets/logos/logo-completo-claro.svg"
+           alt="Sanatorio de la Cañada - Sanatorio Privado Río Tercero">
+      <h1 class="login__titulo">Iniciar sesión</h1>
+
+      <form class="login__tarjeta" id="login-formulario" novalidate>
+        <label class="login__etiqueta" for="login-correo">Correo electrónico</label>
+        <input class="login__campo" type="email" id="login-correo" autocomplete="username"
+               inputmode="email" autocapitalize="off" spellcheck="false">
+
+        <label class="login__etiqueta" for="login-contrasena">Contraseña</label>
+        <div class="login__contrasena">
+          <input class="login__campo" type="password" id="login-contrasena" autocomplete="current-password">
+          <button type="button" class="login__ojito" id="login-ver-contrasena" aria-label="Mostrar contraseña">
+            <svg class="ojo-icono" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle class="ojo-pupila" cx="12" cy="12" r="3" />
+              <line class="ojo-raya" x1="4" y1="4" x2="20" y2="20" />
+            </svg>
+          </button>
+        </div>
+
+        <button type="submit" class="login__boton" id="login-entrar">Entrar</button>
+        <p class="login__error" id="login-error" role="alert" hidden></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- MUESTRA PROVISORIA de la base visual (T045): es la pantalla después del
+       login hasta que exista la carga del estudio (T013). -->
+  <main id="muestra" class="pantalla muestra" hidden>
     <header class="muestra-encabezado">
       <h1 class="muestra-titulo">Base visual</h1>
       <p class="texto-secundario">Muestra provisoria para revisar colores, letra y formas.</p>
+      <p class="texto-secundario">Ingresaste como <strong id="muestra-correo"></strong></p>
       <div class="selector-tema" role="group" aria-label="Modo de color">
         <button type="button" data-modo="claro">Claro</button>
         <button type="button" data-modo="oscuro">Oscuro</button>
@@ -69,8 +116,19 @@
     </section>
 
     <button type="button" class="boton-principal">Confirmar estudio</button>
+    <button type="button" class="boton-secundario" id="muestra-cerrar-sesion">Cerrar sesión</button>
   </main>
 
+  <!-- Librería oficial de Supabase: versión fija y con "huella digital" (integrity):
+       si el archivo del CDN fuera alterado, el navegador se niega a usarlo. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
+          integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
+          crossorigin="anonymous"></script>
+  <script src="js/config.js"></script>
+  <script src="js/sesion.js"></script>
+  <script src="js/pantallas.js"></script>
+  <script src="js/login.js"></script>
+  <script src="js/splash.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

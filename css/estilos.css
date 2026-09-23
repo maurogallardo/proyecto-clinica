@@ -8,6 +8,17 @@
   box-sizing: border-box;
 }
 
+/* Lo oculto se oculta siempre, aunque otra regla le ponga display */
+[hidden] {
+  display: none !important;
+}
+
+/* Logos que cambian con el modo: en oscuro va la versión clara (guía, sección 2) */
+:root[data-tema="oscuro"] .solo-tema-claro,
+:root:not([data-tema="oscuro"]) .solo-tema-oscuro {
+  display: none;
+}
+
 html {
   background: var(--fondo-base);
   color-scheme: light;
@@ -165,6 +176,32 @@ textarea.campo {
 .boton-principal:focus-visible {
   outline: none;
   box-shadow: var(--sombra-boton), var(--anillo-foco);
+}
+
+/* --- Botón secundario: con borde, sin relleno (ej.: "Cerrar sesión") --- */
+.boton-secundario {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 20px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--texto);
+  background: transparent;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-boton);
+  cursor: pointer;
+  transition: transform var(--duracion-corta) var(--curva);
+}
+
+.boton-secundario:active {
+  transform: scale(0.98);
+}
+
+.boton-secundario:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
 }
 
 /* --- Selector de modo: claro / oscuro / automático (píldora) --- */

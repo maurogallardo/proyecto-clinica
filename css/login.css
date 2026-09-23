@@ -1,0 +1,228 @@
+/* =============================================================================
+   Login (T048): copia fiel del de LoMar (lomar-smart-pwa/css/styles.css).
+   Cambia solo: logos (Sanatorio de la Cañada), colores (tokens de la guía),
+   tipografía (Albert Sans) y campos de 16 px (para que el iPhone no haga zoom).
+   ============================================================================= */
+
+#login {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  padding: 24px;
+  background: var(--fondo);
+  overflow-y: auto;   /* si el teclado achica la pantalla, se puede desplazar */
+}
+
+.login__contenedor {
+  width: 100%;
+  max-width: 380px;
+  margin: auto;       /* centrado, sin cortarse si no entra */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
+  animation: login-aparece 500ms ease-out;
+}
+
+/* Resplandor suave detrás del logo */
+.login__contenedor::before {
+  content: '';
+  position: absolute;
+  top: -18%;
+  left: -20%;
+  right: -20%;
+  height: 55%;
+  background: var(--login-resplandor);
+  filter: blur(45px);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes login-aparece {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login__logo {
+  width: 72%;
+  max-width: 260px;
+  align-self: center;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.login__titulo {
+  margin: 0 0 20px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--login-titulo);
+  text-align: center;
+}
+
+/* Tarjeta de vidrio SIN backdrop-filter (mismo criterio que LoMar):
+   transparencia sobre el degradado, sin costo para el celular */
+.login__tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 24px 20px;
+  background: var(--login-tarjeta-fondo);
+  border: 1px solid var(--login-tarjeta-borde);
+  border-radius: 20px;
+  box-shadow: var(--login-tarjeta-sombra);
+}
+
+.login__etiqueta {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--login-etiqueta);
+}
+
+.login__campo {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  font: inherit;
+  font-size: var(--tamano-campo);   /* 16 px (LoMar: 15,5 px + zoom bloqueado) */
+  font-weight: 500;
+  color: var(--campo-texto);
+  background: var(--login-campo-fondo);
+  border: 1px solid var(--login-campo-borde);
+  border-radius: 12px;
+  box-shadow: var(--login-campo-sombra);
+  outline: none;
+  transition: box-shadow 200ms var(--curva), background 200ms var(--curva);
+}
+
+.login__campo:focus {
+  background: var(--blanco);
+  box-shadow: var(--login-anillo-foco);
+}
+
+/* Botón con resplandor (verde profundo, como el botón principal) */
+.login__boton {
+  width: 100%;
+  margin-top: 12px;
+  padding: 15px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--boton-texto);
+  background: var(--boton-fondo);
+  border: none;
+  border-radius: 12px;
+  box-shadow: var(--sombra-boton);
+  cursor: pointer;
+  transition: filter 200ms var(--curva), transform 160ms var(--curva), box-shadow 200ms var(--curva);
+}
+
+.login__boton:hover {
+  filter: brightness(0.9);
+}
+
+.login__boton:active {
+  transform: scale(0.98);
+}
+
+.login__boton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.login__boton:focus-visible {
+  outline: none;
+  box-shadow: var(--sombra-boton), var(--anillo-foco);
+}
+
+.login__error {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--error-texto);
+  background: var(--error-fondo);
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* --- Contraseña con ojito (mostrar / ocultar) --- */
+.login__contrasena {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.login__contrasena .login__campo {
+  margin-bottom: 0;
+  padding-right: 46px;
+}
+
+.login__ojito {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  color: var(--icono-campo);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 150ms ease, transform 150ms ease;
+}
+
+.login__ojito:hover {
+  color: var(--icono-campo-activo);
+}
+
+.login__ojito:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+.login__ojito:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
+.ojo-icono {
+  transition: transform 200ms ease;
+}
+
+/* La raya del ojo se "dibuja" al mostrar la contraseña */
+.ojo-raya {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset 250ms ease;
+}
+
+.login__ojito.esta-visible .ojo-raya {
+  stroke-dashoffset: 0;
+}
+
+/* ...y la pupila parpadea */
+.login__ojito.esta-visible .ojo-pupila {
+  transform-origin: center;
+  animation: ojo-parpadeo 300ms ease;
+}
+
+@keyframes ojo-parpadeo {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(0.1); }
+  100% { transform: scaleY(1); }
+}
+
+/* Sin animación de entrada si el dispositivo pide "reducir movimiento" */
+@media (prefers-reduced-motion: reduce) {
+  .login__contenedor {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

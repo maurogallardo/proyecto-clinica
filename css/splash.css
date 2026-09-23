@@ -1,0 +1,87 @@
+/* =============================================================================
+   Splash (T047): copia fiel del de LoMar (lomar-smart-pwa/css/styles.css).
+   Cambia solo: el logo (Sanatorio de la Cañada) y los colores (tokens de la guía).
+   ============================================================================= */
+
+#splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fondo);
+}
+
+/* "Escena": el logo centrado, 82% del ancho hasta 420 px */
+.splash__escena {
+  position: relative;
+  width: 82%;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Resplandor radial detrás del logo.
+   En LoMar el logo es cuadrado y el halo mide 1,5 x 2,7 veces la escena.
+   El logo de la Cañada es mucho más bajo, así que el tamaño se calcula sobre
+   el ANCHO de la escena para que el halo quede igual de grande que en LoMar. */
+.splash__halo {
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  top: 50%;
+  aspect-ratio: 1.5 / 2.7;
+  margin-top: -135%;   /* centrado en el logo: la mitad de 2,7 veces el ancho */
+  background: var(--splash-halo);
+  filter: blur(45px);
+  border-radius: 50%;
+  z-index: 0;
+  opacity: 0;
+  transform: scale(0.9);
+  animation: splash-halo-entra 1600ms var(--curva-entrada) forwards;
+}
+
+/* El logo sube y crece desde abajo */
+.splash__logo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  transform: translateY(28px) scale(0.88);
+  animation: splash-logo-entra 1500ms var(--curva-entrada) 150ms forwards;
+}
+
+@keyframes splash-halo-entra {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes splash-logo-entra {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Sin animación si el dispositivo pide "reducir movimiento": el logo aparece directo */
+@media (prefers-reduced-motion: reduce) {
+  .splash__halo,
+  .splash__logo {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
