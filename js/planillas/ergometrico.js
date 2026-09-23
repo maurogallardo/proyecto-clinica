@@ -9,6 +9,7 @@
 //   etiqueta -> lo que se ve en pantalla
 //   tipo     -> 'texto' (crece al escribir), 'texto-largo', 'entero', 'decimal' o 'fecha'
 //   ancho    -> 'completo' ocupa las dos columnas; si no se indica, media
+//   valorInicial -> 'hoy' (solo fechas): arranca con la fecha del día
 //
 // Sumar otra planilla = escribir otro archivo como este (js/formulario.js no cambia).
 
@@ -25,12 +26,15 @@ const PLANILLA_ERGOMETRICO = {
         { columna: 'edad', etiqueta: 'Edad', tipo: 'entero' },
         { columna: 'peso', etiqueta: 'Peso', tipo: 'decimal' },
         { columna: 'talla', etiqueta: 'Talla', tipo: 'decimal' },
+        // En el papel, FECHA va después de TALLA. Arranca con la fecha de hoy y se
+        // puede cambiar (el estudio puede cargarse después de hecho). Sin hora:
+        // la planilla no la tiene, y creado_en ya guarda fecha y hora de carga.
+        { columna: 'fecha_estudio', etiqueta: 'Fecha', tipo: 'fecha', ancho: 'completo', valorInicial: 'hoy' },
       ],
     },
     {
       titulo: 'Estudio',
       campos: [
-        { columna: 'fecha_estudio', etiqueta: 'Fecha', tipo: 'fecha', ancho: 'completo' },
         { columna: 'medico_solicitante', etiqueta: 'Médico solicitante', tipo: 'texto', ancho: 'completo' },
         { columna: 'motivo', etiqueta: 'Motivo', tipo: 'texto', ancho: 'completo' },
         { columna: 'antecedentes', etiqueta: 'Antecedentes', tipo: 'texto-largo', ancho: 'completo' },

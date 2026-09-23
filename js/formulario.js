@@ -61,9 +61,19 @@ function dibujarCampo(campo, id, valor) {
   control.dataset.columna = campo.columna;
   control.dataset.tipo = campo.tipo;
   if (valor !== undefined && valor !== null) control.value = valor;
+  else if (campo.valorInicial === 'hoy') control.value = fechaDeHoy();
 
   grupo.append(etiqueta, control);
   return grupo;
+}
+
+// Fecha de hoy según el reloj del dispositivo, en el formato de los campos de
+// fecha (AAAA-MM-DD). No se usa la hora universal: en Argentina, después de
+// las 21 h ya sería "mañana".
+function fechaDeHoy() {
+  const hoy = new Date();
+  const dosCifras = (numero) => String(numero).padStart(2, '0');
+  return `${hoy.getFullYear()}-${dosCifras(hoy.getMonth() + 1)}-${dosCifras(hoy.getDate())}`;
 }
 
 function crearControl(campo) {

@@ -168,3 +168,6 @@ de todas las pantallas sigue `guia-visual.md`.
 - Tabla de pacientes y macheo por documento.
 - Múltiples roles, planillas y clínicas.
 - Empaquetado como app nativa.
+- Menú del encabezado tipo hamburguesa (con X para cerrar), con foto de perfil y
+  nombre del usuario, modo de color y cerrar sesión. (Requiere guardar el nombre
+  y la foto de cada usuario, que hoy la base no tiene.)
