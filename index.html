@@ -2,8 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <!-- Para que la página se vea bien en el celular (sin achicarse) -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Ajustada al ancho del celular y SIN zoom con los dedos (decisión del proyecto).
+       Android lo respeta; el iPhone lo ignora, por eso hay refuerzos en
+       css/estilos.css y js/sin-zoom.js -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Sanatorio de la Cañada</title>
 
   <!-- PWA: la "ficha de identidad" que permite instalar la app en el celular -->
@@ -14,7 +16,7 @@
   <link rel="icon" type="image/png" href="assets/iconos/icono-192.png">
   <!-- iPhone: no usa los íconos del manifest, necesita el suyo y su nombre -->
   <link rel="apple-touch-icon" href="assets/iconos/apple-touch-icon.png">
-  <meta name="apple-mobile-web-app-title" content="delacañada">
+  <meta name="apple-mobile-web-app-title" content="De la Cañada">
 
   <!-- Tokens: todos los colores, formas y tiempos de la app -->
   <link rel="stylesheet" href="css/tokens.css">
@@ -124,6 +126,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
           integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
           crossorigin="anonymous"></script>
+  <script src="js/sin-zoom.js"></script>
   <script src="js/config.js"></script>
   <script src="js/sesion.js"></script>
   <script src="js/pantallas.js"></script>

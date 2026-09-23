@@ -1,7 +1,7 @@
 {
   "id": "/",
   "name": "Sanatorio de la Cañada",
-  "short_name": "delacañada",
+  "short_name": "De la Cañada",
   "description": "Carga de planillas clínicas por voz.",
   "lang": "es",
   "start_url": "/",

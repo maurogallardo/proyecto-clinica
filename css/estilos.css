@@ -22,6 +22,24 @@
 html {
   background: var(--fondo-base);
   color-scheme: light;
+  /* Sin zoom (decisión del proyecto): el dedo solo desplaza, no agranda
+     (ni con pellizco ni con doble toque) */
+  touch-action: pan-x pan-y;
+  /* iPhone: que no agrande solo las letras al girar el teléfono */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Siempre ajustada al ancho: nada se desplaza hacia el costado.
+   En body va "clip" (recorta sin crear una caja con su propio desplazamiento,
+   que en iPhone trae problemas al desplazarse). */
+html {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
+body {
+  overflow-x: clip;
 }
 
 :root[data-tema="oscuro"] {

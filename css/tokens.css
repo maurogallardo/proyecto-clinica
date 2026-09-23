@@ -62,11 +62,12 @@
   /* Curva de entrada del splash, igual que LoMar ("sale disparada, frena muy suave") */
   --curva-entrada: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* --- Splash (copia de LoMar): halo blanco difuminado detrás del logo --- */
+  /* --- Splash (copia de LoMar): halo difuminado detrás del logo.
+         En claro, verde de marca muy suave (el blanco no se notaba sobre el menta) --- */
   --splash-halo: radial-gradient(circle,
-    rgba(255, 255, 255, 0.34) 0%,
-    rgba(255, 255, 255, 0.14) 38%,
-    rgba(255, 255, 255, 0) 70%);
+    rgba(0, 171, 150, 0.22) 0%,
+    rgba(0, 171, 150, 0.08) 38%,
+    rgba(0, 171, 150, 0) 70%);
 
   /* --- Login (copia de LoMar). En claro: tarjeta blanca sobre el menta --- */
   --login-resplandor: radial-gradient(circle,
@@ -102,6 +103,12 @@
   --texto: rgba(255, 255, 255, 0.94);
   --texto-secundario: rgba(255, 255, 255, 0.72);
   --acento: #12B8A0;   /* el verde un poco más luminoso para que resalte */
+
+  /* Splash: en oscuro, el halo blanco original de LoMar */
+  --splash-halo: radial-gradient(circle,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.14) 38%,
+    rgba(255, 255, 255, 0) 70%);
 
   /* Login: valores exactos de LoMar (tarjeta de vidrio, campos blancos) */
   --login-titulo: var(--blanco);
