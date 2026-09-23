@@ -8,20 +8,68 @@
 
   <!-- PWA: la "ficha de identidad" que permite instalar la app en el celular -->
   <link rel="manifest" href="manifest.webmanifest">
-  <!-- Color de la barra superior del celular -->
-  <meta name="theme-color" content="#0f4c81">
+  <!-- Color de la barra superior del celular (js/tema.js lo ajusta según el modo) -->
+  <meta name="theme-color" content="#E7F2F1">
   <!-- Ícono de la pestaña del navegador -->
   <link rel="icon" type="image/png" href="assets/iconos/icono-192.png">
   <!-- iPhone: no usa los íconos del manifest, necesita el suyo y su nombre -->
   <link rel="apple-touch-icon" href="assets/iconos/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-title" content="Clínica">
 
+  <!-- Tokens: todos los colores, formas y tiempos de la app -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <!-- Modo claro/oscuro: va antes de dibujar la página, para que no parpadee -->
+  <script src="js/tema.js"></script>
+
+  <!-- Tipografía Albert Sans (guía visual, sección 5) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap">
+
   <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-  <!-- Contenido provisorio: acá van a ir las pantallas de carga y dashboard -->
-  <h1>Proyecto Clínica</h1>
-  <p>En construcción.</p>
+  <!-- MUESTRA PROVISORIA de la base visual (T045).
+       Se reemplaza por el splash y el login (T047 y T048). -->
+  <main class="muestra">
+    <header class="muestra-encabezado">
+      <h1 class="muestra-titulo">Base visual</h1>
+      <p class="texto-secundario">Muestra provisoria para revisar colores, letra y formas.</p>
+      <div class="selector-tema" role="group" aria-label="Modo de color">
+        <button type="button" data-modo="claro">Claro</button>
+        <button type="button" data-modo="oscuro">Oscuro</button>
+        <button type="button" data-modo="auto">Automático</button>
+      </div>
+    </header>
+
+    <section class="tarjeta">
+      <h2 class="titulo-seccion">Paciente</h2>
+      <div class="grilla-campos">
+        <label class="campo-grupo a-lo-ancho">
+          <span class="campo-etiqueta">Paciente</span>
+          <input class="campo" type="text" placeholder="Nombre y apellido" autocomplete="off">
+        </label>
+        <label class="campo-grupo">
+          <span class="campo-etiqueta">Sexo</span>
+          <input class="campo" type="text" autocomplete="off">
+        </label>
+        <label class="campo-grupo">
+          <span class="campo-etiqueta">Edad</span>
+          <input class="campo numeros" type="text" inputmode="numeric" autocomplete="off">
+        </label>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <h2 class="titulo-seccion">Conclusión</h2>
+      <label class="campo-grupo">
+        <span class="campo-etiqueta">Conclusión</span>
+        <textarea class="campo" rows="3"></textarea>
+      </label>
+    </section>
+
+    <button type="button" class="boton-principal">Confirmar estudio</button>
+  </main>
 
   <script src="js/app.js"></script>
 </body>

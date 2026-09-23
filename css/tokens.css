@@ -1,0 +1,77 @@
+/* =============================================================================
+   Tokens de diseño: TODOS los colores, radios, sombras y tiempos de la app.
+   Fuente: specs/001-estudio-ergometrico/guia-visual.md (secciones 3, 5, 6 y 8).
+
+   Regla: ningún componente escribe un color "a mano"; usa estas variables.
+   Modo claro = :root. Modo oscuro = [data-tema="oscuro"] (lo pone js/tema.js).
+   ============================================================================= */
+
+:root {
+  /* --- Colores de la marca (iguales en los dos modos) --- */
+  --verde-marca: #00AB96;
+  --verde-profundo: #1A8D6B;
+  --gris-logo: #727271;
+  --marino: #181E42;
+  --celeste: #5BA7DB;
+  --menta-claro: #E7F2F1;
+  --gris-texto: #5B5B5B;
+  --casi-negro: #040707;
+  --rojo-error: #D93F3F;
+  --blanco: #FFFFFF;
+
+  /* --- Modo claro --- */
+  --fondo: var(--menta-claro);
+  --fondo-base: var(--menta-claro);      /* color liso detrás del fondo */
+  --color-barra: var(--menta-claro);     /* barra superior del celular */
+  --tarjeta-fondo: var(--blanco);
+  --tarjeta-borde: transparent;
+  --tarjeta-sombra: 0 8px 24px rgba(4, 7, 7, 0.08);
+  --campo-fondo: var(--blanco);
+  --campo-borde: #D5E3E1;
+  --campo-texto: var(--casi-negro);
+  --campo-placeholder: var(--gris-logo);
+  --texto: var(--casi-negro);
+  --texto-secundario: var(--gris-texto);
+  --acento: var(--verde-marca);
+  --anillo-foco: 0 0 0 3px rgba(0, 171, 150, 0.35);
+
+  /* Botones llenos (texto blanco sobre verde): verde profundo, porque el
+     blanco sobre el verde de marca se lee poco (contraste 2,9:1; así, 4,2:1) */
+  --boton-fondo: var(--verde-profundo);
+  --boton-texto: var(--blanco);
+
+  /* --- Forma y profundidad --- */
+  --radio-tarjeta: 16px;
+  --radio-campo: 12px;
+  --radio-boton: 12px;
+  --radio-cartel: 20px;
+  --radio-pildora: 999px;
+  --sombra-campo: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --sombra-boton: 0 8px 22px rgba(26, 141, 107, 0.35);   /* resplandor del verde profundo */
+  --sombra-cartel: 0 20px 60px rgba(0, 0, 0, 0.30);
+  --sombra-barra: 0 10px 28px rgba(0, 0, 0, 0.25);
+
+  /* --- Tipografía --- */
+  --fuente: 'Albert Sans', system-ui, sans-serif;
+  --tamano-campo: 16px;   /* mínimo: si es menor, el iPhone hace zoom al tocar */
+
+  /* --- Movimiento: una sola curva ("arranca decidida, frena suave") --- */
+  --curva: cubic-bezier(0.4, 0, 0.2, 1);
+  --duracion-corta: 150ms;
+  --duracion-media: 250ms;
+}
+
+/* --- Modo oscuro: la receta de LoMar con otra noche --- */
+:root[data-tema="oscuro"] {
+  --fondo: linear-gradient(160deg, #0B2E2A 0%, #071A18 55%, #040707 100%);
+  --fondo-base: var(--casi-negro);
+  --color-barra: #0B2E2A;
+  --tarjeta-fondo: rgba(255, 255, 255, 0.12);
+  --tarjeta-borde: rgba(255, 255, 255, 0.18);
+  --tarjeta-sombra: 0 12px 30px rgba(0, 0, 0, 0.30);
+  --campo-fondo: rgba(255, 255, 255, 0.96);
+  --campo-borde: transparent;
+  --texto: rgba(255, 255, 255, 0.94);
+  --texto-secundario: rgba(255, 255, 255, 0.72);
+  --acento: #12B8A0;   /* el verde un poco más luminoso para que resalte */
+}

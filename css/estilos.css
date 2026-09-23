@@ -1,1 +1,243 @@
-/* Estilos de la app: colores, tamaños y diseño de las pantallas. */
+/* =============================================================================
+   Estilos base y piezas comunes de la app.
+   Todos los valores salen de css/tokens.css (acá no se escriben colores).
+   Guía: specs/001-estudio-ergometrico/guia-visual.md
+   ============================================================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--fondo-base);
+  color-scheme: light;
+}
+
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-weight: 400;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.texto-secundario {
+  color: var(--texto-secundario);
+}
+
+/* Números con cifras de ancho parejo (columnas alineadas en la tabla de etapas) */
+.numeros {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Tarjeta de sección ---
+   Sin backdrop-filter: el desenfoque hace tironear el scroll en Android de gama
+   media (lección de LoMar). El efecto vidrio sale de la transparencia. */
+.tarjeta {
+  padding: 20px;
+  background: var(--tarjeta-fondo);
+  border: 1px solid var(--tarjeta-borde);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--tarjeta-sombra);
+}
+
+/* --- Título de sección: mayúsculas, letras espaciadas y barrita de color --- */
+.titulo-seccion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto);
+}
+
+.titulo-seccion::before {
+  content: '';
+  width: 4px;
+  height: 1.2em;
+  border-radius: 2px;
+  background: var(--acento);
+}
+
+/* --- Campos --- */
+.grilla-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Texto largo (antecedentes, conclusión) ocupa las dos columnas */
+.grilla-campos .a-lo-ancho {
+  grid-column: 1 / -1;
+}
+
+/* Pantallas muy angostas: una sola columna */
+@media (max-width: 340px) {
+  .grilla-campos {
+    grid-template-columns: 1fr;
+  }
+}
+
+.campo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo-etiqueta {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+.campo {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: var(--tamano-campo);
+  font-weight: 500;   /* más cuerpo que LoMar: "que se lea como en WhatsApp" */
+  color: var(--campo-texto);
+  background: var(--campo-fondo);
+  border: 1px solid var(--campo-borde);
+  border-radius: var(--radio-campo);
+  box-shadow: var(--sombra-campo);
+  transition: border-color var(--duracion-corta) var(--curva),
+              box-shadow var(--duracion-corta) var(--curva);
+}
+
+.campo::placeholder {
+  color: var(--campo-placeholder);
+  font-weight: 400;
+}
+
+.campo:focus {
+  outline: none;
+  border-color: var(--acento);
+  box-shadow: var(--sombra-campo), var(--anillo-foco);
+}
+
+textarea.campo {
+  min-height: 96px;
+  resize: vertical;
+}
+
+/* --- Botón principal: verde de marca con resplandor --- */
+.boton-principal {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 20px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--boton-texto);
+  background: var(--boton-fondo);
+  border: none;
+  border-radius: var(--radio-boton);
+  box-shadow: var(--sombra-boton);
+  cursor: pointer;
+  transition: filter var(--duracion-corta) var(--curva),
+              transform var(--duracion-corta) var(--curva);
+}
+
+/* Al pasar o presionar: el mismo verde, un poco más oscuro */
+.boton-principal:hover,
+.boton-principal:active {
+  filter: brightness(0.9);
+}
+
+.boton-principal:active {
+  transform: scale(0.98);
+}
+
+.boton-principal:focus-visible {
+  outline: none;
+  box-shadow: var(--sombra-boton), var(--anillo-foco);
+}
+
+/* --- Selector de modo: claro / oscuro / automático (píldora) --- */
+.selector-tema {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--tarjeta-fondo);
+  border: 1px solid var(--tarjeta-borde);
+  border-radius: var(--radio-pildora);
+  box-shadow: var(--tarjeta-sombra);
+}
+
+.selector-tema button {
+  min-height: 40px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texto-secundario);
+  background: transparent;
+  border: none;
+  border-radius: var(--radio-pildora);
+  cursor: pointer;
+  transition: background-color var(--duracion-corta) var(--curva),
+              color var(--duracion-corta) var(--curva);
+}
+
+.selector-tema button[aria-pressed="true"] {
+  color: var(--boton-texto);
+  background: var(--boton-fondo);
+}
+
+.selector-tema button:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
+/* --- Si el dispositivo pide "reducir movimiento", se apagan las animaciones --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =============================================================================
+   MUESTRA PROVISORIA de la T045: se borra cuando lleguen el splash y el login.
+   ============================================================================= */
+.muestra {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.muestra-encabezado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.muestra-titulo {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.muestra-encabezado p {
+  margin: 0 0 8px;
+}
