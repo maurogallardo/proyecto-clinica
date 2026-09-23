@@ -208,10 +208,17 @@ solo como referencia.
 
 ## Referencia visual (para la etapa de pantallas)
 
-La línea estética se va a definir con referencias que Mauro junta desde Dribbble
-(búsquedas tipo "medical dashboard", "medical form app", "healthcare mobile
-app"). Esas referencias se le pasan a Claude Code como imágenes al construir el
-frontend. No afecta la estructura de este plan; es insumo de la etapa de diseño.
+**Cómo se ve la app lo define la guía visual:**
+`specs/001-estudio-ergometrico/guia-visual.md`. Manda sobre el diseño de todas
+las pantallas: marca y logos, colores (modo claro y oscuro), tipografía, forma,
+componentes, movimiento, y cómo se ven el celular, la computadora y el PDF. No
+cambia la constitución, la spec ni este plan: los complementa.
+
+Referencias que usa la guía:
+- Logos del Sanatorio de la Cañada: ver la guía, sección 2.
+- Capturas de LoMar (referencia principal de componentes y comportamiento) y de
+  Dribbble (paleta en claro, barra inferior, tarjetas del dashboard):
+  `specs/001-estudio-ergometrico/assets/referencias-diseno/`.
 
 ---
 
