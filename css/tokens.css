@@ -88,6 +88,17 @@
   --error-fondo: rgba(217, 63, 63, 0.9);
   --error-texto: var(--blanco);
   --borde-suave: #D5E3E1;
+
+  /* --- Pantalla de carga (T013) --- */
+  /* Encabezado fijo: casi opaco en lugar de desenfoque (como LoMar: no tironea al desplazarse) */
+  --encabezado-fondo: rgba(231, 242, 241, 0.92);
+  --encabezado-borde: rgba(4, 7, 7, 0.08);
+  --encabezado-sombra: 0 4px 18px rgba(4, 7, 7, 0.06);
+  /* Menú del encabezado: opaco, para leerse encima del formulario */
+  --menu-fondo: var(--blanco);
+  /* Tarjeta de etapa: un tono dentro de la tarjeta de la sección */
+  --etapa-fondo: var(--menta-claro);
+  --etapa-borde: #D5E3E1;
 }
 
 /* --- Modo oscuro: la receta de LoMar con otra noche --- */
@@ -119,4 +130,12 @@
   --login-campo-fondo: rgba(255, 255, 255, 0.90);
   --login-campo-borde: transparent;
   --borde-suave: rgba(255, 255, 255, 0.30);
+
+  /* Pantalla de carga: encabezado, menú y etapa (el "vidrio interno" de LoMar) */
+  --encabezado-fondo: rgba(7, 26, 24, 0.92);
+  --encabezado-borde: rgba(255, 255, 255, 0.12);
+  --encabezado-sombra: 0 4px 18px rgba(0, 0, 0, 0.35);
+  --menu-fondo: #0F2A27;
+  --etapa-fondo: rgba(255, 255, 255, 0.07);
+  --etapa-borde: rgba(255, 255, 255, 0.14);
 }

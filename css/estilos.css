@@ -142,6 +142,9 @@ body {
   border: 1px solid var(--campo-borde);
   border-radius: var(--radio-campo);
   box-shadow: var(--sombra-campo);
+  /* Los campos son siempre claros (también en modo oscuro): los controles del
+     navegador, como el ícono del calendario, se dibujan para fondo claro */
+  color-scheme: light;
   transition: border-color var(--duracion-corta) var(--curva),
               box-shadow var(--duracion-corta) var(--curva);
 }
@@ -157,9 +160,32 @@ body {
   box-shadow: var(--sombra-campo), var(--anillo-foco);
 }
 
+/* Cajas de texto que crecen solas con lo escrito o dictado (js/formulario.js) */
 textarea.campo {
-  min-height: 96px;
-  resize: vertical;
+  display: block;
+  min-height: 48px;
+  resize: none;
+  overflow: hidden;
+}
+
+/* Subtítulo dentro de una sección (ej.: "Postesfuerzo a los 5'") */
+.subtitulo-campos {
+  margin: 4px 0 -6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+}
+
+/* Oculto a la vista, pero lo leen los lectores de pantalla */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* --- Botón principal: verde de marca con resplandor --- */
@@ -266,33 +292,4 @@ textarea.campo {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* =============================================================================
-   MUESTRA PROVISORIA de la T045: se borra cuando lleguen el splash y el login.
-   ============================================================================= */
-.muestra {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
-}
-
-.muestra-encabezado {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.muestra-titulo {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.muestra-encabezado p {
-  margin: 0 0 8px;
 }

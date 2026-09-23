@@ -1,0 +1,174 @@
+/* =============================================================================
+   Pantalla de carga del Estudio Ergométrico (T013).
+   Estructura tomada de la ficha de LoMar (encabezado, tarjetas, tarjeta "Control"),
+   con los colores de la guía (css/tokens.css).
+   ============================================================================= */
+
+/* --- Encabezado compacto, fijo arriba al desplazarse --- */
+.encabezado {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--encabezado-fondo);
+  border-bottom: 1px solid var(--encabezado-borde);
+  box-shadow: var(--encabezado-sombra);
+}
+
+.encabezado__titulo {
+  margin: 0;
+  min-width: 0;
+  font-size: clamp(17px, 5.2vw, 22px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--texto);
+}
+
+.encabezado__derecha {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.encabezado__isologo {
+  height: 30px;
+  width: auto;
+}
+
+.encabezado__menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--texto);
+  background: transparent;
+  border: none;
+  border-radius: var(--radio-boton);
+  cursor: pointer;
+}
+
+.encabezado__menu:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
+/* --- Menú del encabezado (modo de color y cerrar sesión) --- */
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 16px;
+  width: min(300px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--menu-fondo);
+  border: 1px solid var(--tarjeta-borde);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-cartel);
+}
+
+.menu__correo {
+  margin: 0;
+  font-size: 14px;
+  color: var(--texto-secundario);
+  overflow-wrap: anywhere;
+}
+
+.menu__correo strong {
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.menu__rotulo {
+  margin: 4px 0 -4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+}
+
+/* --- Formulario: una columna de tarjetas --- */
+.carga {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 560px;
+  margin: 0 auto;
+  /* Abajo queda lugar para la barra de voz (T015) */
+  padding: 16px 16px 140px;
+}
+
+/* Si la pantalla salta a una sección o etapa, que el encabezado fijo no la tape */
+.carga .seccion,
+.carga .etapa,
+.carga .campo {
+  scroll-margin-top: 84px;
+}
+
+/* --- Tarjeta de etapa (como la tarjeta "Control" de LoMar) --- */
+.etapas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--etapa-fondo);
+  border: 1px solid var(--etapa-borde);
+  border-radius: 12px;
+}
+
+/* Tiempo y Carga destacados arriba */
+.etapa__cabecera {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.etapa__cabecera .campo {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* MET, T.A. y F.C. en una fila de tres; ECG y Clínica en una de dos */
+.etapa__grilla {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.etapa__grilla .campo-grupo {
+  grid-column: span 3;
+  min-width: 0;
+}
+
+.etapa__grilla .campo-grupo:nth-child(-n + 3) {
+  grid-column: span 2;
+}
+
+/* Rótulos chicos en mayúsculas, como en la tarjeta "Control" de LoMar */
+.etapa .campo-etiqueta {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+}
+
+.etapa .campo {
+  padding: 10px;
+}

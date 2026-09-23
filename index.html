@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="css/estilos.css">
   <link rel="stylesheet" href="css/splash.css">
   <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/carga.css">
 </head>
 <body>
   <!-- Splash (T047): visible desde el primer instante; js/splash.js lo cambia a los 2,5 s -->
@@ -77,49 +78,36 @@
     </div>
   </section>
 
-  <!-- MUESTRA PROVISORIA de la base visual (T045): es la pantalla después del
-       login hasta que exista la carga del estudio (T013). -->
-  <main id="muestra" class="pantalla muestra" hidden>
-    <header class="muestra-encabezado">
-      <h1 class="muestra-titulo">Base visual</h1>
-      <p class="texto-secundario">Muestra provisoria para revisar colores, letra y formas.</p>
-      <p class="texto-secundario">Ingresaste como <strong id="muestra-correo"></strong></p>
-      <div class="selector-tema" role="group" aria-label="Modo de color">
-        <button type="button" data-modo="claro">Claro</button>
-        <button type="button" data-modo="oscuro">Oscuro</button>
-        <button type="button" data-modo="auto">Automático</button>
+  <!-- Carga del Estudio Ergométrico (T013). El formulario lo dibuja js/carga.js
+       a partir de la planilla (js/planillas/ergometrico.js). -->
+  <section id="carga" class="pantalla" hidden>
+    <header class="encabezado">
+      <h1 class="encabezado__titulo">Estudio ergométrico</h1>
+      <div class="encabezado__derecha">
+        <img class="encabezado__isologo solo-tema-claro" src="assets/logos/isologo.svg" alt="Sanatorio de la Cañada">
+        <img class="encabezado__isologo solo-tema-oscuro" src="assets/logos/isologo-claro.svg" alt="Sanatorio de la Cañada">
+        <button type="button" class="encabezado__menu" id="menu-boton"
+                aria-label="Menú" aria-expanded="false" aria-controls="menu-panel">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="menu" id="menu-panel" hidden>
+        <p class="menu__correo">Ingresaste como <strong id="menu-correo"></strong></p>
+        <p class="menu__rotulo">Modo de color</p>
+        <div class="selector-tema" role="group" aria-label="Modo de color">
+          <button type="button" data-modo="claro">Claro</button>
+          <button type="button" data-modo="oscuro">Oscuro</button>
+          <button type="button" data-modo="auto">Automático</button>
+        </div>
+        <button type="button" class="boton-secundario" id="boton-cerrar-sesion">Cerrar sesión</button>
       </div>
     </header>
 
-    <section class="tarjeta">
-      <h2 class="titulo-seccion">Paciente</h2>
-      <div class="grilla-campos">
-        <label class="campo-grupo a-lo-ancho">
-          <span class="campo-etiqueta">Paciente</span>
-          <input class="campo" type="text" placeholder="Nombre y apellido" autocomplete="off">
-        </label>
-        <label class="campo-grupo">
-          <span class="campo-etiqueta">Sexo</span>
-          <input class="campo" type="text" autocomplete="off">
-        </label>
-        <label class="campo-grupo">
-          <span class="campo-etiqueta">Edad</span>
-          <input class="campo numeros" type="text" inputmode="numeric" autocomplete="off">
-        </label>
-      </div>
-    </section>
-
-    <section class="tarjeta">
-      <h2 class="titulo-seccion">Conclusión</h2>
-      <label class="campo-grupo">
-        <span class="campo-etiqueta">Conclusión</span>
-        <textarea class="campo" rows="3"></textarea>
-      </label>
-    </section>
-
-    <button type="button" class="boton-principal">Confirmar estudio</button>
-    <button type="button" class="boton-secundario" id="muestra-cerrar-sesion">Cerrar sesión</button>
-  </main>
+    <main class="carga" id="carga-formulario"></main>
+  </section>
 
   <!-- Librería oficial de Supabase: versión fija y con "huella digital" (integrity):
        si el archivo del CDN fuera alterado, el navegador se niega a usarlo. -->
@@ -130,6 +118,9 @@
   <script src="js/config.js"></script>
   <script src="js/sesion.js"></script>
   <script src="js/pantallas.js"></script>
+  <script src="js/planillas/ergometrico.js"></script>
+  <script src="js/formulario.js"></script>
+  <script src="js/carga.js"></script>
   <script src="js/login.js"></script>
   <script src="js/splash.js"></script>
   <script src="js/app.js"></script>
