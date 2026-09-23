@@ -1,14 +1,14 @@
 {
   "id": "/",
-  "name": "Proyecto Clínica",
-  "short_name": "Clínica",
+  "name": "Sanatorio de la Cañada",
+  "short_name": "delacañada",
   "description": "Carga de planillas clínicas por voz.",
   "lang": "es",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0f4c81",
+  "background_color": "#E7F2F1",
+  "theme_color": "#E7F2F1",
   "icons": [
     {
       "src": "assets/iconos/icono-192.png",

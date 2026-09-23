@@ -44,9 +44,12 @@ Para los íconos de la app hay además un `isologo.png` de 1024×1024 px con fon
 blanco. Al generar los íconos se le agrega margen (el isologo llega casi al
 borde y Android recorta las puntas).
 
-**Pendiente técnico:** `isologo.svg` e `isologo-claro.svg` tienen espacio vacío
-arriba y abajo (se coló un objeto invisible al exportar). Hay que recortarles el
-lienzo al contorno real de la C y la cruz antes de usarlos.
+**Recorte de lienzo (resuelto en la T046):** los 4 SVG traían un rectángulo-marco
+que se coló al exportar (sin relleno y con borde blanco: en modo oscuro se veía
+como un recuadro) y espacio vacío arriba y abajo. Se aplicó a los 4 logos: se
+borró el marco y se ajustó el lienzo al dibujo real, sin tocar formas ni
+colores. Cada par (normal y claro) tiene el mismo lienzo, así el logo no se
+corre al cambiar de modo.
 
 **Reglas:**
 - El logo va siempre como imagen: nunca se reescribe con texto.

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Creator: CorelDRAW 2020 (64-Bit) -->
-<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="159.667mm" height="50.1731mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
-viewBox="0 0 13088.1 4112.74"
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="141.544mm" height="23.673mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="742.77 1086.12 11602.54 1940.50"
  xmlns:xlink="http://www.w3.org/1999/xlink"
  xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
  <defs>
@@ -112,6 +112,5 @@ viewBox="0 0 13088.1 4112.74"
    <rect class="fil1" transform="matrix(8.00348E-14 -3.02194 3.02194 8.00348E-14 3034.17 2083.22)" width="119.28" height="112.96"/>
    <rect class="fil0 str0" x="2674.93" y="2082" width="360.47" height="341.37"/>
   </g>
-  <rect class="fil8 str3" x="3.12" y="3.12" width="13081.85" height="4106.5"/>
  </g>
 </svg>
