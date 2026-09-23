@@ -113,6 +113,9 @@ Meta de la demo: llegar con la Fase 2 sólida. Si sobra tiempo, Fase 3 y 4.
     `estudios`).
 - **T033** Imprimir / exportar a PDF con el mismo aspecto que la planilla original
   en papel.
+  - *Conclusión:* es un campo de texto largo que va en la misma hoja (no hay
+    segunda hoja de conclusiones). Hay que resolver cómo se ve si es muy larga,
+    para que todo entre en una sola A4 vertical (RF-022).
 
 ## Fase 5 — Pruebas y cierre de la demo
 

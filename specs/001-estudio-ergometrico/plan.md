@@ -194,12 +194,15 @@ arme, los datos ya van a estar.
 
 La vista de consulta en computadora debe poder imprimirse y exportarse a PDF
 viéndose **igual que la planilla original en papel** (Servicio de Cardiología —
-CPM). Se arma una versión visual que reproduce el diseño de la planilla (mismos
-campos, mismo orden, tabla de reposo y esfuerzo, encabezado y pie de la clínica).
+Sanatorio de la Cañada — Sanatorio Privado Río Tercero). Se arma una versión
+visual que reproduce el diseño de la planilla (mismos campos, mismo orden, tabla
+de reposo y esfuerzo, encabezado y pie de la clínica).
 
-**Planilla de referencia:** la imagen de la planilla original está en
-`specs/001-estudio-ergometrico/assets/planilla-original.jpg`. Es la referencia a
-copiar para el diseño del PDF y la impresión.
+**Planilla de referencia:** `specs/001-estudio-ergometrico/assets/planilla-delacanada.jpg`
+(también en PDF: `planilla-delacanada.pdf`). Es la referencia a copiar para el
+diseño del PDF y la impresión. La planilla anterior
+(`planilla-original.jpg`) tiene los mismos campos con la marca anterior; queda
+solo como referencia.
 
 ---
 

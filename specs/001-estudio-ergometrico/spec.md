@@ -207,7 +207,8 @@ imprimir/exportar con el formato de la planilla original.
   guardado.
 - **RF-022:** El sistema debe permitir **imprimir** y **exportar a PDF** un
   estudio. La salida (al menos en computadora) debe verse **igual que la planilla
-  original en papel** del Servicio de Cardiología.
+  original en papel** del Servicio de Cardiología, en hoja **A4 vertical** y en
+  **una sola página**.
 - **RF-023:** Los **datos mínimos** para poder guardar un estudio son los datos
   del paciente. La planilla no necesita estar completa para guardarse.
 - **RF-023b:** Las etapas de la tabla **pueden variar en cantidad**; el sistema
