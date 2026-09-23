@@ -55,28 +55,28 @@ Meta de la demo: llegar con la Fase 2 sólida. Si sobra tiempo, Fase 3 y 4.
 *Orden acordado para arrancar:* T045 → T046 → T047 → T048 → T013. El diseño
 de todas las pantallas sigue `guia-visual.md`.
 
-- **T045** Base visual (guía visual, secciones 3 a 6 y 8): colores como
+- ✅ **T045** Base visual (guía visual, secciones 3 a 6 y 8): colores como
   variables CSS en modo claro y oscuro, tipografía Albert Sans, radios, sombras
   y curva de movimiento; desactivar las animaciones si el dispositivo pide
   "reducir movimiento"; botón claro / oscuro / automático que se recuerda en el
   dispositivo.
-- **T046** Logos e íconos definitivos: recortar el lienzo de los isologos SVG;
+- ✅ **T046** Logos e íconos definitivos: recortar el lienzo de los isologos SVG;
   generar los íconos (192, 512 y 180) desde `isologo.png`, con margen (~70% del
   ancho) y fondo blanco, reemplazando los provisorios de la T005; favicon y
   colores de marca en el manifest.
-- **T047** Splash: copia fiel del de LoMar (mismo diseño y animación: el logo
+- ✅ **T047** Splash: copia fiel del de LoMar (mismo diseño y animación: el logo
   sube y crece con un halo difuminado detrás, ~1,5 s), con el logo de la Cañada
   (versión clara en modo oscuro) y los colores de la guía.
-- **T048** Login: copia fiel del de LoMar (tarjeta de vidrio, campos blancos,
+- ✅ **T048** Login: copia fiel del de LoMar (tarjeta de vidrio, campos blancos,
   botón con resplandor), con los logos de la Cañada y el verde de la guía en
   lugar del naranja. Ingreso con correo electrónico y contraseña (Supabase
   Auth), ver/ocultar contraseña, mensajes claros de error ("correo o contraseña
   incorrectos", "sin conexión"), sesión que se mantiene al reabrir la app y
   "Cerrar sesión". Sin "crear cuenta": el alta la hace el administrador
   (RF-001).
-- **T013** Pantalla de carga: formulario del Estudio Ergométrico con todos los
+- ✅ **T013** Pantalla de carga: formulario del Estudio Ergométrico con todos los
   campos y la tabla de etapas (arranca con reposo, 3', 6', 9').
-- **T014** Permitir agregar y quitar etapas de la tabla.
+- ✅ **T014** Permitir agregar y quitar etapas de la tabla.
 - **T015** Grabación de voz en el celular (reaprovechar la UI tipo WhatsApp de
   LoMar).
 - **T016** Edge Function de transcripción (voz → texto), con la clave a salvo en

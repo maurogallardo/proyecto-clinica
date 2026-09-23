@@ -147,16 +147,19 @@ claro/oscuro es cambiar la paleta, no repasar pantallas.
 
 **Vidrio liviano (lección de LoMar):** las tarjetas **no** llevan
 `backdrop-filter` (el desenfoque hace tironear el scroll en Android de gama
-media). El efecto vidrio sale de la transparencia. El desenfoque se usa solo en
-la barra superior fija y detrás de los carteles.
+media). El efecto vidrio sale de la transparencia. El encabezado fijo va casi
+opaco (92%) y sin desenfoque, como en LoMar. El desenfoque queda solo detrás de
+los carteles.
 
 ---
 
 ## 7. Componentes (heredados de LoMar, con la nueva paleta)
 
 - **Tarjeta de sección** con barrita vertical de color a la izquierda del título.
-  Secciones = las de la planilla: Paciente, Estudio, ECG basal, Reposo y
-  esfuerzo, Interrupción y postesfuerzo, Conclusión, Imágenes.
+  Secciones = las de la planilla: Paciente, Estudio, ECG basal, Conclusión,
+  Reposo y esfuerzo, Interrupción y postesfuerzo, Imágenes (el orden es el de
+  la planilla en papel, porque la constitución manda; Imágenes no está en el
+  papel: es un agregado de la app).
 - **Campos** en grilla de dos columnas en el celular cuando entran (como la
   ficha de LoMar); texto largo (antecedentes, conclusión) a lo ancho.
 - **Tarjeta de etapa**: igual que la tarjeta "Control" de signos vitales de

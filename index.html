@@ -107,7 +107,11 @@
       </div>
     </header>
 
-    <main class="carga" id="carga-formulario"></main>
+    <!-- Solo esta caja se desplaza; el encabezado queda quieto arriba (como en LoMar).
+         Así ningún campo pasa por detrás del encabezado. -->
+    <div class="carga__desplazable">
+      <main class="carga" id="carga-formulario"></main>
+    </div>
   </section>
 
   <!-- Cartel de confirmación (js/cartel.js). Uno solo para toda la app. -->

@@ -4,10 +4,23 @@
    con los colores de la guía (css/tokens.css).
    ============================================================================= */
 
-/* --- Encabezado compacto, fijo arriba al desplazarse --- */
+/* --- La pantalla ocupa todo el alto, como la ficha de LoMar: el encabezado
+       queda quieto arriba y SOLO el formulario se desplaza, en su propia caja
+       debajo del encabezado. Así ningún campo pasa por detrás del encabezado
+       (con el fondo al 92 %, lo que pasa por detrás se ve y se lee). --- */
+#carga {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--fondo);
+}
+
+/* --- Encabezado compacto: quieto arriba. Fondo casi opaco (92 %), SIN
+       desenfoque, línea finita abajo y sombra suave, como en LoMar (tokens) --- */
 .encabezado {
-  position: sticky;
-  top: 0;
+  position: relative;   /* el menú se ubica respecto de acá */
+  flex: 0 0 auto;
   z-index: 5;
   display: flex;
   align-items: center;
@@ -97,6 +110,13 @@
   color: var(--texto-secundario);
 }
 
+/* --- Caja que se desplaza con el formulario (como .ficha__scroll de LoMar) --- */
+.carga__desplazable {
+  flex: 1;
+  min-height: 0;   /* sin esto, la caja crecería con el contenido en vez de desplazarse */
+  overflow-y: auto;
+}
+
 /* --- Formulario: una columna de tarjetas --- */
 .carga {
   display: flex;
@@ -108,11 +128,12 @@
   padding: 16px 16px 140px;
 }
 
-/* Si la pantalla salta a una sección o etapa, que el encabezado fijo no la tape */
+/* Al saltar a una sección, etapa o campo, que quede con un poco de aire arriba
+   (el encabezado ya no tapa nada: el formulario se desplaza debajo de él) */
 .carga .seccion,
 .carga .etapa,
 .carga .campo {
-  scroll-margin-top: 84px;
+  scroll-margin-top: 12px;
 }
 
 /* --- Tarjeta de etapa (como la tarjeta "Control" de LoMar) --- */
