@@ -92,9 +92,9 @@ verifica que quedan guardadas con él y que se pueden ver al consultarlo.
    **entonces** la imagen queda adjunta a ese estudio (guardada en formato WebP).
 
 2. **Dado** un estudio en carga,
-   **cuando** el profesional elige una o varias imágenes/archivos ya guardados
-   en su celular,
-   **entonces** todos quedan adjuntos a ese estudio.
+   **cuando** el profesional elige una o varias imágenes ya guardadas en su
+   celular,
+   **entonces** todas quedan adjuntas a ese estudio.
 
 3. **Dado** un estudio guardado con imágenes,
    **cuando** alguien autorizado lo consulta,

@@ -22,27 +22,27 @@ Meta de la demo: llegar con la Fase 2 sólida. Si sobra tiempo, Fase 3 y 4.
 
 ## Fase 0 — Preparación (cimientos)
 
-- **T001** Crear el repositorio en GitHub para el proyecto ("Proyecto Clínica",
+- ✅ **T001** Crear el repositorio en GitHub para el proyecto ("Proyecto Clínica",
   repo sugerido: `proyecto-clinica`).
-- **T002** Crear el proyecto en Vercel y conectarlo al repo de GitHub (para que
+- ✅ **T002** Crear el proyecto en Vercel y conectarlo al repo de GitHub (para que
   cada cambio subido se publique solo).
-- **T003** Crear el proyecto en Supabase (base, auth y storage).
-- **T004** [P] Armar la estructura de carpetas del proyecto (index.html, css/,
+- ✅ **T003** Crear el proyecto en Supabase (base, auth y storage).
+- ✅ **T004** [P] Armar la estructura de carpetas del proyecto (index.html, css/,
   js/, assets/, supabase/).
-- **T005** [P] Configurar la PWA: `manifest.webmanifest`, `sw.js`, íconos, para
+- ✅ **T005** [P] Configurar la PWA: `manifest.webmanifest`, `sw.js`, íconos, para
   que se pueda instalar en el celular.
 
 ## Fase 1 — Base de datos, login y seguridad
 
-- **T006** Crear la tabla `estudios` con todos sus campos y tipos (según el
+- ✅ **T006** Crear la tabla `estudios` con todos sus campos y tipos (según el
   plan), incluidos `documento` y `fecha_estudio` (fecha de la prueba, editable),
   además de `creado_en` (fecha de carga automática).
-- **T007** [P] Crear la tabla `etapas` vinculada a `estudios` por `estudio_id`.
-- **T008** [P] Crear la tabla `imagenes` vinculada a `estudios` por `estudio_id`.
-- **T009** Crear el bucket privado para imágenes en Supabase Storage.
-- **T010** Configurar el login con usuario y contraseña.
-- **T011** Dar de alta el usuario administrador (Mauro).
-- **T012** Configurar Row Level Security básica (cada usuario ve lo que le
+- ✅ **T007** [P] Crear la tabla `etapas` vinculada a `estudios` por `estudio_id`.
+- ✅ **T008** [P] Crear la tabla `imagenes` vinculada a `estudios` por `estudio_id`.
+- ✅ **T009** Crear el bucket privado para imágenes en Supabase Storage.
+- ✅ **T010** Configurar el login con usuario y contraseña.
+- ✅ **T011** Dar de alta el usuario administrador (Mauro).
+- ✅ **T012** Configurar Row Level Security básica (cada usuario ve lo que le
   corresponde; en la demo, un solo usuario).
   - *No olvidar (trazabilidad):* la política de `estudios` tiene que exigir que
     `cargado_por` sea el usuario logueado. Hoy tiene ese valor por defecto, pero
