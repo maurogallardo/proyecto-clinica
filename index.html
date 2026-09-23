@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="css/splash.css">
   <link rel="stylesheet" href="css/login.css">
   <link rel="stylesheet" href="css/carga.css">
+  <link rel="stylesheet" href="css/cartel.css">
 </head>
 <body>
   <!-- Splash (T047): visible desde el primer instante; js/splash.js lo cambia a los 2,5 s -->
@@ -109,6 +110,19 @@
     <main class="carga" id="carga-formulario"></main>
   </section>
 
+  <!-- Cartel de confirmación (js/cartel.js). Uno solo para toda la app. -->
+  <div class="cartel-velo" id="cartel" hidden>
+    <div class="cartel" role="alertdialog" aria-modal="true"
+         aria-labelledby="cartel-titulo" aria-describedby="cartel-texto">
+      <h2 class="cartel__titulo" id="cartel-titulo"></h2>
+      <p class="cartel__texto" id="cartel-texto"></p>
+      <div class="cartel__acciones">
+        <button type="button" class="cartel__boton cartel__boton--secundario" id="cartel-volver">Volver</button>
+        <button type="button" class="cartel__boton cartel__boton--primario" id="cartel-confirmar">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Librería oficial de Supabase: versión fija y con "huella digital" (integrity):
        si el archivo del CDN fuera alterado, el navegador se niega a usarlo. -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
@@ -119,6 +133,7 @@
   <script src="js/sesion.js"></script>
   <script src="js/pantallas.js"></script>
   <script src="js/planillas/ergometrico.js"></script>
+  <script src="js/cartel.js"></script>
   <script src="js/formulario.js"></script>
   <script src="js/carga.js"></script>
   <script src="js/login.js"></script>

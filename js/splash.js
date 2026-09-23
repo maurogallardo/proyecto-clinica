@@ -18,7 +18,11 @@ async function arrancar() {
     await entrarALaApp();
     return;
   }
-  setTimeout(() => mostrarPantalla('login'), DURACION_SPLASH_MS);
+  // Solo pasa al login si el splash sigue en pantalla: si mientras tanto la app
+  // ya fue a otra pantalla, el reloj no la pisa (LoMar cancelaba el reloj al entrar).
+  setTimeout(() => {
+    if (!document.getElementById('splash').hidden) mostrarPantalla('login');
+  }, DURACION_SPLASH_MS);
 }
 
 arrancar();

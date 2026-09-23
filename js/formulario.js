@@ -22,7 +22,7 @@ function dibujarSeccion(seccion, planilla) {
     planilla.etapas.iniciales.forEach((valores) => {
       lista.append(dibujarEtapa(planilla.etapas.campos, valores));
     });
-    tarjeta.append(lista);
+    tarjeta.append(lista, dibujarBotonAgregarEtapa(planilla.etapas.campos, lista));
     return tarjeta;
   }
 
@@ -36,20 +36,83 @@ function dibujarSeccion(seccion, planilla) {
   return tarjeta;
 }
 
-// Tarjeta de etapa (como la tarjeta "Control" de LoMar):
-// Tiempo y Carga destacados arriba; MET, T.A., F.C., ECG y Clínica en grilla
+// Tarjeta de etapa (como la tarjeta "Control" de LoMar): rótulo y tacho arriba;
+// Tiempo y Carga destacados; MET, T.A., F.C., ECG y Clínica en grilla
 function dibujarEtapa(campos, valores = {}) {
   const numero = contadorEtapas++;
   const tarjeta = crear('div', 'etapa');
+
+  const encabezado = crear('div', 'etapa__encabezado');
+  const botonQuitar = crear('button', 'etapa__quitar');
+  botonQuitar.type = 'button';
+  botonQuitar.setAttribute('aria-label', 'Quitar esta etapa');
+  botonQuitar.innerHTML = ICONO_TACHO;
+  botonQuitar.addEventListener('click', () => quitarEtapa(tarjeta));
+  encabezado.append(crear('span', 'etapa__rotulo', 'Etapa'), botonQuitar);
+
   const cabecera = crear('div', 'etapa__cabecera');
   const grilla = crear('div', 'etapa__grilla');
   campos.forEach((campo) => {
     const grupo = dibujarCampo(campo, `etapa-${numero}-${campo.columna}`, valores[campo.columna]);
     (campo.destacado ? cabecera : grilla).append(grupo);
   });
-  tarjeta.append(cabecera, grilla);
+  tarjeta.append(encabezado, cabecera, grilla);
   return tarjeta;
 }
+
+// "+ Agregar etapa" (como "+ Agregar control" de LoMar). La etapa nueva arranca
+// VACÍA, también Tiempo y Carga: los completa el profesional (nunca inventar).
+function dibujarBotonAgregarEtapa(campos, lista) {
+  const boton = crear('button', 'agregar-etapa', '+ Agregar etapa');
+  boton.type = 'button';
+  boton.addEventListener('click', () => {
+    const nueva = dibujarEtapa(campos);
+    nueva.classList.add('etapa--nueva');
+    lista.append(nueva);
+    ajustarTodasLasAlturas(nueva);
+    // El cursor queda en Tiempo (y la pantalla va hasta ahí)
+    nueva.querySelector('[data-columna]').focus();
+  });
+  return boton;
+}
+
+// Quitar una etapa: si tiene datos medidos, antes se pregunta (un toque sin
+// querer no puede borrar datos dictados). Si solo tiene Tiempo y Carga, se
+// quita enseguida, como en LoMar.
+async function quitarEtapa(tarjeta) {
+  if (etapaTieneDatos(tarjeta)) {
+    const identificacion = [...tarjeta.querySelectorAll('.etapa__cabecera [data-columna]')]
+      .filter((control) => control.value.trim() !== '')
+      .map((control) => `${control.labels[0].textContent} ${control.value.trim()}`)
+      .join(' · ');
+    const quitar = await preguntar({
+      titulo: '¿Quitar esta etapa?',
+      texto: `${identificacion ? `${identificacion}. ` : ''}Se van a borrar los datos cargados en esta etapa.`,
+      textoConfirmar: 'Quitar',
+      peligro: true,
+    });
+    if (!quitar) return;
+  }
+  const seccion = tarjeta.closest('.seccion');
+  tarjeta.remove();
+  // El foco pasa al botón "+ Agregar etapa" (no se pierde en la pantalla)
+  seccion.querySelector('.agregar-etapa').focus();
+}
+
+// ¿Tiene algo cargado aparte de Tiempo y Carga?
+function etapaTieneDatos(tarjeta) {
+  return [...tarjeta.querySelectorAll('.etapa__grilla [data-columna]')]
+    .some((control) => control.value.trim() !== '');
+}
+
+// Ícono de tacho (el mismo de LoMar)
+const ICONO_TACHO = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <polyline points="3 6 5 6 21 6"/>
+  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+  <path d="M10 11v6"/><path d="M14 11v6"/>
+  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+</svg>`;
 
 function dibujarCampo(campo, id, valor) {
   const grupo = crear('div', campo.ancho === 'completo' ? 'campo-grupo a-lo-ancho' : 'campo-grupo');

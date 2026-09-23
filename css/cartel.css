@@ -1,0 +1,99 @@
+/* =============================================================================
+   Cartel de confirmación: copia del "modal" de LoMar (lomar-smart-pwa/css/styles.css).
+   Tarjeta blanca, fondo desenfocado, aparece con un pequeño "pop" (guía, sección 7).
+   ============================================================================= */
+
+.cartel-velo {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--cartel-velo);
+  backdrop-filter: blur(8px);   /* la guía permite desenfoque detrás de los carteles */
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.cartel {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 20px;
+  background: var(--cartel-fondo);
+  border-radius: var(--radio-cartel);
+  box-shadow: var(--sombra-cartel);
+  animation: cartel-aparece 200ms ease-out;
+}
+
+@keyframes cartel-aparece {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.cartel__titulo {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--cartel-titulo);
+  text-align: center;
+}
+
+.cartel__texto {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--cartel-texto);
+  text-align: center;
+}
+
+.cartel__acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.cartel__boton {
+  flex: 1 1 0;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: var(--radio-boton);
+  cursor: pointer;
+  transition: transform 100ms ease;
+}
+
+.cartel__boton:active {
+  transform: scale(0.97);
+}
+
+.cartel__boton:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
+.cartel__boton--secundario {
+  color: var(--cartel-texto);
+  background: var(--cartel-fondo);
+  border: 1.5px solid var(--cartel-boton-borde);
+}
+
+.cartel__boton--primario {
+  color: var(--boton-texto);
+  background: var(--boton-fondo);
+  border: none;
+}
+
+/* Para acciones que borran datos */
+.cartel__boton--peligro {
+  color: var(--peligro-texto);
+  background: var(--peligro-fondo);
+  border: none;
+}

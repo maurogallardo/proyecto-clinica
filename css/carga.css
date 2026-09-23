@@ -132,6 +132,83 @@
   border-radius: 12px;
 }
 
+/* Etapa recién agregada: aparece con un movimiento corto */
+.etapa--nueva {
+  animation: etapa-aparece var(--duracion-media) var(--curva);
+}
+
+@keyframes etapa-aparece {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Renglón de arriba: rótulo "ETAPA" y tacho (como "CONTROL" en LoMar) */
+.etapa__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -4px -4px -6px 0;
+}
+
+.etapa__rotulo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+}
+
+.etapa__quitar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--tacho);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--duracion-corta) var(--curva);
+}
+
+.etapa__quitar:hover,
+.etapa__quitar:active {
+  background: var(--tacho-fondo-activo);
+}
+
+.etapa__quitar:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
+/* "+ Agregar etapa" con borde punteado (como "+ Agregar control" de LoMar) */
+.agregar-etapa {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  padding: 10px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--texto);
+  background: var(--agregar-fondo);
+  border: 1.5px dashed var(--agregar-borde);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color var(--duracion-corta) var(--curva);
+}
+
+.agregar-etapa:hover,
+.agregar-etapa:active {
+  background: var(--agregar-fondo-activo);
+}
+
+.agregar-etapa:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
 /* Tiempo y Carga destacados arriba */
 .etapa__cabecera {
   display: grid;

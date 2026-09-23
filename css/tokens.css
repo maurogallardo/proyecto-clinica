@@ -99,6 +99,23 @@
   /* Tarjeta de etapa: un tono dentro de la tarjeta de la sección */
   --etapa-fondo: var(--menta-claro);
   --etapa-borde: #D5E3E1;
+
+  /* --- Agregar / quitar etapas (T014), como "+ Agregar control" de LoMar --- */
+  --tacho: var(--rojo-error);
+  --tacho-fondo-activo: rgba(217, 63, 63, 0.12);
+  --agregar-fondo: rgba(0, 171, 150, 0.06);
+  --agregar-fondo-activo: rgba(0, 171, 150, 0.14);
+  --agregar-borde: rgba(0, 171, 150, 0.45);
+
+  /* --- Cartel (como los de LoMar): tarjeta blanca sobre un velo desenfocado.
+         Igual en los dos modos (guía, sección 7) --- */
+  --cartel-velo: rgba(4, 7, 7, 0.45);
+  --cartel-fondo: var(--blanco);
+  --cartel-titulo: var(--casi-negro);
+  --cartel-texto: var(--gris-texto);
+  --cartel-boton-borde: #D5E3E1;
+  --peligro-fondo: var(--rojo-error);
+  --peligro-texto: var(--blanco);
 }
 
 /* --- Modo oscuro: la receta de LoMar con otra noche --- */
@@ -138,4 +155,10 @@
   --menu-fondo: #0F2A27;
   --etapa-fondo: rgba(255, 255, 255, 0.07);
   --etapa-borde: rgba(255, 255, 255, 0.14);
+  /* Agregar / quitar etapas: valores de LoMar sobre fondo oscuro */
+  --tacho: #FF8A7E;
+  --tacho-fondo-activo: rgba(255, 138, 126, 0.16);
+  --agregar-fondo: rgba(255, 255, 255, 0.06);
+  --agregar-fondo-activo: rgba(255, 255, 255, 0.14);
+  --agregar-borde: rgba(255, 255, 255, 0.38);
 }
