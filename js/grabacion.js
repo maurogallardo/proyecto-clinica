@@ -1,0 +1,532 @@
+// Grabación de voz (T015): copia de la grabación "estilo WhatsApp" de LoMar
+// (lomar-smart-pwa/js/app.js, sección "Grabación de audio estilo WhatsApp").
+//
+//   - Mantener apretado el micrófono: graba (cronómetro, onda y vibración).
+//   - Soltar: vista previa para escuchar, descartar o enviar.
+//   - Deslizar a la izquierda: cancela.  Deslizar hacia arriba: traba con candado.
+//
+// Todavía NO transcribe: "Enviar" avisa y deja el audio en la vista previa.
+// La transcripción se conecta en la T016, en la función enviarAudio() (al final).
+
+// Tope de una grabación. Al llegar, se detiene sola y pasa a la vista previa.
+const GRABACION = {
+  maximoMs: 5 * 60 * 1000,   // 5 minutos
+};
+
+const UMBRAL_CANCELAR_PX = 80;   // cuánto deslizar a la izquierda para cancelar
+const UMBRAL_TRABAR_PX = 60;     // cuánto deslizar hacia arriba para trabar
+
+// Formatos de audio, en orden de preferencia (los mismos de LoMar). El iPhone usa audio/mp4.
+const FORMATOS_AUDIO = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'];
+
+// Estados: 'reposo' | 'grabando' | 'trabado' | 'vista-previa' | 'enviando'
+let estadoGrabacion = 'reposo';
+let grabador = null;              // MediaRecorder
+let pedazosAudio = [];
+let flujoMicrofono = null;        // lo que entrega el micrófono (MediaStream)
+let contextoAudio = null;
+let analizador = null;            // mide el volumen para la onda
+let trabado = false;
+let accionPendiente = null;       // si se suelta o cancela antes de que arranque: 'cancelar' | 'detenerSinVista'
+let descartarAlDetener = false;
+let enviarAlDetener = false;
+let topeAlcanzado = false;
+
+let cronometro = null;
+let inicioTramoMs = 0;
+let acumuladoMs = 0;              // tiempo grabado antes de la última pausa
+
+let audioVistaPrevia = null;      // el audio grabado (Blob)
+let urlVistaPrevia = null;
+
+// --- Ayudantes -----------------------------------------------------------------
+
+// Vibración con el resguardo de LoMar: el iPhone no tiene vibración y no se rompe nada
+function vibrar(patron) {
+  try {
+    if (typeof navigator.vibrate === 'function') navigator.vibrate(patron);
+  } catch { /* sin vibración, no pasa nada */ }
+}
+
+function formatearTiempo(ms) {
+  const segundos = Math.max(0, Math.floor(ms / 1000));
+  const mm = String(Math.floor(segundos / 60)).padStart(2, '0');
+  const ss = String(segundos % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
+// "5 minutos", "1 minuto" o, si es menos de un minuto, "30 segundos"
+function describirDuracion(ms) {
+  const minutos = Math.round(ms / 60000);
+  if (minutos >= 1) return `${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`;
+  return `${Math.round(ms / 1000)} segundos`;
+}
+
+function mostrarTiempo(ms) {
+  document.getElementById('tiempo-grabacion').textContent = formatearTiempo(ms);
+}
+
+// Los íconos son dibujos SVG, y en un SVG ".hidden = ..." no hace nada:
+// hay que poner o sacar el atributo "hidden" directamente.
+function mostrarIcono(id, ver) {
+  document.getElementById(id).toggleAttribute('hidden', !ver);
+}
+
+function mostrarIconoPausa(verPausa) {
+  mostrarIcono('icono-pausar', verPausa);
+  mostrarIcono('icono-seguir', !verPausa);
+}
+
+function mostrarIconoEscuchar(verEscuchar) {
+  mostrarIcono('icono-escuchar', verEscuchar);
+  mostrarIcono('icono-pausar-escucha', !verEscuchar);
+}
+
+// --- Estados de la barra (como setRecorderState de LoMar) ----------------------
+
+function cambiarEstado(estado) {
+  estadoGrabacion = estado;
+  const barra = document.getElementById('barra-voz');
+  const botonMicrofono = document.getElementById('microfono');
+  const enVistaPrevia = estado === 'vista-previa' || estado === 'enviando';
+
+  // Grabando o trabado: se esconden el clip y la cámara (le dejan el ancho a la onda)
+  barra.classList.toggle('esta-grabando', estado === 'grabando' || estado === 'trabado');
+  barra.classList.toggle('esta-ocupada', enVistaPrevia);
+
+  botonMicrofono.hidden = estado !== 'reposo' && estado !== 'grabando';
+  botonMicrofono.classList.toggle('esta-grabando', estado === 'grabando');
+  if (estado === 'reposo') botonMicrofono.style.transform = '';
+
+  document.getElementById('guia-candado').classList.toggle('esta-visible', estado === 'grabando');
+  document.getElementById('pista-cancelar').hidden = estado !== 'grabando';
+  document.getElementById('tiempo-grabacion').hidden = estado === 'reposo';
+  document.getElementById('controles-trabado').hidden = estado !== 'trabado';
+  document.getElementById('boton-descartar-grabacion').hidden = estado !== 'trabado';
+  document.getElementById('controles-vista-previa').hidden = !enVistaPrevia;
+  if (estado === 'grabando') mostrarIconoPausa(true);   // cada grabación arranca con "pausar"
+
+  ajustarLienzo(lienzoOnda());
+  if (estado === 'reposo') dibujarOndaReposo();
+}
+
+// --- Micrófono y analizador ----------------------------------------------------------
+
+function soltarMicrofono() {
+  if (flujoMicrofono) {
+    flujoMicrofono.getTracks().forEach((pista) => pista.stop());
+    flujoMicrofono = null;
+  }
+}
+
+function prepararAnalizador(flujo) {
+  try {
+    const ContextoAudio = window.AudioContext || window.webkitAudioContext;
+    contextoAudio = new ContextoAudio();
+    const fuente = contextoAudio.createMediaStreamSource(flujo);
+    analizador = contextoAudio.createAnalyser();
+    analizador.fftSize = 256;
+    fuente.connect(analizador);
+  } catch (error) {
+    console.error('No se pudo iniciar el analizador de audio', error);
+    analizador = null;
+  }
+}
+
+function cerrarAnalizador() {
+  if (contextoAudio) {
+    contextoAudio.close().catch(() => {});
+    contextoAudio = null;
+  }
+  analizador = null;
+}
+
+// --- Cronómetro (y control del tope) ------------------------------------------------
+
+function iniciarCronometro() {
+  acumuladoMs = 0;
+  reanudarCronometro();
+}
+
+function reanudarCronometro() {
+  inicioTramoMs = performance.now();
+  clearInterval(cronometro);
+  cronometro = setInterval(controlarTiempo, 100);
+  controlarTiempo();
+}
+
+function pausarCronometro() {
+  if (!cronometro) return;
+  clearInterval(cronometro);
+  cronometro = null;
+  acumuladoMs += performance.now() - inicioTramoMs;
+}
+
+function detenerCronometro() {
+  clearInterval(cronometro);
+  cronometro = null;
+}
+
+// Tiempo grabado de verdad (sin contar las pausas)
+function tiempoGrabadoMs() {
+  return acumuladoMs + (cronometro ? performance.now() - inicioTramoMs : 0);
+}
+
+function controlarTiempo() {
+  const ms = tiempoGrabadoMs();
+  mostrarTiempo(Math.min(ms, GRABACION.maximoMs));
+  if (ms >= GRABACION.maximoMs) detenerPorTope();
+}
+
+// Llegó al tope: se detiene sola y pasa a la vista previa (el aviso sale al detenerse)
+function detenerPorTope() {
+  if (topeAlcanzado) return;
+  topeAlcanzado = true;
+  detenerCronometro();
+  detenerGrabacion();
+}
+
+// --- "Deslizá para cancelar": vibra una vez al acercarse al umbral ------------------
+
+let yaVibroCercaDeCancelar = false;
+
+function reiniciarPistaCancelar() {
+  yaVibroCercaDeCancelar = false;
+  document.getElementById('pista-cancelar').classList.remove('esta-cerca');
+}
+
+function actualizarPistaCancelar(distanciaPx) {
+  const cerca = distanciaPx > UMBRAL_CANCELAR_PX * 0.6;
+  document.getElementById('pista-cancelar').classList.toggle('esta-cerca', cerca);
+  if (cerca && !yaVibroCercaDeCancelar) {
+    vibrar(45);
+    yaVibroCercaDeCancelar = true;
+  } else if (!cerca) {
+    yaVibroCercaDeCancelar = false;
+  }
+}
+
+// --- Grabar ------------------------------------------------------------------------------
+
+function iniciarGrabacion() {
+  // Sin micrófono disponible (por ejemplo, un navegador viejo): se avisa
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+    accionPendiente = null;
+    mostrarAviso('No se pudo acceder al micrófono', 'error');
+    return;
+  }
+
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then((flujo) => {
+      flujoMicrofono = flujo;
+      reiniciarOnda();
+      const formato = FORMATOS_AUDIO.find((tipo) => MediaRecorder.isTypeSupported(tipo)) || 'audio/ogg';
+      grabador = new MediaRecorder(flujo, { mimeType: formato });
+      pedazosAudio = [];
+
+      grabador.addEventListener('dataavailable', (evento) => {
+        if (evento.data && evento.data.size > 0) pedazosAudio.push(evento.data);
+      });
+      grabador.addEventListener('stop', () => alTerminarGrabacion(formato));
+
+      prepararAnalizador(flujo);
+      grabador.start();
+      vibrar(35);   // vibra al empezar a grabar
+      cambiarEstado('grabando');
+      iniciarCronometro();
+      iniciarBucleOnda(analizador);
+
+      // Si soltó o canceló mientras el micrófono arrancaba
+      if (accionPendiente) {
+        accionPendiente = null;
+        finalizarSinVistaPrevia();
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      soltarMicrofono();   // por si el error fue después de abrir el micrófono
+      accionPendiente = null;
+      cambiarEstado('reposo');
+      let mensaje;
+      if (error.name === 'NotAllowedError') {
+        mensaje = 'No se pudo acceder al micrófono, revisá los permisos';
+      } else if (error.name === 'NotReadableError' || error.name === 'AbortError') {
+        mensaje = 'El micrófono está siendo usado por otra app. Cerrala e intentá de nuevo.';
+      } else {
+        mensaje = 'No se pudo acceder al micrófono';
+      }
+      mostrarAviso(mensaje, 'error');
+    });
+}
+
+// Cuando el grabador se detiene (por soltar, enviar, cancelar o el tope)
+function alTerminarGrabacion(formato) {
+  detenerBucleOnda();
+  cerrarAnalizador();
+  detenerCronometro();
+  soltarMicrofono();
+
+  if (descartarAlDetener || pedazosAudio.length === 0) {
+    descartarAlDetener = false;
+    enviarAlDetener = false;
+    topeAlcanzado = false;
+    pedazosAudio = [];
+    trabado = false;
+    cambiarEstado('reposo');
+    return;
+  }
+
+  const audio = new Blob(pedazosAudio, { type: grabador.mimeType || formato });
+  pedazosAudio = [];
+  trabado = false;
+  mostrarVistaPrevia(audio);
+
+  if (topeAlcanzado) {
+    topeAlcanzado = false;
+    mostrarAviso(`Llegaste al máximo de ${describirDuracion(GRABACION.maximoMs)}: la grabación se detuvo sola. Escuchala o enviala.`, 'info', 5000);
+  }
+  if (enviarAlDetener) {
+    enviarAlDetener = false;
+    enviarAudio(audio);
+  }
+}
+
+// Detener sin guardar nada (cancelar o descartar)
+function finalizarSinVistaPrevia() {
+  descartarAlDetener = true;
+  if (grabador && grabador.state !== 'inactive') {
+    grabador.stop();
+  } else {
+    descartarAlDetener = false;
+    cambiarEstado('reposo');
+  }
+}
+
+function detenerGrabacion() {
+  if (grabador && grabador.state !== 'inactive') grabador.stop();
+}
+
+function cancelar() {
+  if (grabador && grabador.state !== 'inactive') finalizarSinVistaPrevia();
+  else accionPendiente = 'cancelar';
+}
+
+function trabar() {
+  if (trabado) return;
+  trabado = true;
+  vibrar(45);   // vibra al trabar con el candado
+  const circulo = document.getElementById('guia-candado-circulo');
+  circulo.classList.add('esta-trabando');
+  setTimeout(() => {
+    circulo.classList.remove('esta-trabando');
+    if (estadoGrabacion === 'grabando') cambiarEstado('trabado');
+  }, 250);
+}
+
+// --- Gestos sobre el micrófono (como bindMicFab de LoMar) --------------------------------
+
+function prepararMicrofono() {
+  const botonMicrofono = document.getElementById('microfono');
+  let punteroActivo = null;
+  let inicioX = 0;
+  let inicioY = 0;
+
+  botonMicrofono.addEventListener('pointerdown', (evento) => {
+    if (estadoGrabacion !== 'reposo') return;
+    trabado = false;
+    accionPendiente = null;
+    inicioX = evento.clientX;
+    inicioY = evento.clientY;
+    punteroActivo = evento.pointerId;
+    botonMicrofono.setPointerCapture(evento.pointerId);
+    reiniciarPistaCancelar();
+    iniciarGrabacion();
+  });
+
+  botonMicrofono.addEventListener('pointermove', (evento) => {
+    // Trabado o ya en vista previa (por el tope): el dedo ya no manda
+    if (evento.pointerId !== punteroActivo || trabado || estadoGrabacion === 'vista-previa') return;
+    const deltaX = evento.clientX - inicioX;
+    const deltaY = inicioY - evento.clientY;
+
+    const arrastreX = Math.max(Math.min(deltaX, 0), -UMBRAL_CANCELAR_PX);
+    // Se mantiene el "crecer" del estado grabando: este transform pisa al del CSS
+    botonMicrofono.style.transform = `translateX(${arrastreX}px) scale(1.15)`;
+    actualizarPistaCancelar(-arrastreX);
+
+    if (deltaX < -UMBRAL_CANCELAR_PX) {
+      punteroActivo = null;
+      botonMicrofono.style.transform = '';
+      vibrar(20);
+      cancelar();
+      return;
+    }
+    if (deltaY > UMBRAL_TRABAR_PX) trabar();
+  });
+
+  const alSoltar = (evento) => {
+    if (evento.pointerId !== punteroActivo) return;
+    punteroActivo = null;
+    botonMicrofono.style.transform = '';
+    // Trabado: sigue grabando. En vista previa (llegó al tope): no hay nada que detener.
+    if (trabado || estadoGrabacion === 'vista-previa') return;
+    if (grabador && grabador.state !== 'inactive') detenerGrabacion();
+    else accionPendiente = 'detenerSinVista';
+  };
+  botonMicrofono.addEventListener('pointerup', alSoltar);
+  botonMicrofono.addEventListener('pointercancel', alSoltar);
+}
+
+// --- Controles con candado: pausar / seguir, enviar, descartar ---------------------------
+
+function prepararControlesTrabado() {
+  document.getElementById('boton-pausar').addEventListener('click', () => {
+    if (!grabador) return;
+    if (grabador.state === 'recording') {
+      grabador.pause();
+      pausarCronometro();
+      pausarBucleOnda();
+      mostrarIconoPausa(false);
+    } else if (grabador.state === 'paused') {
+      grabador.resume();
+      reanudarCronometro();
+      reanudarBucleOnda();
+      mostrarIconoPausa(true);
+    }
+  });
+
+  // Enviar: detiene la grabación, pasa a la vista previa y "envía" (por ahora, avisa)
+  document.getElementById('boton-enviar-grabacion').addEventListener('click', () => {
+    enviarAlDetener = true;
+    detenerGrabacion();
+  });
+
+  document.getElementById('boton-descartar-grabacion').addEventListener('click', finalizarSinVistaPrevia);
+}
+
+// --- Vista previa: escuchar, descartar, enviar --------------------------------------------
+
+function mostrarVistaPrevia(audio) {
+  audioVistaPrevia = audio;
+  urlVistaPrevia = URL.createObjectURL(audio);
+  document.getElementById('audio-vista-previa').src = urlVistaPrevia;
+  mostrarIconoEscuchar(true);
+  mostrarTiempo(0);
+  document.getElementById('boton-enviar-audio').disabled = false;
+  // Primero se acomoda la barra y después se mide la onda (así usa el ancho final)
+  cambiarEstado('vista-previa');
+  prepararOndaVistaPrevia();
+}
+
+function cerrarVistaPrevia() {
+  const reproductor = document.getElementById('audio-vista-previa');
+  reproductor.pause();
+  reproductor.removeAttribute('src');
+  reproductor.load();
+  if (urlVistaPrevia) {
+    URL.revokeObjectURL(urlVistaPrevia);
+    urlVistaPrevia = null;
+  }
+  audioVistaPrevia = null;
+  nivelesVistaPrevia = [];
+  cambiarEstado('reposo');
+}
+
+function prepararControlesVistaPrevia() {
+  const reproductor = document.getElementById('audio-vista-previa');
+
+  document.getElementById('boton-escuchar').addEventListener('click', () => {
+    if (!audioVistaPrevia) return;
+    if (reproductor.paused) reproductor.play();
+    else reproductor.pause();
+  });
+
+  reproductor.addEventListener('play', () => mostrarIconoEscuchar(false));
+  reproductor.addEventListener('pause', () => mostrarIconoEscuchar(true));
+  reproductor.addEventListener('ended', () => {
+    mostrarIconoEscuchar(true);
+    mostrarTiempo(0);
+    dibujarOndaVistaPrevia(0);
+  });
+  reproductor.addEventListener('timeupdate', () => {
+    mostrarTiempo(reproductor.currentTime * 1000);
+    if (!Number.isFinite(reproductor.duration) || reproductor.duration === 0) return;
+    dibujarOndaVistaPrevia(reproductor.currentTime / reproductor.duration);
+  });
+  reproductor.addEventListener('loadedmetadata', () => {
+    // Falla conocida de los navegadores con audio webm: la duración llega como
+    // "infinito". Se fuerza a calcularla (igual que en LoMar).
+    if (!Number.isFinite(reproductor.duration)) {
+      reproductor.currentTime = 1e101;
+      const alConocerDuracion = () => {
+        reproductor.removeEventListener('durationchange', alConocerDuracion);
+        reproductor.currentTime = 0;
+      };
+      reproductor.addEventListener('durationchange', alConocerDuracion);
+    }
+  });
+
+  document.getElementById('boton-descartar-audio').addEventListener('click', cerrarVistaPrevia);
+  document.getElementById('boton-enviar-audio').addEventListener('click', () => {
+    if (audioVistaPrevia) enviarAudio(audioVistaPrevia);
+  });
+}
+
+// --- Enviar: acá se conecta la transcripción en la T016 -----------------------------------
+
+// Recibe el audio grabado (Blob, con su formato en audio.type).
+// T016: mandarlo a la Edge Function de transcripción (y después a la de
+// estructuración, T017). Por ahora solo avisa; el audio queda en la vista
+// previa para escucharlo.
+function enviarAudio(audio) {
+  document.getElementById('audio-vista-previa').pause();
+  mostrarAviso('Audio grabado. La transcripción se conecta en el próximo paso', 'info');
+}
+
+// --- Clip y cámara: llegan en la Fase 3 (T025 a T029) -----------------------------------
+
+function prepararAdjuntos() {
+  ['boton-adjuntar', 'boton-camara'].forEach((id) => {
+    document.getElementById(id).addEventListener('click', () => {
+      mostrarAviso('Adjuntar imágenes llega en un próximo paso', 'info');
+    });
+  });
+}
+
+// --- Volver a empezar (al cerrar sesión: no queda ningún audio guardado) --------------------
+
+function reiniciarGrabacion() {
+  accionPendiente = null;
+  trabado = false;
+  enviarAlDetener = false;
+  topeAlcanzado = false;
+  if (grabador && grabador.state !== 'inactive') {
+    descartarAlDetener = true;
+    try { grabador.stop(); } catch { /* ya estaba detenido */ }
+  }
+  soltarMicrofono();
+  detenerBucleOnda();
+  cerrarAnalizador();
+  detenerCronometro();
+  reiniciarOnda();
+  cerrarVistaPrevia();
+}
+
+// --- Arranque ------------------------------------------------------------------------------
+
+prepararMicrofono();
+prepararControlesTrabado();
+prepararControlesVistaPrevia();
+prepararAdjuntos();
+cambiarEstado('reposo');
+
+// La onda en reposo se redibuja cuando la barra aparece o cambia de ancho
+document.addEventListener('pantallamostrada', (evento) => {
+  if (evento.detail.id === 'carga' && estadoGrabacion === 'reposo') dibujarOndaReposo();
+});
+window.addEventListener('resize', () => {
+  if (estadoGrabacion === 'reposo') dibujarOndaReposo();
+});
+document.addEventListener('temacambiado', () => {
+  if (estadoGrabacion === 'reposo') dibujarOndaReposo();
+});

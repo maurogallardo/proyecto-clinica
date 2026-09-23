@@ -116,6 +116,7 @@ de todas las pantallas sigue `guia-visual.md`.
 ## Fase 3 — Historia 2 (P2): imágenes
 
 - **T025** Sacar foto en el momento y elegir archivos ya guardados en el celular.
+  - Si llegamos a la demo sin la Fase 3, esconder el clip y la cámara de la barra.
 - **T026** Convertir las imágenes a formato WebP.
 - **T027** Subir las imágenes al bucket privado.
   - *Orden de guardado:* se suben recién después de guardar la fila de

@@ -149,7 +149,8 @@ claro/oscuro es cambiar la paleta, no repasar pantallas.
 `backdrop-filter` (el desenfoque hace tironear el scroll en Android de gama
 media). El efecto vidrio sale de la transparencia. El encabezado fijo va casi
 opaco (92%) y sin desenfoque, como en LoMar. El desenfoque queda solo detrás de
-los carteles.
+los carteles. El contenido se desplaza en su propia caja, DEBAJO del encabezado,
+no por detrás (como en LoMar).
 
 ---
 

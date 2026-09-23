@@ -1,0 +1,234 @@
+/* =============================================================================
+   Barra de voz (T015): copia de la barra de grabación de LoMar
+   (lomar-smart-pwa/css/styles.css: .rec-bar, .audio-fab, .lock-guide, .rec-icon-btn),
+   con el aspecto de la guía: píldora verde con botones redondos blancos (Dribbble).
+   Todos los colores salen de css/tokens.css.
+   ============================================================================= */
+
+/* --- La píldora, flotando abajo --- */
+.barra-voz {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 6;
+  max-width: 528px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+  background: var(--barra-fondo);
+  border: 1px solid var(--barra-borde);
+  border-radius: var(--radio-pildora);
+  box-shadow: var(--sombra-barra);
+}
+
+/* Clip y cámara, a la izquierda */
+.barra-voz__adjuntos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  max-width: 120px;
+  overflow: hidden;
+  transition: opacity 200ms var(--curva), transform 200ms var(--curva),
+              max-width 200ms var(--curva), margin-right 200ms var(--curva);
+}
+
+/* Mientras hay audio en curso (grabando, trabado o en vista previa) el clip y la
+   cámara se van y le dejan el ancho a la onda (como en LoMar) */
+.barra-voz.esta-grabando .barra-voz__adjuntos,
+.barra-voz.esta-ocupada .barra-voz__adjuntos {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+  max-width: 0;
+  margin-right: -8px;
+}
+
+.barra-voz__izquierda {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* Cronómetro: cifras de ancho parejo para que no "baile" */
+.barra-voz__tiempo {
+  min-width: 44px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--barra-texto);
+}
+
+/* "← Deslizá para cancelar" */
+.barra-voz__pista {
+  padding: 3px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--barra-texto);
+  border-radius: var(--radio-pildora);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* Cerca del umbral de cancelación: etiqueta roja (el rojo sobre verde no se leería) */
+.barra-voz__pista.esta-cerca {
+  color: var(--cancelar-cerca-texto);
+  background: var(--cancelar-cerca-fondo);
+}
+
+.barra-voz__onda {
+  flex: 1 1 auto;
+  min-width: 20px;
+  height: 28px;
+  display: block;
+}
+
+.barra-voz__derecha,
+.barra-voz__controles {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* --- Micrófono: el protagonista (círculo blanco más grande) --- */
+.microfono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  color: var(--barra-boton-icono);
+  background: var(--barra-boton-fondo);
+  border: none;
+  border-radius: 50%;
+  box-shadow: var(--barra-boton-sombra);
+  cursor: pointer;
+  /* Sin esto, el navegador usaría el deslizamiento para desplazar la pantalla */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  transition: background-color 200ms var(--curva), color 200ms var(--curva),
+              transform 200ms var(--curva), box-shadow 200ms var(--curva);
+}
+
+.microfono:active {
+  transform: scale(0.95);
+}
+
+/* Grabando: el micrófono se pone rojo, crece y flota con un halo (como en LoMar) */
+.microfono.esta-grabando,
+.microfono.esta-grabando:active {
+  color: var(--mic-grabando-icono);
+  background: var(--mic-grabando);
+  transform: scale(1.15);
+  box-shadow: var(--mic-grabando-halo);
+}
+
+/* --- Botones redondos blancos (clip, cámara, pausa, escuchar, enviar, descartar) --- */
+.boton-redondo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  color: var(--barra-boton-icono);
+  background: var(--barra-boton-fondo);
+  border: none;
+  border-radius: 50%;
+  box-shadow: var(--barra-boton-sombra);
+  cursor: pointer;
+  transition: transform 100ms ease, opacity 200ms var(--curva);
+}
+
+.boton-redondo:active {
+  transform: scale(0.92);
+}
+
+.boton-redondo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.barra-voz__adjuntos .boton-redondo {
+  width: 44px;
+  height: 44px;
+}
+
+.boton-redondo--descartar {
+  color: var(--barra-boton-peligro);
+}
+
+/* Enviar: un poco más grande, como el protagonista de cada momento */
+.boton-redondo--enviar {
+  width: 52px;
+  height: 52px;
+}
+
+.microfono:focus-visible,
+.boton-redondo:focus-visible {
+  outline: none;
+  box-shadow: var(--barra-anillo-foco);
+}
+
+/* --- Guía del candado: aparece arriba del micrófono mientras se graba --- */
+.guia-candado {
+  position: absolute;
+  right: max(28px, calc((100% - 528px) / 2 + 12px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px) + 84px);
+  z-index: 6;
+  width: 112px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.guia-candado.esta-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.guia-candado__circulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--candado-icono);
+  background: var(--candado-fondo);
+  border-radius: 50%;
+  box-shadow: var(--candado-sombra);
+}
+
+.guia-candado__circulo.esta-trabando {
+  animation: candado-late 250ms ease;
+}
+
+@keyframes candado-late {
+  0% { transform: scale(1); color: var(--candado-icono); }
+  50% { transform: scale(1.3); color: var(--candado-icono-activo); }
+  100% { transform: scale(1); color: var(--candado-icono); }
+}
+
+.guia-candado__texto {
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--candado-texto);
+  background: var(--candado-texto-fondo);
+  border-radius: 6px;
+}

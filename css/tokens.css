@@ -116,6 +116,46 @@
   --cartel-boton-borde: #D5E3E1;
   --peligro-fondo: var(--rojo-error);
   --peligro-texto: var(--blanco);
+
+  /* --- Barra de voz (T015): píldora verde con botones redondos blancos (Dribbble).
+         Verde profundo: el blanco encima se lee (4,2:1; sobre el verde de marca, 2,9:1).
+         Opaca: el formulario no se ve por detrás. --- */
+  --barra-fondo: var(--verde-profundo);
+  --barra-borde: rgba(255, 255, 255, 0.16);
+  --barra-texto: var(--blanco);                  /* cronómetro y "Deslizá para cancelar" */
+  --barra-boton-fondo: var(--blanco);            /* clip, cámara, micrófono y controles */
+  --barra-boton-icono: var(--verde-profundo);    /* sobre blanco: 4,2:1 */
+  --barra-boton-peligro: var(--rojo-error);      /* tacho de descartar */
+  --barra-boton-sombra: 0 2px 8px rgba(4, 7, 7, 0.18);
+  --barra-anillo-foco: 0 0 0 3px rgba(255, 255, 255, 0.7);
+  /* Micrófono grabando: rojo de la guía, con halo */
+  --mic-grabando: var(--rojo-error);
+  --mic-grabando-icono: var(--blanco);
+  --mic-grabando-halo: 0 0 0 8px rgba(217, 63, 63, 0.22), 0 0 0 16px rgba(217, 63, 63, 0.10);
+  /* "Deslizá para cancelar", cerca del umbral: etiqueta roja */
+  --cancelar-cerca-fondo: var(--rojo-error);
+  --cancelar-cerca-texto: var(--blanco);
+  /* Onda de audio (se dibuja en un lienzo, leyendo estos colores) */
+  --onda-reposo: rgba(255, 255, 255, 0.35);
+  --onda-grabando: rgba(255, 255, 255, 0.9);
+  --onda-sin-escuchar: rgba(255, 255, 255, 0.3);
+  --onda-escuchada: var(--blanco);
+  /* Guía del candado ("Deslizá arriba para trabar") */
+  --candado-fondo: var(--blanco);
+  --candado-icono: var(--verde-profundo);
+  --candado-icono-activo: var(--verde-marca);
+  --candado-sombra: 0 4px 14px rgba(4, 7, 7, 0.2);
+  --candado-texto: var(--blanco);
+  --candado-texto-fondo: rgba(4, 7, 7, 0.75);
+
+  /* --- Avisos cortos (toast): tarjeta blanca con barrita de color, como las
+         tarjetas de la guía. Igual en los dos modos (como los carteles) --- */
+  --aviso-fondo: var(--blanco);
+  --aviso-texto: var(--casi-negro);
+  --aviso-sombra: 0 12px 30px rgba(4, 7, 7, 0.18);
+  --aviso-info: var(--celeste);
+  --aviso-error: var(--rojo-error);
+  --aviso-exito: var(--verde-marca);   /* la guía: el éxito se muestra con el verde de marca */
 }
 
 /* --- Modo oscuro: la receta de LoMar con otra noche --- */
@@ -161,4 +201,9 @@
   --agregar-fondo: rgba(255, 255, 255, 0.06);
   --agregar-fondo-activo: rgba(255, 255, 255, 0.14);
   --agregar-borde: rgba(255, 255, 255, 0.38);
+  /* Barra de voz y avisos: sombras más marcadas sobre el fondo oscuro */
+  --barra-borde: rgba(255, 255, 255, 0.18);
+  --barra-boton-sombra: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --candado-sombra: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --aviso-sombra: 0 12px 30px rgba(0, 0, 0, 0.45);
 }

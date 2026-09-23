@@ -1,0 +1,51 @@
+/* =============================================================================
+   Avisos cortos (toast), nuevos en la app (guía visual, sección 7).
+   Como el aviso de LoMar va arriba de la pantalla, pero con el estilo de la guía:
+   tarjeta blanca con la barrita de color de las secciones.
+     info  -> celeste      error -> rojo      éxito -> verde de marca
+   ============================================================================= */
+
+.aviso {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  right: 16px;
+  z-index: 30;              /* por encima de todo, también de los carteles */
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--aviso-texto);
+  background: var(--aviso-fondo);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--aviso-sombra);
+  pointer-events: none;     /* no bloquea los toques: se va solo */
+  animation: aviso-entra var(--duracion-media) var(--curva);
+}
+
+/* Barrita de color a la izquierda (como en los títulos de sección) */
+.aviso::before {
+  content: '';
+  flex: 0 0 4px;
+  align-self: stretch;
+  border-radius: 2px;
+  background: var(--aviso-info);
+}
+
+.aviso--error::before {
+  background: var(--aviso-error);
+}
+
+.aviso--exito::before {
+  background: var(--aviso-exito);
+}
+
+@keyframes aviso-entra {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
