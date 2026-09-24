@@ -189,6 +189,46 @@ function prepararOndaVistaPrevia() {
   dibujarOndaVistaPrevia(0);
 }
 
+// La onda de la vista previa se recalcula con el audio grabado: así sale bien
+// aunque el medidor en vivo haya fallado (en algunos celulares queda plano).
+// Todo pasa en el celular; si no se puede leer el audio, queda la onda en vivo.
+const ONDA_MUESTRAS_POR_SEGUNDO = 1000 / ONDA_INTERVALO_MS;
+
+async function ondaDesdeElAudio(audio) {
+  try {
+    const ContextoFuera = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!ContextoFuera) return;
+    let contexto;
+    try {
+      contexto = new ContextoFuera(1, 1, 16000);   // 16 kHz alcanza para medir el volumen
+    } catch {
+      contexto = new ContextoFuera(1, 1, 44100);
+    }
+    const sonido = await contexto.decodeAudioData(await audio.arrayBuffer());
+    if (audioVistaPrevia !== audio) return;   // mientras tanto se descartó o se envió
+
+    const datos = sonido.getChannelData(0);
+    const tramo = Math.max(1, Math.round(sonido.sampleRate / ONDA_MUESTRAS_POR_SEGUNDO));
+    const niveles = [];
+    for (let desde = 0; desde < datos.length; desde += tramo) {
+      const hasta = Math.min(datos.length, desde + tramo);
+      let sumaCuadrados = 0;
+      for (let i = desde; i < hasta; i++) sumaCuadrados += datos[i] * datos[i];
+      niveles.push(Math.min(1, Math.sqrt(sumaCuadrados / (hasta - desde)) * 3.5));
+    }
+    if (niveles.length === 0) return;
+
+    muestrasOnda = niveles;
+    nivelesVistaPrevia = [];   // se reparte de nuevo al dibujar
+    const reproductor = document.getElementById('audio-vista-previa');
+    const proporcion = Number.isFinite(reproductor.duration) && reproductor.duration > 0
+      ? reproductor.currentTime / reproductor.duration : 0;
+    dibujarOndaVistaPrevia(proporcion);
+  } catch {
+    // Sin poder leer el audio: queda la onda medida en vivo
+  }
+}
+
 function dibujarOndaVistaPrevia(proporcionEscuchada) {
   const lienzo = lienzoOnda();
   ajustarLienzo(lienzo);

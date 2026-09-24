@@ -16,6 +16,11 @@ const GRABACION = {
 const UMBRAL_CANCELAR_PX = 80;   // cuánto deslizar a la izquierda para cancelar
 const UMBRAL_TRABAR_PX = 60;     // cuánto deslizar hacia arriba para trabar
 
+// Resguardos para que la grabación nunca quede colgada (ver T015 en tasks.md)
+const PEDAZO_AUDIO_MS = 1000;             // el audio se guarda en memoria de a 1 segundo
+const ESPERA_DETENER_MS = 3000;           // si el grabador no confirma que paró, se sigue igual
+const MICROFONO_SILENCIADO_MS = 2000;     // micrófono silenciado por el sistema más de esto: se detiene
+
 // Formatos de audio, en orden de preferencia (los mismos de LoMar). El iPhone usa audio/mp4.
 const FORMATOS_AUDIO = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'];
 
@@ -28,6 +33,11 @@ let contextoAudio = null;
 let analizador = null;            // mide el volumen para la onda
 let trabado = false;
 let accionPendiente = null;       // si se suelta o cancela antes de que arranque: 'cancelar' | 'detenerSinVista'
+let esperandoMicrofono = false;   // se pidió el micrófono y todavía no arrancó
+let grabacionAbierta = false;     // hay una grabación sin terminar (se cierra una sola vez)
+let relojDetener = null;
+let relojSilenciado = null;
+let microfonoInterrumpido = false;
 let descartarAlDetener = false;
 let enviarAlDetener = false;
 let topeAlcanzado = false;
@@ -133,11 +143,21 @@ function prepararAnalizador(flujo) {
     analizador = contextoAudio.createAnalyser();
     analizador.fftSize = 256;
     fuente.connect(analizador);
+    despertarAudio();
   } catch (error) {
     console.error('No se pudo iniciar el analizador de audio', error);
     analizador = null;
   }
 }
+
+// Algunos celulares crean el medidor de volumen "dormido" (la onda queda plana):
+// se lo despierta al arrancar y con cualquier toque. El audio grabado no depende de esto.
+function despertarAudio() {
+  if (contextoAudio && contextoAudio.state !== 'running' && contextoAudio.state !== 'closed') {
+    contextoAudio.resume().catch(() => {});
+  }
+}
+document.addEventListener('pointerup', despertarAudio, true);
 
 function cerrarAnalizador() {
   if (contextoAudio) {
@@ -222,33 +242,46 @@ function iniciarGrabacion() {
     return;
   }
 
+  esperandoMicrofono = true;
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then((flujo) => {
+      esperandoMicrofono = false;
+      // Mientras el micrófono arrancaba, se soltó, se canceló, la app pasó a segundo
+      // plano o se cerró la sesión: no hay nada que grabar
+      if (accionPendiente) {
+        accionPendiente = null;
+        flujo.getTracks().forEach((pista) => pista.stop());
+        cambiarEstado('reposo');
+        return;
+      }
       flujoMicrofono = flujo;
       reiniciarOnda();
       const formato = FORMATOS_AUDIO.find((tipo) => MediaRecorder.isTypeSupported(tipo)) || 'audio/ogg';
-      grabador = new MediaRecorder(flujo, { mimeType: formato });
-      pedazosAudio = [];
+      const este = new MediaRecorder(flujo, { mimeType: formato });
+      const pedazos = [];
+      grabador = este;
+      pedazosAudio = pedazos;
+      grabacionAbierta = true;
+      microfonoInterrumpido = false;
 
-      grabador.addEventListener('dataavailable', (evento) => {
-        if (evento.data && evento.data.size > 0) pedazosAudio.push(evento.data);
+      este.addEventListener('dataavailable', (evento) => {
+        if (evento.data && evento.data.size > 0) pedazos.push(evento.data);
       });
-      grabador.addEventListener('stop', () => alTerminarGrabacion(formato));
+      // Cada aviso cuenta solo si viene de la grabación actual (no de una anterior)
+      este.addEventListener('stop', () => { if (grabador === este) alTerminarGrabacion(formato); });
+      este.addEventListener('error', () => { if (grabador === este) interrumpirPorMicrofono(); });
+      vigilarMicrofono(flujo, este);
 
       prepararAnalizador(flujo);
-      grabador.start();
+      // De a pedazos de 1 segundo: si algo falla de golpe, queda lo grabado hasta ahí
+      este.start(PEDAZO_AUDIO_MS);
       vibrar(35);   // vibra al empezar a grabar
       cambiarEstado('grabando');
       iniciarCronometro();
       iniciarBucleOnda(analizador);
-
-      // Si soltó o canceló mientras el micrófono arrancaba
-      if (accionPendiente) {
-        accionPendiente = null;
-        finalizarSinVistaPrevia();
-      }
     })
     .catch((error) => {
+      esperandoMicrofono = false;
       console.error(error);
       soltarMicrofono();   // por si el error fue después de abrir el micrófono
       accionPendiente = null;
@@ -266,19 +299,29 @@ function iniciarGrabacion() {
 }
 
 // Cuando el grabador se detiene (por soltar, enviar, cancelar o el tope)
+// (o por el resguardo de los 3 segundos). Corre una sola vez por grabación.
 function alTerminarGrabacion(formato) {
+  if (!grabacionAbierta) return;
+  grabacionAbierta = false;
+  clearTimeout(relojDetener);
+  clearTimeout(relojSilenciado);
   detenerBucleOnda();
   cerrarAnalizador();
   detenerCronometro();
   soltarMicrofono();
 
+  const interrumpido = microfonoInterrumpido;
+  const porTope = topeAlcanzado;
+  microfonoInterrumpido = false;
+  topeAlcanzado = false;
+
   if (descartarAlDetener || pedazosAudio.length === 0) {
     descartarAlDetener = false;
     enviarAlDetener = false;
-    topeAlcanzado = false;
     pedazosAudio = [];
     trabado = false;
     cambiarEstado('reposo');
+    if (interrumpido) mostrarAviso('Se interrumpió el micrófono y no llegó a grabarse nada. Probá de nuevo.', 'error', 6000);
     return;
   }
 
@@ -287,8 +330,9 @@ function alTerminarGrabacion(formato) {
   trabado = false;
   mostrarVistaPrevia(audio);
 
-  if (topeAlcanzado) {
-    topeAlcanzado = false;
+  if (interrumpido) {
+    mostrarAviso('Se interrumpió el micrófono: la grabación se detuvo. Escuchala o enviala.', 'error', 6000);
+  } else if (porTope) {
     mostrarAviso(`Llegaste al máximo de ${describirDuracion(GRABACION.maximoMs)}: la grabación se detuvo sola. Escuchala o enviala.`, 'info', 5000);
   }
   if (enviarAlDetener) {
@@ -300,25 +344,53 @@ function alTerminarGrabacion(formato) {
 // Detener sin guardar nada (cancelar o descartar)
 function finalizarSinVistaPrevia() {
   descartarAlDetener = true;
-  if (grabador && grabador.state !== 'inactive') {
-    grabador.stop();
+  if (grabacionAbierta) {
+    detenerGrabacion();
   } else {
     descartarAlDetener = false;
     cambiarEstado('reposo');
   }
 }
 
+// Pide al grabador que pare. Si no confirma en 3 segundos (falla del celular),
+// se cierra igual con los pedazos que ya había: la barra nunca queda colgada.
 function detenerGrabacion() {
-  if (grabador && grabador.state !== 'inactive') grabador.stop();
+  if (!grabacionAbierta) return;
+  const formato = grabador.mimeType;
+  try {
+    if (grabador.state !== 'inactive') grabador.stop();
+  } catch { /* ya estaba detenido */ }
+  clearTimeout(relojDetener);
+  relojDetener = setTimeout(() => alTerminarGrabacion(formato), ESPERA_DETENER_MS);
+}
+
+// El sistema cortó el micrófono o el grabador falló: se detiene con lo grabado
+function interrumpirPorMicrofono() {
+  if (!grabacionAbierta || descartarAlDetener) return;
+  microfonoInterrumpido = true;
+  detenerGrabacion();
+}
+
+// Si Android corta el micrófono (lo toma otra app, una llamada, el asistente) o lo
+// silencia más de 2 segundos, la grabación no sigue "grabando silencio"
+function vigilarMicrofono(flujo, este) {
+  flujo.getAudioTracks().forEach((pista) => {
+    pista.addEventListener('ended', () => { if (grabador === este) interrumpirPorMicrofono(); });
+    pista.addEventListener('mute', () => {
+      clearTimeout(relojSilenciado);
+      relojSilenciado = setTimeout(() => { if (grabador === este) interrumpirPorMicrofono(); }, MICROFONO_SILENCIADO_MS);
+    });
+    pista.addEventListener('unmute', () => clearTimeout(relojSilenciado));
+  });
 }
 
 function cancelar() {
-  if (grabador && grabador.state !== 'inactive') finalizarSinVistaPrevia();
+  if (grabacionAbierta) finalizarSinVistaPrevia();
   else accionPendiente = 'cancelar';
 }
 
 function trabar() {
-  if (trabado) return;
+  if (trabado || !grabacionAbierta) return;
   trabado = true;
   vibrar(45);   // vibra al trabar con el candado
   const circulo = document.getElementById('guia-candado-circulo');
@@ -338,7 +410,15 @@ function prepararMicrofono() {
   let inicioY = 0;
 
   botonMicrofono.addEventListener('pointerdown', (evento) => {
-    if (estadoGrabacion !== 'reposo') return;
+    // Un toque nuevo mientras graba quiere decir que el que empezó ya no está (el
+    // sistema se quedó con él sin avisar): frena y pasa a la vista previa con lo grabado
+    if (estadoGrabacion === 'grabando') {
+      punteroActivo = null;
+      botonMicrofono.style.transform = '';
+      detenerGrabacion();
+      return;
+    }
+    if (estadoGrabacion !== 'reposo' || esperandoMicrofono) return;
     trabado = false;
     accionPendiente = null;
     inicioX = evento.clientX;
@@ -376,18 +456,44 @@ function prepararMicrofono() {
     botonMicrofono.style.transform = '';
     // Trabado: sigue grabando. En vista previa (llegó al tope): no hay nada que detener.
     if (trabado || estadoGrabacion === 'vista-previa') return;
-    if (grabador && grabador.state !== 'inactive') detenerGrabacion();
+    if (grabacionAbierta) detenerGrabacion();
     else accionPendiente = 'detenerSinVista';
   };
+
+  // El sistema canceló o se quedó con el toque (gesto de Android, notificación...):
+  // no se sabe si la persona terminó de hablar, así que se traba con el candado.
+  // Sigue grabando y aparecen Pausar, Enviar y Descartar: no se pierde nada.
+  const alPerderElToque = (evento) => {
+    if (evento.pointerId !== punteroActivo) return;   // ya se había soltado normalmente
+    punteroActivo = null;
+    botonMicrofono.style.transform = '';
+    if (trabado || estadoGrabacion === 'vista-previa') return;
+    if (grabacionAbierta) trabar();
+    else accionPendiente = 'detenerSinVista';   // todavía no había arrancado: no hay nada grabado
+  };
+
   botonMicrofono.addEventListener('pointerup', alSoltar);
-  botonMicrofono.addEventListener('pointercancel', alSoltar);
+  botonMicrofono.addEventListener('pointercancel', alPerderElToque);
+  botonMicrofono.addEventListener('lostpointercapture', alPerderElToque);
+}
+
+// Si la app pasa a segundo plano (inicio, pantalla apagada, abrir una notificación),
+// se detiene con lo grabado y pasa a la vista previa: el micrófono no queda abierto de fondo
+function prepararSegundoPlano() {
+  const alIrseDePantalla = () => {
+    document.getElementById('audio-vista-previa').pause();
+    if (esperandoMicrofono) accionPendiente = 'cancelar';
+    if (grabacionAbierta && !descartarAlDetener) detenerGrabacion();
+  };
+  document.addEventListener('visibilitychange', () => { if (document.hidden) alIrseDePantalla(); });
+  window.addEventListener('pagehide', alIrseDePantalla);
 }
 
 // --- Controles con candado: pausar / seguir, enviar, descartar ---------------------------
 
 function prepararControlesTrabado() {
   document.getElementById('boton-pausar').addEventListener('click', () => {
-    if (!grabador) return;
+    if (!grabador || !grabacionAbierta) return;
     if (grabador.state === 'recording') {
       grabador.pause();
       pausarCronometro();
@@ -422,6 +528,7 @@ function mostrarVistaPrevia(audio) {
   // Primero se acomoda la barra y después se mide la onda (así usa el ancho final)
   cambiarEstado('vista-previa');
   prepararOndaVistaPrevia();
+  ondaDesdeElAudio(audio);
 }
 
 function cerrarVistaPrevia() {
@@ -517,14 +624,21 @@ function bloquearMenusDelApretonLargo() {
 // --- Volver a empezar (al cerrar sesión: no queda ningún audio guardado) --------------------
 
 function reiniciarGrabacion() {
-  accionPendiente = null;
+  accionPendiente = esperandoMicrofono ? 'cancelar' : null;
   trabado = false;
   enviarAlDetener = false;
   topeAlcanzado = false;
+  microfonoInterrumpido = false;
+  clearTimeout(relojDetener);
+  clearTimeout(relojSilenciado);
   if (grabador && grabador.state !== 'inactive') {
-    descartarAlDetener = true;
     try { grabador.stop(); } catch { /* ya estaba detenido */ }
   }
+  // Lo que avise después este grabador se ignora: no queda ningún audio
+  grabacionAbierta = false;
+  grabador = null;
+  pedazosAudio = [];
+  descartarAlDetener = false;
   soltarMicrofono();
   detenerBucleOnda();
   cerrarAnalizador();
@@ -539,6 +653,7 @@ prepararMicrofono();
 prepararControlesTrabado();
 prepararControlesVistaPrevia();
 prepararAdjuntos();
+prepararSegundoPlano();
 bloquearMenusDelApretonLargo();
 cambiarEstado('reposo');
 

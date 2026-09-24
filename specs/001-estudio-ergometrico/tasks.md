@@ -79,6 +79,12 @@ de todas las pantallas sigue `guia-visual.md`.
 - ✅ **T014** Permitir agregar y quitar etapas de la tabla.
 - ✅ **T015** Grabación de voz en el celular (reaprovechar la UI tipo WhatsApp de
   LoMar).
+  - Nota (la grabación nunca queda colgada): si el sistema cancela o se queda con
+    el toque, pasa a candado (sigue grabando, con Pausar, Enviar y Descartar); un
+    toque nuevo en el micrófono mientras graba la frena; si la app pasa a segundo
+    plano o Android corta o silencia el micrófono, se detiene y pasa a la vista
+    previa con lo grabado. El audio se guarda en memoria de a 1 segundo, y la
+    onda de la vista previa se calcula con el audio grabado.
 - ✅ **T016** Edge Function de transcripción (voz → texto), con la clave a salvo en
   el servidor.
 - ✅ **T017** Edge Function de estructuración (texto → planilla) con el instructivo
