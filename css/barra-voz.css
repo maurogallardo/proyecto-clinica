@@ -5,6 +5,17 @@
    Todos los colores salen de css/tokens.css.
    ============================================================================= */
 
+/* --- Ni la barra ni la guía del candado dejan seleccionar texto ni abren menús
+       con el apretón largo (Chrome seleccionaba el "00:" del cronómetro y mostraba
+       "Copiar" y la búsqueda de Google; -webkit-touch-callout es para el iPhone).
+       Solo acá: en los campos del formulario se sigue pudiendo seleccionar. --- */
+.barra-voz,
+.guia-candado {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 /* --- La píldora, flotando abajo --- */
 .barra-voz {
   position: absolute;
@@ -62,18 +73,26 @@
   color: var(--barra-texto);
 }
 
-/* "← Deslizá para cancelar" */
+/* "← Deslizá para cancelar": cartelito ARRIBA de la barra, a la izquierda,
+   simétrico con el del candado (a la derecha). Así, mientras se mantiene
+   apretado, la onda tiene casi todo el ancho de la barra. */
 .barra-voz__pista {
-  padding: 3px 8px;
-  font-size: 13px;
-  font-weight: 700;
+  position: absolute;
+  left: 16px;
+  bottom: calc(100% + 10px);
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
   white-space: nowrap;
-  color: var(--barra-texto);
-  border-radius: var(--radio-pildora);
+  color: var(--pista-texto);
+  background: var(--pista-fondo);
+  border-radius: 6px;
+  pointer-events: none;
   transition: background-color 150ms ease, color 150ms ease;
 }
 
-/* Cerca del umbral de cancelación: etiqueta roja (el rojo sobre verde no se leería) */
+/* Cerca del umbral de cancelación: el cartelito se pone rojo */
 .barra-voz__pista.esta-cerca {
   color: var(--cancelar-cerca-texto);
   background: var(--cancelar-cerca-fondo);

@@ -169,10 +169,13 @@ no por detrás (como en LoMar).
 - **"+ Agregar etapa"**: botón con borde punteado (como "+ Agregar control").
   Quitar etapa: ícono de tacho en la tarjeta.
 - **Toggles** y **chips** como en LoMar, si algún campo los necesita.
-- **Barra inferior de voz** (referencia: menú de Dribbble): píldora flotante
-  con clip (adjuntar imágenes), cámara, onda de audio y **micrófono
-  protagonista** (más grande, verde marca; rojo mientras graba). Las miniaturas
-  de las fotos adjuntas flotan arriba de la barra, con su ✕, como en LoMar.
+- **Barra inferior de voz** (referencia: menú de Dribbble): píldora flotante en
+  **verde profundo**, opaca, con clip (adjuntar imágenes) y cámara en círculos
+  blancos con ícono verde profundo, onda de audio y **micrófono protagonista**:
+  círculo blanco más grande con ícono verde profundo, que se pone rojo mientras
+  graba. Es verde profundo y no verde marca porque el blanco sobre el verde marca
+  se lee poco. Las miniaturas de las fotos adjuntas flotan arriba de la barra,
+  con su ✕, como en LoMar.
 - **Carteles** (como LoMar): "¿Confirmar estudio?", "Estudio guardado — N° X",
   y error con "Reintentar". Tarjeta blanca, fondo desenfocado, ícono circular
   (check en verde marca, error en rojo).

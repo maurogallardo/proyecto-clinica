@@ -493,6 +493,17 @@ function prepararAdjuntos() {
   });
 }
 
+// --- Refuerzo: en la barra y en la guía del candado, el apretón largo no abre ---
+// --- ningún menú ni empieza a seleccionar texto (el CSS ya lo impide)          ---
+
+function bloquearMenusDelApretonLargo() {
+  ['barra-voz', 'guia-candado'].forEach((id) => {
+    const zona = document.getElementById(id);
+    zona.addEventListener('contextmenu', (evento) => evento.preventDefault());
+    zona.addEventListener('selectstart', (evento) => evento.preventDefault());
+  });
+}
+
 // --- Volver a empezar (al cerrar sesión: no queda ningún audio guardado) --------------------
 
 function reiniciarGrabacion() {
@@ -518,6 +529,7 @@ prepararMicrofono();
 prepararControlesTrabado();
 prepararControlesVistaPrevia();
 prepararAdjuntos();
+bloquearMenusDelApretonLargo();
 cambiarEstado('reposo');
 
 // La onda en reposo se redibuja cuando la barra aparece o cambia de ancho

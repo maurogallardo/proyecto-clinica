@@ -147,6 +147,10 @@
   --candado-sombra: 0 4px 14px rgba(4, 7, 7, 0.2);
   --candado-texto: var(--blanco);
   --candado-texto-fondo: rgba(4, 7, 7, 0.75);
+  /* "← Deslizá para cancelar": cartelito arriba de la barra, a la izquierda,
+     igual al del candado (a la derecha) */
+  --pista-texto: var(--candado-texto);
+  --pista-fondo: var(--candado-texto-fondo);
 
   /* --- Avisos cortos (toast): tarjeta blanca con barrita de color, como las
          tarjetas de la guía. Igual en los dos modos (como los carteles) --- */
