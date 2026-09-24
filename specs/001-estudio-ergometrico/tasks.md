@@ -77,7 +77,7 @@ de todas las pantallas sigue `guia-visual.md`.
 - ✅ **T013** Pantalla de carga: formulario del Estudio Ergométrico con todos los
   campos y la tabla de etapas (arranca con reposo, 3', 6', 9').
 - ✅ **T014** Permitir agregar y quitar etapas de la tabla.
-- **T015** Grabación de voz en el celular (reaprovechar la UI tipo WhatsApp de
+- ✅ **T015** Grabación de voz en el celular (reaprovechar la UI tipo WhatsApp de
   LoMar).
 - **T016** Edge Function de transcripción (voz → texto), con la clave a salvo en
   el servidor.
@@ -92,6 +92,8 @@ de todas las pantallas sigue `guia-visual.md`.
   (el "buscá el renglón y completalo").
 - **T021** Manejar el dato no ubicable con certeza: no cargarlo; señalar que va a
   mano.
+  - *Pasa a después de la demo.* Por ahora, el dato no ubicable simplemente no se
+    carga en ningún lado (sin aviso).
 - **T022** Pantalla de revisión: mostrar la planilla completa y permitir editar
   cualquier campo a mano.
 - **T023** Exigir datos mínimos (paciente) para poder guardar; permitir guardar
@@ -105,6 +107,8 @@ de todas las pantallas sigue `guia-visual.md`.
     1) guardar la fila de `estudios` (así existe su `id`); 2) guardar sus
     `etapas`; 3) subir las imágenes al bucket, en la carpeta del estudio
     (T027); 4) guardar las filas de `imagenes` con su ruta (T028).
+  - Una vez guardado, el estudio no se edita desde el celular: se corrige desde el
+    dashboard (T032).
 - **T042** Diseño adaptativo: que la app se vea bien y muestre la vista correcta
   según el dispositivo (carga en celular, dashboard en computadora). *(cubre
   RF-018)*

@@ -1,0 +1,8 @@
+# Archivos que Git ignora (no se suben al repo, que es público)
+
+# Datos locales de la herramienta de Supabase (versión y proyecto conectado)
+supabase/.temp/
+
+# Archivos donde se suelen guardar claves: nunca al repo
+.env
+.env.*

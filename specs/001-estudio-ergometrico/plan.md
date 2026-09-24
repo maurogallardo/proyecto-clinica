@@ -38,15 +38,18 @@ formato de planilla— se diseña a medida para este proyecto.
 - **Respaldo e historial:** GitHub.
 - **Base de datos, login, archivos y funciones de servidor:** Supabase, todo en
   un solo lugar.
-- **Voz a texto (transcripción):** Whisper de OpenAI, llamado desde una función
-  de servidor (nunca desde el celular directo).
+- **Voz a texto (transcripción):** gpt-4o-mini-transcribe de OpenAI (no Whisper),
+  en español y con una lista de palabras de ayuda del ergométrico (ergometría,
+  MET, T.A., FCIA, QRS, protocolo de Bruce, etc.), llamado desde una función de
+  servidor (nunca desde el celular directo). El nombre del modelo está en un solo
+  lugar, fácil de cambiar (por ejemplo, a gpt-4o-transcribe).
 - **Asistente que llena la planilla (LLM):** un único modelo de OpenAI
   (referencia: gpt-4o-mini, el mismo enfoque de LoMar), llamado desde una función
   de servidor. Lo que cambia por cada planilla es su instructivo (prompt) y su
   esquema (JSON), no el modelo.
 - **Clave de OpenAI:** la provee Mauro (cuenta propia) en la etapa de armado; se
   guarda en la Edge Function, nunca en el celular ni en el repositorio. Nota: el
-  uso de Whisper y del LLM tiene costo por uso (bajo para la demo).
+  uso de la transcripción y del LLM tiene costo por uso (bajo para la demo).
 - **Entorno de trabajo:** VSCode con Claude Code.
 
 ---
@@ -90,7 +93,14 @@ Reglas del asistente (del instructivo, ya trabajadas): nunca inventar; completar
 solo las filas de etapa existentes según el tiempo dictado; si no puede ubicar un
 dato con certeza, no lo carga (lo pone el profesional a mano); aplicar
 correcciones sin duplicar; acumular varias grabaciones sin pisar lo cargado;
-limpiar el documento (sin puntos ni espacios), como en LoMar.
+limpiar el documento (sin puntos ni espacios), como en LoMar. El instructivo está
+basado en el de LoMar, adaptado al ergométrico.
+
+Resguardos del flujo de voz:
+- **Las funciones solo atienden a usuarios logueados**: cualquier otro pedido se
+  rechaza antes de llamar a OpenAI (nadie de afuera gasta el crédito).
+- **El audio no se guarda en el servidor**: pasa a la transcripción y se descarta.
+  Ni el audio ni el texto dictado se registran en los logs (son datos de salud).
 
 ---
 

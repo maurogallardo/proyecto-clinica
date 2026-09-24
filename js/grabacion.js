@@ -106,6 +106,12 @@ function cambiarEstado(estado) {
   document.getElementById('controles-vista-previa').hidden = !enVistaPrevia;
   if (estado === 'grabando') mostrarIconoPausa(true);   // cada grabación arranca con "pausar"
 
+  // Enviando: la barra queda ocupada, sin poder tocar sus botones
+  barra.setAttribute('aria-busy', String(estado === 'enviando'));
+  document.querySelectorAll('#controles-vista-previa button').forEach((boton) => {
+    boton.disabled = estado === 'enviando';
+  });
+
   ajustarLienzo(lienzoOnda());
   if (estado === 'reposo') dibujarOndaReposo();
 }
@@ -429,6 +435,7 @@ function cerrarVistaPrevia() {
   }
   audioVistaPrevia = null;
   nivelesVistaPrevia = [];
+  olvidarTranscripcionPendiente();
   cambiarEstado('reposo');
 }
 
@@ -472,15 +479,18 @@ function prepararControlesVistaPrevia() {
   });
 }
 
-// --- Enviar: acá se conecta la transcripción en la T016 -----------------------------------
+// --- Enviar: el dictado llena la planilla (T016 y T017, en js/dictado.js) -------------------
 
-// Recibe el audio grabado (Blob, con su formato en audio.type).
-// T016: mandarlo a la Edge Function de transcripción (y después a la de
-// estructuración, T017). Por ahora solo avisa; el audio queda en la vista
-// previa para escucharlo.
-function enviarAudio(audio) {
+// Mientras procesa, la barra queda ocupada (no se puede grabar ni tocar sus botones).
+// Si sale bien, el audio se borra del celular (los datos ya están en la planilla).
+// Si falla, vuelve a la vista previa con el audio, para reintentar.
+async function enviarAudio(audio) {
   document.getElementById('audio-vista-previa').pause();
-  mostrarAviso('Audio grabado. La transcripción se conecta en el próximo paso', 'info');
+  cambiarEstado('enviando');
+  const salioBien = await procesarDictado(audio);
+  if (estadoGrabacion !== 'enviando') return;   // mientras tanto se cerró la sesión
+  if (salioBien) cerrarVistaPrevia();
+  else cambiarEstado('vista-previa');
 }
 
 // --- Clip y cámara: llegan en la Fase 3 (T025 a T029) -----------------------------------

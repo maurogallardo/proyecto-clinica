@@ -14,6 +14,7 @@
 // Sumar otra planilla = escribir otro archivo como este (js/formulario.js no cambia).
 
 const PLANILLA_ERGOMETRICO = {
+  id: 'ergometrico',   // con este nombre la función "estructurar" elige su instructivo
   titulo: 'Estudio ergométrico',
 
   secciones: [

@@ -213,6 +213,40 @@ function leerValor(control) {
   return texto;
 }
 
+// --- Para el dictado (T017) ------------------------------------------------------
+
+// La lista de campos de una planilla, sacada de su configuración:
+// { estudio: [{ columna, etiqueta, tipo }], etapas: [...] }
+function camposDePlanilla(planilla) {
+  const resumir = ({ columna, etiqueta, tipo }) => ({ columna, etiqueta, tipo });
+  return {
+    estudio: planilla.secciones.flatMap((s) => s.campos || []).filter((c) => c.columna).map(resumir),
+    etapas: planilla.etapas.campos.map(resumir),
+  };
+}
+
+// "Foto" de la planilla: cada campo del estudio y de cada etapa, con su control.
+// Sirve para escribir el resultado del dictado exactamente donde estaba cada dato,
+// aunque mientras tanto se agreguen o quiten etapas.
+function tomarFotoPlanilla(contenedor) {
+  const estudio = {};
+  contenedor.querySelectorAll('[data-columna]').forEach((control) => {
+    if (!control.closest('.etapa')) estudio[control.dataset.columna] = control;
+  });
+  const etapas = [...contenedor.querySelectorAll('.etapa')].map((tarjeta) => {
+    const controles = {};
+    tarjeta.querySelectorAll('[data-columna]').forEach((control) => { controles[control.dataset.columna] = control; });
+    return controles;
+  });
+  return { estudio, etapas };
+}
+
+// Escribe un valor en un campo, sin destello (y acomoda el alto de las cajas de texto)
+function escribirValor(control, valor) {
+  control.value = valor === null || valor === undefined ? '' : String(valor);
+  if (control.tagName === 'TEXTAREA') ajustarAltura(control);
+}
+
 // --- Ayudante ------------------------------------------------------------------
 
 function crear(etiqueta, clase, texto) {
