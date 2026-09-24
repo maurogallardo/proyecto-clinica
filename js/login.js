@@ -88,6 +88,7 @@ Sesion.alCerrarse(() => {
   abrirMenu(false);
   reiniciarGrabacion();
   reiniciarCarga();
+  olvidarEstudioEnCurso();
   document.getElementById('login-formulario').reset();
   document.getElementById('login-contrasena').type = 'password';
   document.getElementById('login-ver-contrasena').classList.remove('esta-visible');

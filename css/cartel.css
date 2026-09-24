@@ -56,9 +56,38 @@
   margin-top: 8px;
 }
 
+/* Botones uno arriba del otro, el principal arriba (como "Ficha registrada" de LoMar) */
+.cartel__acciones--columna {
+  flex-direction: column-reverse;
+}
+
+/* Ícono circular arriba del título: check (éxito) o signo de error */
+.cartel__icono {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 4px;
+  color: var(--cartel-icono-trazo);
+  border-radius: 50%;
+}
+
+.cartel__icono--exito {
+  background: var(--cartel-icono-exito);
+  box-shadow: var(--cartel-icono-exito-sombra);
+}
+
+.cartel__icono--error {
+  background: var(--cartel-icono-error);
+  box-shadow: var(--cartel-icono-error-sombra);
+}
+
 .cartel__boton {
   flex: 1 1 0;
   min-height: 46px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: center;

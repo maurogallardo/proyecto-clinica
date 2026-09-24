@@ -113,6 +113,10 @@
          Así ningún campo pasa por detrás del encabezado. -->
     <div class="carga__desplazable">
       <main class="carga" id="carga-formulario"></main>
+      <!-- Confirmar estudio (T024): al final de la planilla, se mueve con ella (como LoMar) -->
+      <div class="carga__final">
+        <button type="button" class="boton-principal boton-confirmar" id="boton-confirmar-estudio">Confirmar estudio</button>
+      </div>
     </div>
 
     <!-- Guía del candado (T015): aparece arriba del micrófono mientras se graba -->
@@ -223,6 +227,7 @@
   <div class="cartel-velo" id="cartel" hidden>
     <div class="cartel" role="alertdialog" aria-modal="true"
          aria-labelledby="cartel-titulo" aria-describedby="cartel-texto">
+      <div class="cartel__icono" id="cartel-icono" hidden></div>
       <h2 class="cartel__titulo" id="cartel-titulo"></h2>
       <p class="cartel__texto" id="cartel-texto"></p>
       <div class="cartel__acciones">
@@ -254,6 +259,7 @@
   <script src="js/onda.js"></script>
   <script src="js/dictado.js"></script>
   <script src="js/grabacion.js"></script>
+  <script src="js/guardado.js"></script>
   <script src="js/login.js"></script>
   <script src="js/splash.js"></script>
   <script src="js/app.js"></script>

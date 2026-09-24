@@ -79,16 +79,16 @@ de todas las pantallas sigue `guia-visual.md`.
 - ✅ **T014** Permitir agregar y quitar etapas de la tabla.
 - ✅ **T015** Grabación de voz en el celular (reaprovechar la UI tipo WhatsApp de
   LoMar).
-- **T016** Edge Function de transcripción (voz → texto), con la clave a salvo en
+- ✅ **T016** Edge Function de transcripción (voz → texto), con la clave a salvo en
   el servidor.
-- **T017** Edge Function de estructuración (texto → planilla) con el instructivo
+- ✅ **T017** Edge Function de estructuración (texto → planilla) con el instructivo
   del ergométrico y el esquema JSON.
-- **T018** Escribir y afinar el instructivo (prompt) del ergométrico: no
+- ✅ **T018** Escribir y afinar el instructivo (prompt) del ergométrico: no
   inventar, completar solo etapas existentes por tiempo dictado, correcciones sin
   duplicar, documento sin puntos.
-- **T019** Acumular varias grabaciones sobre el mismo estudio sin pisar lo ya
+- ✅ **T019** Acumular varias grabaciones sobre el mismo estudio sin pisar lo ya
   cargado.
-- **T020** Ubicar cada dato de etapa en la fila correcta según el tiempo dictado
+- ✅ **T020** Ubicar cada dato de etapa en la fila correcta según el tiempo dictado
   (el "buscá el renglón y completalo").
 - **T021** Manejar el dato no ubicable con certeza: no cargarlo; señalar que va a
   mano.
@@ -109,6 +109,8 @@ de todas las pantallas sigue `guia-visual.md`.
     (T027); 4) guardar las filas de `imagenes` con su ruta (T028).
   - Una vez guardado, el estudio no se edita desde el celular: se corrige desde el
     dashboard (T032).
+  - Sesión vencida durante la carga: por ahora vuelve al login (y la planilla se
+    borra, por privacidad). Se revisa después de la demo.
 - **T042** Diseño adaptativo: que la app se vea bien y muestre la vista correcta
   según el dispositivo (carga en celular, dashboard en computadora). *(cubre
   RF-018)*

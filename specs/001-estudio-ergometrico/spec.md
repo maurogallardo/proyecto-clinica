@@ -209,8 +209,9 @@ imprimir/exportar con el formato de la planilla original.
   estudio. La salida (al menos en computadora) debe verse **igual que la planilla
   original en papel** del Servicio de Cardiología, en hoja **A4 vertical** y en
   **una sola página**.
-- **RF-023:** Los **datos mínimos** para poder guardar un estudio son los datos
-  del paciente. La planilla no necesita estar completa para guardarse.
+- **RF-023:** Los **datos mínimos** para poder guardar un estudio son el **DNI** y
+  el **nombre del paciente**. La planilla no necesita estar completa para
+  guardarse.
 - **RF-023b:** Las etapas de la tabla **pueden variar en cantidad**; el sistema
   debe permitir agregar o quitar etapas.
 - **RF-024:** *(POSTERIOR A LA DEMO — escrito, no se implementa todavía)* El
@@ -302,6 +303,13 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
 10. **Imágenes:** formato WebP, visibles en celular y computadora.
 11. **Visibilidad entre usuarios del mismo servicio:** a definir al escalar (en
     la demo hay un solo usuario).
+12. **Audio:** no se guarda en el servidor (pasa a la transcripción y se
+    descarta).
+13. **Datos no ubicados:** por ahora no se avisan; no se cargan en ningún lado
+    (T021, después de la demo).
+14. **Corrección de un estudio guardado:** una vez guardado, no se edita desde el
+    celular; se corrige desde la computadora (dashboard, T032).
+15. **Datos mínimos para guardar:** DNI y nombre del paciente.
 
 ---
 

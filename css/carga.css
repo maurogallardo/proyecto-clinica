@@ -124,8 +124,23 @@
   gap: 16px;
   max-width: 560px;
   margin: 0 auto;
-  /* Abajo queda lugar para la barra de voz (T015) */
-  padding: 16px 16px 140px;
+  padding: 16px 16px 0;
+}
+
+/* Al final de la planilla: el botón "Confirmar estudio". Abajo queda lugar para
+   la barra de voz (T015), así no lo tapa */
+.carga__final {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 140px;
+}
+
+/* Botón grande, como "Confirmar Ficha" de LoMar, con el estilo del botón principal */
+.boton-confirmar {
+  min-height: 58px;
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 14px;
 }
 
 /* Al saltar a una sección, etapa o campo, que quede con un poco de aire arriba

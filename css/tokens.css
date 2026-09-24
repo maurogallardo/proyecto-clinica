@@ -116,6 +116,12 @@
   --cartel-boton-borde: #D5E3E1;
   --peligro-fondo: var(--rojo-error);
   --peligro-texto: var(--blanco);
+  /* Ícono circular del cartel (guía, sección 7): check en verde de marca, error en rojo */
+  --cartel-icono-exito: var(--verde-marca);
+  --cartel-icono-exito-sombra: 0 6px 18px rgba(0, 171, 150, 0.35);
+  --cartel-icono-error: var(--rojo-error);
+  --cartel-icono-error-sombra: 0 6px 18px rgba(217, 63, 63, 0.35);
+  --cartel-icono-trazo: var(--blanco);
 
   /* --- Barra de voz (T015): píldora verde con botones redondos blancos (Dribbble).
          Verde profundo: el blanco encima se lee (4,2:1; sobre el verde de marca, 2,9:1).

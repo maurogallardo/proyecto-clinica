@@ -114,6 +114,7 @@ tabla aparte, unida por el número de estudio (`estudio_id`).
 | Campo | Tipo | Nota |
 |---|---|---|
 | id | identificador único | el `estudio_id` que une todo |
+| numero | entero | número de estudio correlativo (1, 2, 3...) para "Estudio guardado — N° X". Lo pone la base sola y nadie lo puede cambiar; si un guardado falla a mitad de camino, puede quedar un número salteado |
 | documento | texto | documento del paciente (limpio, sin puntos). Para futuro macheo de pacientes |
 | nombre_paciente | texto | |
 | sexo | texto | |
@@ -147,6 +148,16 @@ modifica** cada planilla. `cargado_por`/`creado_en` dicen quién la cargó y cu�
 cuatro son automáticos. `modificado_por`/`modificado_en` los fuerza la base de
 datos (un trigger), así la app no puede falsearlos; `cargado_por` se protege con
 la política de Row Level Security (T012).
+
+**Guardado "todo o nada" (T024):** el estudio y sus etapas se guardan de una sola
+vez con la función de la base `guardar_estudio` (`supabase/guardado.sql`). Si
+cualquier paso falla, la base deshace todo: no quedan estudios a medias. La
+función corre con los permisos del usuario (valen las mismas reglas de Row Level
+Security), solo toma los campos de la planilla (`cargado_por`, `creado_en` y
+`numero` los pone la base) y no duplica: la app arma el `id` del estudio antes de
+guardar y lo repite en cada reintento; si ese estudio ya estaba guardado, la
+función devuelve su número. Orden de guardado: estudio → etapas (y, cuando llegue
+la Fase 3, imágenes → filas de `imagenes`).
 
 ### Tabla `etapas` (varias filas por estudio)
 
