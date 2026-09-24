@@ -166,6 +166,14 @@
   --aviso-info: var(--celeste);
   --aviso-error: var(--rojo-error);
   --aviso-exito: var(--verde-marca);   /* la guía: el éxito se muestra con el verde de marca */
+
+  /* Miniaturas de las fotos, arriba de la barra de voz (T025) */
+  --miniatura-borde: var(--blanco);
+  --miniatura-fondo: var(--verde-profundo);        /* mientras se prepara */
+  --miniatura-sombra: 0 4px 12px rgba(4, 7, 7, 0.22);
+  --miniatura-quitar-fondo: rgba(4, 7, 7, 0.72);
+  --miniatura-quitar-icono: var(--blanco);
+  --miniatura-cargando: rgba(255, 255, 255, 0.9);
 }
 
 /* --- Modo oscuro: la receta de LoMar con otra noche --- */
@@ -216,4 +224,7 @@
   --barra-boton-sombra: 0 2px 8px rgba(0, 0, 0, 0.35);
   --candado-sombra: 0 4px 14px rgba(0, 0, 0, 0.45);
   --aviso-sombra: 0 12px 30px rgba(0, 0, 0, 0.45);
+  /* Miniaturas: borde apenas más suave y sombra más marcada sobre el fondo oscuro */
+  --miniatura-borde: rgba(255, 255, 255, 0.85);
+  --miniatura-sombra: 0 4px 12px rgba(0, 0, 0, 0.5);
 }

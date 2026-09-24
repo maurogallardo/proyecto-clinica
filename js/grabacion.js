@@ -600,16 +600,6 @@ async function enviarAudio(audio) {
   else cambiarEstado('vista-previa');
 }
 
-// --- Clip y cámara: llegan en la Fase 3 (T025 a T029) -----------------------------------
-
-function prepararAdjuntos() {
-  ['boton-adjuntar', 'boton-camara'].forEach((id) => {
-    document.getElementById(id).addEventListener('click', () => {
-      mostrarAviso('Adjuntar imágenes llega en un próximo paso', 'info');
-    });
-  });
-}
-
 // --- Refuerzo: en la barra y en la guía del candado, el apretón largo no abre ---
 // --- ningún menú ni empieza a seleccionar texto (el CSS ya lo impide)          ---
 
@@ -652,7 +642,6 @@ function reiniciarGrabacion() {
 prepararMicrofono();
 prepararControlesTrabado();
 prepararControlesVistaPrevia();
-prepararAdjuntos();
 prepararSegundoPlano();
 bloquearMenusDelApretonLargo();
 cambiarEstado('reposo');

@@ -82,12 +82,13 @@ prepararOjitoContrasena();
 prepararCerrarSesion();
 
 // Si la sesión se cierra (con el botón o porque venció), volver al login limpio.
-// El formulario y cualquier audio grabado también se borran: si entra otra
-// persona en el mismo dispositivo, no ve ni escucha lo que había quedado.
+// El formulario, cualquier audio grabado y las fotos también se borran: si entra
+// otra persona en el mismo dispositivo, no ve ni escucha lo que había quedado.
 Sesion.alCerrarse(() => {
   abrirMenu(false);
   reiniciarGrabacion();
   reiniciarCarga();
+  reiniciarFotos();
   olvidarEstudioEnCurso();
   document.getElementById('login-formulario').reset();
   document.getElementById('login-contrasena').type = 'password';

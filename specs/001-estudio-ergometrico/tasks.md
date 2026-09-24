@@ -100,11 +100,13 @@ de todas las pantallas sigue `guia-visual.md`.
   mano.
   - *Pasa a después de la demo.* Por ahora, el dato no ubicable simplemente no se
     carga en ningún lado (sin aviso).
-- **T022** Pantalla de revisión: mostrar la planilla completa y permitir editar
+- ✅ **T022** Pantalla de revisión: mostrar la planilla completa y permitir editar
   cualquier campo a mano.
-- **T023** Exigir datos mínimos (paciente) para poder guardar; permitir guardar
+  - La misma planilla de carga es la pantalla de revisión: se puede editar a mano
+    cualquier campo.
+- ✅ **T023** Exigir datos mínimos (paciente) para poder guardar; permitir guardar
   incompleto el resto.
-- **T024** Confirmar y guardar el estudio en Supabase (con `cargado_por` y
+- ✅ **T024** Confirmar y guardar el estudio en Supabase (con `cargado_por` y
   `creado_en` automáticos).
   - *Antes de esta tarea:* sumar el número correlativo del estudio (para mostrar
     "Estudio guardado — N° X"): actualizar el modelo de datos del plan y agregar
@@ -122,13 +124,14 @@ de todas las pantallas sigue `guia-visual.md`.
   RF-018)*
 - **T043** Manejo del permiso de micrófono, con atención especial a iPhone:
   pedirlo y mostrar un mensaje claro si está denegado. *(cubre RF-020)*
-- **T044** Manejo de error de transcripción: si el dictado no se entiende o falla,
+- ✅ **T044** Manejo de error de transcripción: si el dictado no se entiende o falla,
   avisar y permitir volver a grabar.
 
 ## Fase 3 — Historia 2 (P2): imágenes
 
 - **T025** Sacar foto en el momento y elegir archivos ya guardados en el celular.
   - Si llegamos a la demo sin la Fase 3, esconder el clip y la cámara de la barra.
+    *(Ya no hace falta si las fotos funcionan en el celular.)*
 - **T026** Convertir las imágenes a formato WebP.
 - **T027** Subir las imágenes al bucket privado.
   - *Orden de guardado:* se suben recién después de guardar la fila de
@@ -138,6 +141,9 @@ de todas las pantallas sigue `guia-visual.md`.
 - **T028** Guardar la ruta de cada imagen en la tabla `imagenes`.
 - **T029** Mostrar las imágenes con enlaces firmados que caducan (en celular y
   computadora).
+  - Ver las fotos de un estudio guardado es en el dashboard (Fase 4). En el
+    celular, antes de guardar, solo se ven las miniaturas. La función del enlace
+    firmado queda lista para el dashboard.
 
 ## Fase 4 — Historia 3 (P3): dashboard (consultar, editar, imprimir)
 
@@ -184,3 +190,10 @@ de todas las pantallas sigue `guia-visual.md`.
 - Menú del encabezado tipo hamburguesa (con X para cerrar), con foto de perfil y
   nombre del usuario, modo de color y cerrar sesión. (Requiere guardar el nombre
   y la foto de cada usuario, que hoy la base no tiene.)
+- Fotos en iPhone: sumar un conversor a WebP para los celulares que no lo crean
+  solos.
+- Probar el acceso restringido con una segunda cuenta real (que un usuario no vea
+  ni toque estudios ni fotos de otro).
+- Adjuntar videos (WebM o MP4, según lo que grabe cada celular). Tener en cuenta
+  que hoy el depósito solo acepta WebP de hasta 5 MB y el espacio del plan gratis
+  de Supabase.

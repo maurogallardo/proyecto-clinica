@@ -190,6 +190,10 @@ Las imágenes **no** se guardan dentro de la tabla: van al **bucket** (depósito
 archivos privado de Supabase), en formato **WebP**. En la tabla se guarda solo la
 ruta (el "ticket" para ir a buscarlas).
 
+Cada foto recibe un código al agregarla en el celular: ese código es el nombre del
+archivo (`<estudio_id>/<código>.webp`) y el `id` de su fila en `imagenes`. Así,
+reintentar la subida nunca duplica ni archivos ni filas.
+
 ### Para el futuro (no en la demo)
 
 Tabla `pacientes` para agrupar todos los estudios de una misma persona por

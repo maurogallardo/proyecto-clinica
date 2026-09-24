@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="css/carga.css">
   <link rel="stylesheet" href="css/cartel.css">
   <link rel="stylesheet" href="css/barra-voz.css">
+  <link rel="stylesheet" href="css/fotos.css">
   <link rel="stylesheet" href="css/avisos.css">
 </head>
 <body>
@@ -220,6 +221,14 @@
       </div>
     </div>
 
+    <!-- Miniaturas de las fotos (T025): flotan arriba de la barra, cada una con su ✕
+         (como los adjuntos de LoMar). Hasta confirmar, viven solo en el celular. -->
+    <div class="miniaturas" id="miniaturas" aria-label="Fotos del estudio" hidden></div>
+
+    <!-- Selectores del celular: galería (varias fotos) y cámara (foto en el momento) -->
+    <input type="file" id="input-fotos" accept="image/*" multiple hidden>
+    <input type="file" id="input-camara" accept="image/*" capture="environment" hidden>
+
     <audio id="audio-vista-previa" hidden></audio>
   </section>
 
@@ -231,6 +240,7 @@
       <h2 class="cartel__titulo" id="cartel-titulo"></h2>
       <p class="cartel__texto" id="cartel-texto"></p>
       <div class="cartel__acciones">
+        <button type="button" class="cartel__boton cartel__boton--secundario" id="cartel-tercero" hidden></button>
         <button type="button" class="cartel__boton cartel__boton--secundario" id="cartel-volver">Volver</button>
         <button type="button" class="cartel__boton cartel__boton--primario" id="cartel-confirmar">Aceptar</button>
       </div>
@@ -259,6 +269,7 @@
   <script src="js/onda.js"></script>
   <script src="js/dictado.js"></script>
   <script src="js/grabacion.js"></script>
+  <script src="js/fotos.js"></script>
   <script src="js/guardado.js"></script>
   <script src="js/login.js"></script>
   <script src="js/splash.js"></script>

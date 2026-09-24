@@ -1,0 +1,123 @@
+/* =============================================================================
+   Miniaturas de las fotos (T025): flotan arriba de la barra de voz, cada una con
+   su ✕ (como la tira de adjuntos de LoMar: .rec-thumbs y .rec-thumb).
+   Todos los colores salen de css/tokens.css.
+   ============================================================================= */
+
+/* La tira: mismo ancho que la barra, justo arriba de ella. Se desliza de costado. */
+.miniaturas {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px) + 70px);
+  z-index: 5;
+  max-width: 528px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Aire alrededor para que la sombra de las miniaturas no quede recortada
+     (la tira se desliza de costado y recorta lo que se sale de ella) */
+  padding: 14px 6px 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* La tira en sí no recibe toques (solo las miniaturas): lo que quede entre
+     ellas sigue siendo la planilla de atrás */
+  pointer-events: none;
+  transition: opacity 200ms var(--curva);
+}
+
+.miniaturas::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mientras se graba, la tira se aparta: arriba del micrófono va la guía del candado */
+.barra-voz.esta-grabando ~ .miniaturas {
+  opacity: 0;
+}
+
+.barra-voz.esta-grabando ~ .miniaturas .miniatura {
+  pointer-events: none;
+}
+
+.miniatura {
+  position: relative;
+  flex: 0 0 auto;
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--miniatura-borde);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--miniatura-fondo);
+  box-shadow: var(--miniatura-sombra);
+  pointer-events: auto;
+}
+
+.miniatura img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Preparando (pasando a WebP): una rueda que gira */
+.miniatura--preparando::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 22px;
+  height: 22px;
+  border: 3px solid transparent;
+  border-top-color: var(--miniatura-cargando);
+  border-right-color: var(--miniatura-cargando);
+  border-radius: 50%;
+  animation: miniatura-gira 800ms linear infinite;
+}
+
+@keyframes miniatura-gira {
+  to { transform: rotate(360deg); }
+}
+
+/* ✕ para quitarla: círculo oscuro arriba a la derecha, con zona de toque más grande */
+.miniatura__quitar {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--miniatura-quitar-icono);
+  background: var(--miniatura-quitar-fondo);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.miniatura__quitar::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+.miniatura__quitar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.miniatura__quitar:focus-visible {
+  outline: none;
+  box-shadow: var(--barra-anillo-foco);
+}
+
+/* Con fotos, el final de la planilla suma aire: la tira no tapa "Confirmar estudio" */
+#carga.hay-fotos .carga__final {
+  padding-bottom: 220px;
+}

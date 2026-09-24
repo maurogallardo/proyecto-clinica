@@ -1,10 +1,12 @@
-// Guardado del estudio (T023 y T024).
-//   1) Revisa: datos mínimos (DNI y nombre), números bien escritos y que no haya
-//      un dictado a medias.
+// Guardado del estudio (T023 y T024, con las fotos de T027 y T028).
+//   1) Revisa: datos mínimos (DNI y nombre), números bien escritos, que no haya
+//      un dictado a medias ni fotos preparándose.
 //   2) Cartel "¿Confirmar estudio?".
 //   3) Guarda estudio + etapas de una sola vez (función guardar_estudio de la base:
-//      todo o nada). Orden de la T024: estudio -> etapas (imágenes: Fase 3).
-//   4) Cartel "Estudio guardado — N° X" o cartel de error con "Reintentar".
+//      todo o nada). Después, cada foto: el archivo al depósito y su fila en
+//      `imagenes` (js/fotos.js). Es el orden de la T024.
+//   4) Cartel "Estudio guardado — N° X", el de fotos pendientes con "Reintentar
+//      fotos", o el de error con "Reintentar".
 // Una vez guardado, el estudio no se edita desde el celular (se corrige desde el
 // dashboard, T032): la planilla vuelve a empezar.
 
@@ -28,6 +30,9 @@ let idEstudioEnCurso = null;
 // Desde que se toca "Confirmar estudio" hasta que se cierra el último cartel, el
 // botón no vuelve a arrancar el guardado (así un doble toque no guarda dos veces)
 let ocupado = false;
+// Cambia cada vez que se cierra la sesión: si pasa en medio de un guardado, lo
+// que responda después ya no muestra carteles (la pantalla ya es el login)
+let vueltaDeCarga = 0;
 
 function botonConfirmar() {
   return document.getElementById('boton-confirmar-estudio');
@@ -84,6 +89,10 @@ function hayNumeroMalEscrito(contenedor) {
 
 async function confirmarEstudio() {
   if (ocupado || hayDictadoAMedias()) return;
+  if (hayFotosPreparando()) {
+    mostrarAviso('Esperá que terminen de prepararse las fotos.', 'error', 5000);
+    return;
+  }
   ocupado = true;
   try {
     // Se guarda exactamente lo que se revisó y se confirmó
@@ -109,10 +118,16 @@ function datosParaGuardar() {
   return { estudio, etapas: conDatos };
 }
 
-async function guardarEstudio(datos) {
+function ponerBoton(texto, desactivado) {
   const boton = botonConfirmar();
-  boton.disabled = true;
-  boton.textContent = 'Guardando…';
+  boton.textContent = texto;
+  boton.disabled = desactivado;
+}
+
+async function guardarEstudio(datos) {
+  const vuelta = vueltaDeCarga;
+  ponerBoton('Guardando…', true);
+  bloquearFotos(true);   // mientras se guarda, no se agregan ni se quitan fotos
   idEstudioEnCurso = idEstudioEnCurso || crypto.randomUUID();
 
   let resultado = null;
@@ -132,22 +147,90 @@ async function guardarEstudio(datos) {
     tipoDeError = !navigator.onLine || /fetch|network|abort|sin conexión/i.test(mensaje) ? 'conexion' : 'general';
     console.error('No se pudo guardar el estudio');   // sin datos del paciente en el registro
   } finally {
-    boton.disabled = false;
-    boton.textContent = 'Confirmar estudio';
+    ponerBoton('Confirmar estudio', false);
   }
 
-  if (resultado) await estudioGuardado(resultado.numero);
-  else await errorAlGuardar(tipoDeError, datos);
+  if (vuelta !== vueltaDeCarga) return;   // se cerró la sesión mientras guardaba
+  if (resultado) {
+    await subirLasFotos(resultado);
+  } else {
+    bloquearFotos(false);
+    await errorAlGuardar(tipoDeError, datos);
+  }
 }
 
-// --- 4) Después de guardar ------------------------------------------------------------------
+// --- 4) Después de guardar: las fotos --------------------------------------------------------
 
-async function estudioGuardado(numero) {
-  // Una vez guardado, no se edita desde el celular: la planilla vuelve a empezar
+// El estudio ya quedó guardado. Sube las fotos que falten (a la carpeta de ESE
+// estudio) y, si alguna no se pudo, las deja en el celular para reintentar.
+async function subirLasFotos(guardado) {
+  if (fotosSinGuardar().length > 0) {
+    const vuelta = vueltaDeCarga;
+    ponerBoton('Subiendo fotos…', true);
+    await subirFotos(guardado.id);
+    ponerBoton('Confirmar estudio', false);
+    if (vuelta !== vueltaDeCarga) return;   // se cerró la sesión mientras subía
+  }
+  const faltan = fotosSinGuardar().length;
+  if (faltan === 0) {
+    await estudioGuardado(guardado.numero);
+    return;
+  }
+  await fotosPendientes(guardado, faltan);
+}
+
+async function fotosPendientes(guardado, faltan) {
+  const cuales = faltan === 1 ? 'no se pudo subir 1 foto' : `no se pudieron subir ${faltan} fotos`;
+  const eleccion = await preguntar({
+    titulo: `Estudio guardado — N° ${guardado.numero}, pero ${cuales}`,
+    texto: navigator.onLine
+      ? 'Las fotos que faltan siguen en el celular.'
+      : 'Sin conexión. Las fotos que faltan siguen en el celular: probá de nuevo cuando tengas señal.',
+    icono: 'error',
+    textoConfirmar: 'Reintentar fotos',
+    textoVolver: 'Cargar nuevo estudio',
+    textoTercero: 'Cerrar sesión',
+    columna: true,
+    cancelable: false,
+    enfocar: 'confirmar',
+  });
+
+  if (eleccion === true) {
+    await subirLasFotos(guardado);   // solo las que faltan, al mismo estudio
+    return;
+  }
+  // "Cargar nuevo estudio" o "Cerrar sesión": primero, que decida si pierde las fotos
+  const pierde = await preguntar({
+    titulo: '¿Seguir sin esas fotos?',
+    texto: `El estudio N° ${guardado.numero} ya quedó guardado, pero sin ${faltan === 1 ? '1 foto' : `${faltan} fotos`}. Si seguís, se borran del celular.`,
+    textoConfirmar: 'Seguir sin las fotos',
+    textoVolver: 'Volver',
+    peligro: true,
+  });
+  if (!pierde) {
+    await fotosPendientes(guardado, faltan);
+    return;
+  }
+  if (eleccion === 'tercero') {
+    await Sesion.salir();   // al cerrarse la sesión se borra todo y vuelve al login
+    return;
+  }
+  empezarDeNuevo();
+}
+
+// --- 5) Después de guardar: la planilla vuelve a empezar ---------------------------------------
+
+// Una vez guardado, no se edita desde el celular: planilla, audio y fotos afuera
+function empezarDeNuevo() {
   idEstudioEnCurso = null;
   reiniciarGrabacion();
   reiniciarCarga();
+  reiniciarFotos();
   document.querySelector('.carga__desplazable').scrollTo(0, 0);
+}
+
+async function estudioGuardado(numero) {
+  empezarDeNuevo();
 
   const cargarOtro = await preguntar({
     titulo: `Estudio guardado — N° ${numero}`,
@@ -175,6 +258,7 @@ async function errorAlGuardar(tipo, datos) {
 // Al empezar de nuevo (cerrar sesión), el próximo estudio lleva otro código
 function olvidarEstudioEnCurso() {
   idEstudioEnCurso = null;
+  vueltaDeCarga++;
 }
 
 botonConfirmar().addEventListener('click', confirmarEstudio);
