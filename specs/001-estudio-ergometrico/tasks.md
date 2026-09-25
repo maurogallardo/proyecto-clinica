@@ -140,17 +140,17 @@ de todas las pantallas sigue `guia-visual.md`.
 
 ## Fase 3 — Historia 2 (P2): imágenes
 
-- **T025** Sacar foto en el momento y elegir archivos ya guardados en el celular.
+- ✅ **T025** Sacar foto en el momento y elegir archivos ya guardados en el celular.
   - Si llegamos a la demo sin la Fase 3, esconder el clip y la cámara de la barra.
-    *(Ya no hace falta si las fotos funcionan en el celular.)*
-- **T026** Convertir las imágenes a formato WebP.
-- **T027** Subir las imágenes al bucket privado.
+    *(Ya no hace falta: las fotos funcionan en el celular.)*
+- ✅ **T026** Convertir las imágenes a formato WebP.
+- ✅ **T027** Subir las imágenes al bucket privado.
   - *Orden de guardado:* se suben recién después de guardar la fila de
     `estudios` (ver T024), en la carpeta de ese estudio:
     `imagenes-estudios/<estudio_id>/<archivo>.webp`. Las reglas del bucket
     (`seguridad.sql`) rechazan cualquier archivo fuera de esa carpeta.
-- **T028** Guardar la ruta de cada imagen en la tabla `imagenes`.
-- **T029** Mostrar las imágenes con enlaces firmados que caducan (en celular y
+- ✅ **T028** Guardar la ruta de cada imagen en la tabla `imagenes`.
+- ✅ **T029** Mostrar las imágenes con enlaces firmados que caducan (en celular y
   computadora).
   - Ver las fotos de un estudio guardado es en el dashboard (Fase 4). En el
     celular, antes de guardar, solo se ven las miniaturas. La función del enlace
