@@ -96,8 +96,9 @@ de todas las pantallas sigue `guia-visual.md`.
     en cifras, sin importar puntos, espacios, guiones o coma); si no, se descarta
     y el campo queda como estaba.
   - F.C. teórica, F.C. alcanzada y porcentaje solo se aceptan si en el dictado se
-    dice su palabra ("teórica"; "alcanzada" o "máxima"; "porcentaje" o "%"). Una
-    talla mayor de 3 se descarta y queda vacía (no se convierte a metros).
+    dice su palabra (una que empiece con "teor", como teórica o teoría, o "teo";
+    "alcanzada" o "máxima"; "porcentaje" o "%"). Una talla mayor de 3 se
+    descarta y queda vacía (no se convierte a metros).
   - ~~**PENDIENTE**: la presión del postesfuerzo dicha sin la palabra "presión",
     o escrita en palabras, a veces no se carga.~~ **Resuelto** con el cambio del
     ordenador a gpt-6-luna (razonamiento bajo), elegido en la comparación de

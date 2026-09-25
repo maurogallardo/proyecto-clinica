@@ -24,7 +24,7 @@ const INSTRUCTIVOS: Record<string, string> = {
 };
 
 // Resguardos propios de cada planilla (palabras clave y valores máximos)
-type Resguardos = { palabrasClave: Record<string, string[]>; maximos: Record<string, number> };
+type Resguardos = { palabrasClave: Record<string, RegExp[]>; maximos: Record<string, number> };
 const RESGUARDOS: Record<string, Resguardos> = {
   ergometrico: RESGUARDOS_ERGOMETRICO,
 };
@@ -143,7 +143,7 @@ type Descartado = { campo: string; valor: unknown };
 // pasa el máximo
 function cumpleResguardos(columna: string, valor: unknown, resguardos: Resguardos, dictadoSinAcentos: string): boolean {
   const claves = resguardos.palabrasClave[columna];
-  if (claves && !claves.some((clave) => dictadoSinAcentos.includes(clave))) return false;
+  if (claves && !claves.some((clave) => clave.test(dictadoSinAcentos))) return false;
   const maximo = resguardos.maximos[columna];
   return !(maximo !== undefined && typeof valor === 'number' && valor > maximo);
 }

@@ -114,7 +114,8 @@ Resguardos del flujo de voz:
     acepta si sus cifras se dijeron, en palabras o en cifras, sin importar puntos,
     espacios, guiones o coma.
   - *Palabras clave:* F.C. teórica, F.C. alcanzada y porcentaje solo si se dice
-    su palabra ("teórica"; "alcanzada" o "máxima"; "porcentaje" o "%").
+    su palabra (una que empiece con "teor", como teórica o teoría, o "teo";
+    "alcanzada" o "máxima"; "porcentaje" o "%").
   - *Máximos:* una talla mayor de 3 (metros) se descarta; no se convierte.
 
 ---

@@ -3,17 +3,18 @@
 
 // Resguardos en el código para esta planilla (los aplica index.ts después del
 // modelo; lo que no los cumple se descarta y el campo queda como estaba):
-//   - palabrasClave: el campo solo se acepta si en el dictado aparece alguna de
-//     estas palabras (sin acentos, en minúscula). Así la frecuencia de una etapa
-//     no termina como "alcanzada" si nadie dijo "alcanzada".
+//   - palabrasClave: el campo solo se acepta si en el dictado (sin acentos, en
+//     minúscula) aparece alguna de estas palabras. Así la frecuencia de una etapa
+//     no termina como "alcanzada" si nadie dijo "alcanzada". (\b = comienzo o fin
+//     de palabra: /\bteor/ es "una palabra que empieza con teor".)
 //   - maximos: un valor mayor se descarta (no se convierte): una talla de 178
 //     es un error de unidades y queda vacía para cargarla a mano.
 export const RESGUARDOS_ERGOMETRICO = {
   palabrasClave: {
-    fc_teorica: ['teoric'],
-    fc_alcanzada: ['alcanzad', 'maxim'],
-    porcentaje: ['porcentaje', 'por ciento', '%'],
-  } as Record<string, string[]>,
+    fc_teorica: [/\bteor/, /\bteo\b/],   // teórica, teórico, teoría (como en la planilla) o "teo"
+    fc_alcanzada: [/alcanzad/, /maxim/],
+    porcentaje: [/porcentaje/, /por ciento/, /%/],
+  } as Record<string, RegExp[]>,
   maximos: {
     talla: 3,   // en metros
   } as Record<string, number>,
