@@ -53,24 +53,47 @@ export function numerosDichos(texto: string): NumeroDicho[] {
   });
   const numeros: NumeroDicho[] = [];
 
-  // El número en palabras que se está armando
-  let armando: { total: number; grupo: number; clase: Clase; desde: number; hasta: number } | null = null;
+  // El número que se está armando. "escrito": si vino en cifras y quedó solo, se
+  // usa tal cual (así se respetan los ceros de adelante: "0,08")
+  let armando: {
+    total: number; grupo: number; clase: Clase; desde: number; hasta: number; escrito?: string; trasMillones?: boolean;
+  } | null = null;
   let yPendiente = -1;   // posición de un "y" que puede unir decena y unidad ("treinta y dos")
 
   const cerrar = () => {
-    if (armando) numeros.push({ cifras: String(armando.total + armando.grupo), desde: armando.desde, hasta: armando.hasta });
+    if (armando) {
+      const cifras = armando.escrito ?? String(armando.total + armando.grupo);
+      numeros.push({ cifras, desde: armando.desde, hasta: armando.hasta });
+    }
     armando = null;
   };
 
   palabras.forEach((palabra, i) => {
+    // "29 millones 800.412": tras "millones", el punto separa los miles
+    if (armando && armando.trasMillones && cortes.has(i) && /^\d{3}$/.test(palabra)) {
+      armando.total += armando.grupo * 1000;
+      armando.grupo = Number(palabra);
+      armando.trasMillones = false;
+      armando.hasta = i;
+      return;
+    }
     // Después de una coma, el número en palabras termina (salvo tras "mil" o "millones")
     if (cortes.has(i) && armando && armando.clase !== 'mil' && armando.clase !== 'millon') cerrar();
     const conY = yPendiente === i - 1 && !cortes.has(i);
     if (palabra !== 'y') yPendiente = -1;
 
-    if (/^\d+$/.test(palabra)) {   // ya viene en cifras (se respetan los ceros de adelante: "0,08")
+    if (/^\d+$/.test(palabra)) {   // ya viene en cifras
+      // Cifras y palabras mezcladas: "29 millones 800 mil 412" es un solo número
+      const valor = Number(palabra);
+      if (armando && (armando.clase === 'mil' || armando.clase === 'millon') && valor < 1000) {
+        armando.trasMillones = armando.clase === 'millon';
+        armando.grupo += valor;
+        armando.clase = 'cerrado';
+        armando.hasta = i;
+        return;
+      }
       cerrar();
-      numeros.push({ cifras: palabra, desde: i, hasta: i });
+      armando = { total: 0, grupo: valor, clase: 'cerrado', desde: i, hasta: i, escrito: palabra };
       return;
     }
     if (palabra === 'y') {
@@ -96,6 +119,7 @@ export function numerosDichos(texto: string): NumeroDicho[] {
         armando.grupo = 0;
         armando.clase = 'mil';
         armando.hasta = i;
+        armando.escrito = undefined;
       } else {
         cerrar();
         armando = { total: 1000, grupo: 0, clase: 'mil', desde: i, hasta: i };
@@ -108,6 +132,7 @@ export function numerosDichos(texto: string): NumeroDicho[] {
         armando.grupo = 0;
         armando.clase = 'millon';
         armando.hasta = i;
+        armando.escrito = undefined;
       } else {
         cerrar();
         armando = { total: 1000000, grupo: 0, clase: 'millon', desde: i, hasta: i };

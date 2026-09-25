@@ -11,7 +11,7 @@
 //
 // - Solo para usuarios logueados.
 // - El texto dictado no se registra en los logs (son datos de salud).
-import { MODELO_ESTRUCTURACION } from '../_compartido/modelos.ts';
+import { AJUSTES_ESTRUCTURACION, MODELO_ESTRUCTURACION } from '../_compartido/modelos.ts';
 import { esUsuarioLogueado, responder, respuestaPrevia } from '../_compartido/http.ts';
 import { pedirAOpenAI } from '../_compartido/openai.ts';
 import { CORRECCIONES_SEGURAS, INSTRUCTIVO_GENERAL } from './instructivos/general.ts';
@@ -228,7 +228,7 @@ Deno.serve(async (pedido) => {
   try {
     const respuesta = await pedirAOpenAI('/chat/completions', {
       model: MODELO_ESTRUCTURACION,
-      temperature: 0,
+      ...AJUSTES_ESTRUCTURACION,
       response_format: {
         type: 'json_schema',
         json_schema: { name: 'planilla', strict: true, schema: esquemaDePlanilla(camposEstudio, camposEtapa) },
@@ -253,8 +253,12 @@ Deno.serve(async (pedido) => {
     const estudio = exigirQueSeHayaDicho(limpiarObjeto(devuelto.estudio, camposEstudio), camposEstudio, lodicho,
       actual.estudio, 'estudio', descartados);
 
-    // "sin_ubicar" se descarta a propósito (ver esquemaDePlanilla)
-    return responder(pedido, { estudio, etapas, descartados });
+    // "sin_ubicar" se descarta a propósito (ver esquemaDePlanilla). "uso": solo la
+    // cantidad de tokens (para saber el costo); la app no lo usa.
+    const uso = respuesta?.usage
+      ? { entrada: respuesta.usage.prompt_tokens, enCache: respuesta.usage.prompt_tokens_details?.cached_tokens ?? 0, salida: respuesta.usage.completion_tokens }
+      : null;
+    return responder(pedido, { estudio, etapas, descartados, uso });
   } catch {
     console.error('estructurar: no se pudo completar la planilla');
     return responder(pedido, { error: 'no-se-pudo-estructurar' }, 502);

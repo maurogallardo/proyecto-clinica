@@ -98,9 +98,10 @@ de todas las pantallas sigue `guia-visual.md`.
   - F.C. teórica, F.C. alcanzada y porcentaje solo se aceptan si en el dictado se
     dice su palabra ("teórica"; "alcanzada" o "máxima"; "porcentaje" o "%"). Una
     talla mayor de 3 se descarta y queda vacía (no se convierte a metros).
-  - **PENDIENTE** (se decide con la comparación de modelos): la presión del
-    postesfuerzo dicha sin la palabra "presión", o escrita en palabras, a veces
-    no se carga.
+  - ~~**PENDIENTE**: la presión del postesfuerzo dicha sin la palabra "presión",
+    o escrita en palabras, a veces no se carga.~~ **Resuelto** con el cambio del
+    ordenador a gpt-6-luna (razonamiento bajo), elegido en la comparación de
+    modelos: 0 de 7 postesfuerzos perdidos en las pruebas con voz.
 - ✅ **T019** Acumular varias grabaciones sobre el mismo estudio sin pisar lo ya
   cargado.
 - ✅ **T020** Ubicar cada dato de etapa en la fila correcta según el tiempo dictado

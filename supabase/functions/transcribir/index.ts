@@ -8,12 +8,15 @@ import { MODELO_TRANSCRIPCION } from '../_compartido/modelos.ts';
 import { esUsuarioLogueado, responder, respuestaPrevia } from '../_compartido/http.ts';
 import { pedirAOpenAI } from '../_compartido/openai.ts';
 
-// Palabras de ayuda para la transcripción (como en LoMar), adaptadas al ergométrico
+// Palabras de ayuda para la transcripción (como en LoMar), adaptadas al ergométrico:
+// términos generales de cardiología, para que el transcriptor los escriba bien
 const PALABRAS_DE_AYUDA =
   'Estudio ergométrico del Servicio de Cardiología del Sanatorio de la Cañada, Río Tercero. ' +
   'Términos: ergometría, ergométrico, MET, T.A., tensión arterial, F.C., frecuencia cardíaca, ' +
   'FCIA, QRS, PQ, QT, ritmo sinusal, eje, postesfuerzo, cicloergómetro, cinta, protocolo de Bruce, ' +
-  'electrocardiograma.';
+  'electrocardiograma, disnea, angor, precordial, isquemia, asintomático, taquicardia, bradicardia, ' +
+  'extrasístoles, supradesnivel, infradesnivel, segmento ST, bloqueo de rama, hipertensión, ' +
+  'dislipemia, tabaquismo.';
 
 // Formatos que graba la app (T015; el iPhone usa audio/mp4) y su extensión
 const FORMATOS: Record<string, string> = {

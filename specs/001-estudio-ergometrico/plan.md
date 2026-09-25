@@ -40,13 +40,18 @@ formato de planilla— se diseña a medida para este proyecto.
   un solo lugar.
 - **Voz a texto (transcripción):** gpt-4o-mini-transcribe de OpenAI (no Whisper),
   en español y con una lista de palabras de ayuda del ergométrico (ergometría,
-  MET, T.A., FCIA, QRS, protocolo de Bruce, etc.), llamado desde una función de
-  servidor (nunca desde el celular directo). El nombre del modelo está en un solo
-  lugar, fácil de cambiar (por ejemplo, a gpt-4o-transcribe).
-- **Asistente que llena la planilla (LLM):** un único modelo de OpenAI
-  (referencia: gpt-4o-mini, el mismo enfoque de LoMar), llamado desde una función
-  de servidor. Lo que cambia por cada planilla es su instructivo (prompt) y su
-  esquema (JSON), no el modelo.
+  MET, T.A., FCIA, QRS, protocolo de Bruce, etc.) y términos generales de
+  cardiología (disnea, angor, isquemia, extrasístoles, segmento ST, etc.), llamado
+  desde una función de servidor (nunca desde el celular directo). El nombre del
+  modelo está en un solo lugar, fácil de cambiar (por ejemplo, a gpt-4o-transcribe).
+- **Asistente que llena la planilla (LLM):** un único modelo de OpenAI,
+  **gpt-6-luna con razonamiento bajo** (antes gpt-4o-mini, el mismo enfoque de
+  LoMar), llamado desde una función de servidor. Se eligió en una comparación de
+  modelos con las mismas pruebas con voz: fue el único que no perdió los datos del
+  postesfuerzo, con un costo de alrededor de 1 centavo de dólar por dictado largo
+  y unos segundos más de demora. El nombre del modelo y sus ajustes están en un
+  solo lugar, fácil de cambiar. Lo que cambia por cada planilla es su instructivo
+  (prompt) y su esquema (JSON), no el modelo.
 - **Clave de OpenAI:** la provee Mauro (cuenta propia) en la etapa de armado; se
   guarda en la Edge Function, nunca en el celular ni en el repositorio. Nota: el
   uso de la transcripción y del LLM tiene costo por uso (bajo para la demo).
