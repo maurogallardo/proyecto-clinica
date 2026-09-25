@@ -9,6 +9,7 @@
 
 const FOTOS = {
   maximo: 10,                            // por estudio
+  porFila: 5,                            // miniaturas: dos filas de hasta 5, todas a la vista
   ladoMaximoPx: 3000,                    // se lee bien un electro sacado con el celular
   calidad: 0.85,
   calidadMinima: 0.6,
@@ -42,19 +43,68 @@ function puedeCrearWebP() {
 }
 
 // --- Pasar a WebP (T026) ------------------------------------------------------------
+// Lado largo hasta 3000 px y calidad 85 %. Si igual pesa demasiado, baja la
+// calidad y, si hace falta, el tamaño, hasta que entre con margen en 5 MB.
+// Se hace en el ayudante (js/fotos-trabajo.js) para no trabar la pantalla; si
+// este celular no puede, se hace acá, de la forma de siempre.
 
-async function abrirImagen(archivo) {
+class ErrorDeFoto extends Error {
+  constructor(motivo) {
+    super(motivo);
+    this.motivo = motivo;   // 'lectura', 'formato' o 'tamano'
+  }
+}
+
+let ayudante;              // undefined: sin probar; null: no se puede usar
+const pedidosAlAyudante = new Map();
+
+function elAyudante() {
+  if (ayudante !== undefined) return ayudante;
+  try {
+    if (typeof OffscreenCanvas !== 'function' || typeof Worker !== 'function') throw new Error('no');
+    ayudante = new Worker('js/fotos-trabajo.js');
+    ayudante.addEventListener('message', ({ data }) => {
+      const pedido = pedidosAlAyudante.get(data.id);
+      if (!pedido) return;
+      pedidosAlAyudante.delete(data.id);
+      pedido(data);
+    });
+    ayudante.addEventListener('error', () => {
+      // El ayudante no arrancó: lo pendiente se hace acá
+      ayudante = null;
+      pedidosAlAyudante.forEach((pedido) => pedido({ error: 'sin-webp' }));
+      pedidosAlAyudante.clear();
+    });
+  } catch {
+    ayudante = null;
+  }
+  return ayudante;
+}
+
+function convertirConAyudante(blob) {
+  const trabajador = elAyudante();
+  if (!trabajador) return Promise.resolve({ error: 'sin-webp' });
+  const id = crypto.randomUUID();
+  return new Promise((responder) => {
+    pedidosAlAyudante.set(id, responder);
+    trabajador.postMessage({ id, foto: blob, opciones: FOTOS });
+  });
+}
+
+async function abrirImagen(blob) {
   if (typeof createImageBitmap === 'function') {
     try {
-      return await createImageBitmap(archivo, { imageOrientation: 'from-image' });
+      return await createImageBitmap(blob, { imageOrientation: 'from-image' });
     } catch { /* se prueba de la otra forma */ }
   }
-  const url = URL.createObjectURL(archivo);
+  const url = URL.createObjectURL(blob);
   try {
     const imagen = new Image();
     imagen.src = url;
     await imagen.decode();
     return imagen;
+  } catch {
+    throw new ErrorDeFoto('formato');
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -64,10 +114,9 @@ function lienzoABlob(lienzo, calidad) {
   return new Promise((responder) => lienzo.toBlob(responder, 'image/webp', calidad));
 }
 
-// Lado largo hasta 3000 px y calidad 85 %. Si igual pesa demasiado, baja la
-// calidad y, si hace falta, el tamaño, hasta que entre con margen en 5 MB.
-async function convertirAWebP(archivo) {
-  const imagen = await abrirImagen(archivo);
+// La forma de siempre, en la pantalla (si el ayudante no se puede usar)
+async function convertirEnPantalla(blob) {
+  const imagen = await abrirImagen(blob);
   const ancho = imagen.width;
   const alto = imagen.height;
   let escala = Math.min(1, FOTOS.ladoMaximoPx / Math.max(ancho, alto));
@@ -81,17 +130,43 @@ async function convertirAWebP(archivo) {
       pincel.imageSmoothingQuality = 'high';
       pincel.drawImage(imagen, 0, 0, lienzo.width, lienzo.height);
       const webp = await lienzoABlob(lienzo, calidad);
-      if (!webp || webp.type !== 'image/webp') throw new Error('sin WebP');
+      if (!webp || webp.type !== 'image/webp') throw new ErrorDeFoto('formato');
       if (webp.size <= FOTOS.pesoMaximo) return webp;
       if (calidad > FOTOS.calidadMinima + 0.01) calidad -= 0.1;
       else escala *= 0.85;
     }
-    throw new Error('no entra en el límite');
+    throw new ErrorDeFoto('tamano');
   } finally {
     if (typeof imagen.close === 'function') imagen.close();
     lienzo.width = 0;   // libera la memoria del lienzo
     lienzo.height = 0;
   }
+}
+
+async function convertirAWebP(blob) {
+  const respuesta = await convertirConAyudante(blob);
+  if (respuesta.webp) return respuesta.webp;
+  if (respuesta.error === 'formato' || respuesta.error === 'tamano') throw new ErrorDeFoto(respuesta.error);
+  return convertirEnPantalla(blob);   // 'sin-webp': el ayudante no pudo; se hace acá
+}
+
+// --- Leer lo elegido apenas llega ----------------------------------------------------------
+// Android da permiso para leer las fotos elegidas solo por un rato: si se leen
+// de a una, a medida que se preparan, las últimas pueden no poder leerse. Por
+// eso se leen TODAS apenas llegan (y se reintenta una vez) y después se preparan
+// de a una desde la memoria del celular.
+
+async function leerArchivo(archivo) {
+  for (let intento = 0; intento < 2; intento++) {
+    try {
+      const datos = await archivo.arrayBuffer();
+      if (datos.byteLength === 0) throw new Error('vacío');
+      return new Blob([datos], { type: archivo.type });
+    } catch {
+      if (intento === 0) await new Promise((r) => setTimeout(r, 400));
+    }
+  }
+  throw new ErrorDeFoto('lectura');
 }
 
 // --- Agregar y quitar -------------------------------------------------------------------
@@ -109,48 +184,77 @@ function fotosSinGuardar() {
   return fotos.filter((foto) => !foto.guardada);
 }
 
+const plural = (n, uno, varios) => (n === 1 ? uno : varios.replace('#', n));
+
+// Un solo aviso al final, que dice qué pasó con las que no entraron
+function avisoDeFotos({ agregadas, noImagenes, sobrantes, lectura, formato }) {
+  const problemas = [];
+  if (lectura) problemas.push(plural(lectura, '1 no se pudo abrir: probá elegirla de nuevo.', '# no se pudieron abrir: probá elegirlas de nuevo.'));
+  if (formato) problemas.push(plural(formato, '1 no se pudo preparar (el formato no es compatible).', '# no se pudieron preparar (el formato no es compatible).'));
+  if (noImagenes) problemas.push(plural(noImagenes, 'Solo se pueden adjuntar fotos: 1 archivo no se agregó.', 'Solo se pueden adjuntar fotos: # archivos no se agregaron.'));
+  if (sobrantes) problemas.push(`Máximo ${FOTOS.maximo} fotos por estudio: ${plural(sobrantes, '1 no se agregó.', '# no se agregaron.')}`);
+  if (problemas.length === 0) return;
+  const inicio = agregadas > 0 ? `${plural(agregadas, 'Se agregó 1 foto.', 'Se agregaron # fotos.')} ` : '';
+  mostrarAviso(inicio + problemas.join(' '), 'error', 7000);
+}
+
+// Devuelve { leidas, preparadas }: dos promesas, para cuando ya se leyó todo lo
+// elegido y para cuando ya se preparó todo
 async function agregarFotos(archivos) {
-  if (fotosBloqueadas) return;
+  const nada = { leidas: Promise.resolve(), preparadas: Promise.resolve() };
+  if (fotosBloqueadas) return nada;
   const lista = [...archivos];
-  if (lista.length === 0) return;
+  if (lista.length === 0) return nada;
 
   if (!(await puedeCrearWebP())) {
     mostrarAviso('Este celular no puede preparar las fotos en el formato que pide el sistema (WebP). Por ahora, adjuntalas desde un celular Android.', 'error', 7000);
-    return;
+    return nada;
   }
 
   const imagenes = lista.filter((archivo) => archivo.type.startsWith('image/'));
-  const lugar = FOTOS.maximo - fotos.length;
-  const nuevas = imagenes.slice(0, Math.max(0, lugar));
-
-  if (imagenes.length < lista.length) {
-    mostrarAviso('Solo se pueden adjuntar fotos: los otros archivos no se agregaron.', 'error', 5000);
-  }
-  if (nuevas.length < imagenes.length) {
-    mostrarAviso(nuevas.length === 0
-      ? `Ya hay ${FOTOS.maximo} fotos: es el máximo por estudio.`
-      : `Máximo ${FOTOS.maximo} fotos por estudio: se agregaron ${nuevas.length} y las demás no.`, 'error', 5000);
+  const nuevas = imagenes.slice(0, Math.max(0, FOTOS.maximo - fotos.length));
+  const resumen = { agregadas: 0, noImagenes: lista.length - imagenes.length, sobrantes: imagenes.length - nuevas.length, lectura: 0, formato: 0 };
+  if (nuevas.length === 0 && resumen.noImagenes === 0) {
+    mostrarAviso(`Ya hay ${FOTOS.maximo} fotos: es el máximo por estudio.`, 'error', 5000);
+    return nada;
   }
 
-  const entradas = nuevas.map((archivo) => ({ id: crypto.randomUUID(), estado: 'preparando', archivo }));
+  const entradas = nuevas.map(() => ({ id: crypto.randomUUID(), estado: 'preparando' }));
   fotos.push(...entradas);
   dibujarMiniaturas();
 
-  // De a una, para no ocupar tanta memoria en el celular
-  for (const foto of entradas) {
-    try {
-      const webp = await convertirAWebP(foto.archivo);
-      if (!fotos.includes(foto)) continue;   // mientras tanto la quitaron o se cerró la sesión
-      foto.webp = webp;
-      foto.url = URL.createObjectURL(webp);
-      foto.estado = 'lista';
-    } catch {
-      if (fotos.includes(foto)) fotos.splice(fotos.indexOf(foto), 1);
-      mostrarAviso('No se pudo preparar una de las fotos. Probá de nuevo.', 'error', 5000);
+  // Todas se leen ya, juntas (antes de que Android retire el permiso)
+  const lecturas = nuevas.map((archivo) => leerArchivo(archivo).then((blob) => ({ blob }), (error) => ({ error })));
+
+  // Después se preparan de a una, para no ocupar tanta memoria. Si una falla,
+  // se descarta solo esa y las demás siguen.
+  const preparadas = (async () => {
+    for (const [indice, foto] of entradas.entries()) {
+      const leida = await lecturas[indice];
+      try {
+        if (leida.error) throw leida.error;
+        const webp = await convertirAWebP(leida.blob);
+        if (!fotos.includes(foto)) continue;   // mientras tanto la quitaron o se cerró la sesión
+        foto.webp = webp;
+        foto.url = URL.createObjectURL(webp);
+        foto.estado = 'lista';
+        resumen.agregadas++;
+      } catch (error) {
+        const motivo = error && error.motivo === 'lectura' ? 'lectura' : 'formato';
+        if (fotos.includes(foto)) {
+          fotos.splice(fotos.indexOf(foto), 1);
+          resumen[motivo]++;
+        }
+        console.error(`No se pudo preparar una foto (${motivo})`);   // sin datos del paciente
+      } finally {
+        leida.blob = null;   // la original no se guarda: queda solo la WebP
+        dibujarMiniaturas();
+      }
     }
-    delete foto.archivo;   // la original no se guarda: queda solo la WebP
-    dibujarMiniaturas();
-  }
+    avisoDeFotos(resumen);
+  })();
+
+  return { leidas: Promise.all(lecturas), preparadas };
 }
 
 function quitarFoto(id) {
@@ -201,8 +305,11 @@ function dibujarMiniaturas() {
     return miniatura;
   }));
   tira.hidden = fotos.length === 0;
-  // Con fotos, la planilla suma aire abajo: la tira no tapa "Confirmar estudio"
-  document.getElementById('carga').classList.toggle('hay-fotos', fotos.length > 0);
+  // Con fotos, la planilla suma aire abajo (una o dos filas): la tira no tapa
+  // "Confirmar estudio" ni el último campo
+  const carga = document.getElementById('carga');
+  carga.classList.toggle('hay-fotos', fotos.length > 0);
+  carga.classList.toggle('hay-fotos-2-filas', fotos.length > FOTOS.porFila);
 }
 
 // --- Subir (T027) y guardar la fila (T028) ------------------------------------------------
@@ -271,10 +378,10 @@ function prepararFotos() {
 
   ['input-fotos', 'input-camara'].forEach((id) => {
     const input = document.getElementById(id);
-    input.addEventListener('change', () => {
-      const elegidos = [...input.files];
-      input.value = '';   // así se puede volver a elegir la misma foto
-      agregarFotos(elegidos);
+    input.addEventListener('change', async () => {
+      const { leidas } = await agregarFotos(input.files);
+      await leidas;
+      input.value = '';   // recién cuando ya se leyó todo: así se puede volver a elegir la misma foto
     });
   });
 }

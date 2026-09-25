@@ -101,6 +101,16 @@ Resguardos del flujo de voz:
   rechaza antes de llamar a OpenAI (nadie de afuera gasta el crédito).
 - **El audio no se guarda en el servidor**: pasa a la transcripción y se descarta.
   Ni el audio ni el texto dictado se registran en los logs (son datos de salud).
+- **Controles en el código, después del LLM** (lo que no los cumple se descarta y
+  el campo queda como estaba; no dependen de un dictado en particular):
+  - *Palabras:* un texto solo se acepta si alguna de sus palabras se dijo en esa
+    grabación.
+  - *Números:* un número (o las cifras de un DNI, T.A. o valor del ECG) solo se
+    acepta si sus cifras se dijeron, en palabras o en cifras, sin importar puntos,
+    espacios, guiones o coma.
+  - *Palabras clave:* F.C. teórica, F.C. alcanzada y porcentaje solo si se dice
+    su palabra ("teórica"; "alcanzada" o "máxima"; "porcentaje" o "%").
+  - *Máximos:* una talla mayor de 3 (metros) se descarta; no se convierte.
 
 ---
 

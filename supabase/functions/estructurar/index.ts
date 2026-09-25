@@ -15,11 +15,18 @@ import { MODELO_ESTRUCTURACION } from '../_compartido/modelos.ts';
 import { esUsuarioLogueado, responder, respuestaPrevia } from '../_compartido/http.ts';
 import { pedirAOpenAI } from '../_compartido/openai.ts';
 import { CORRECCIONES_SEGURAS, INSTRUCTIVO_GENERAL } from './instructivos/general.ts';
-import { INSTRUCTIVO_ERGOMETRICO } from './instructivos/ergometrico.ts';
+import { INSTRUCTIVO_ERGOMETRICO, RESGUARDOS_ERGOMETRICO } from './instructivos/ergometrico.ts';
+import { type CifrasDichas, cifrasDichas, seDijeronLasCifras, seDijoElNumero } from './cifras.ts';
 
 // Instructivo de cada planilla. Sumar una planilla = sumar una línea acá.
 const INSTRUCTIVOS: Record<string, string> = {
   ergometrico: INSTRUCTIVO_ERGOMETRICO,
+};
+
+// Resguardos propios de cada planilla (palabras clave y valores máximos)
+type Resguardos = { palabrasClave: Record<string, string[]>; maximos: Record<string, number> };
+const RESGUARDOS: Record<string, Resguardos> = {
+  ergometrico: RESGUARDOS_ERGOMETRICO,
 };
 
 type Campo = { columna: string; etiqueta: string; tipo: string };
@@ -79,6 +86,9 @@ function limpiarValor(valor: unknown, campo: Campo): unknown {
   if (texto === '') return null;
   if (campo.tipo === 'fecha') return /^\d{4}-\d{2}-\d{2}$/.test(texto) ? texto : null;
   if (campo.columna === 'documento') return texto.replace(/\D/g, '') || null;   // DNI: solo números
+  // ECG basal: un valor que es solo un número decimal va con coma, como en la
+  // planilla en papel ("0.16" queda "0,16")
+  if (campo.columna.startsWith('ecg_') && /^\d+\.\d+$/.test(texto)) return texto.replace('.', ',');
   return texto;
 }
 
@@ -93,7 +103,8 @@ function limpiarObjeto(objeto: unknown, campos: Campo[]): Valores {
 // Un valor de TEXTO con palabras solo se acepta si alguna de sus palabras (de 4
 // letras o más) aparece en lo dictado en esta grabación, admitiendo pequeñas
 // diferencias de ortografía ("sinusal" y "sinusual"). Así el modelo no puede
-// "mejorar" un dato viejo que no se dictó. No se aplica a números, T.A. ni fechas.
+// "mejorar" un dato viejo que no se dictó. Los números tienen su propio resguardo
+// (cifras.ts); las fechas no se revisan.
 
 function sinAcentos(texto: string): string {
   return texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -124,11 +135,40 @@ function seDijo(valor: unknown, palabrasDictadas: string[]): boolean {
   return palabras.some((p) => palabrasDictadas.some((d) => distancia(p, d) <= (p.length >= 7 ? 2 : 1)));
 }
 
-function exigirQueSeHayaDicho(objeto: Valores, campos: Campo[], palabrasDictadas: string[]): Valores {
+// Lo que el modelo propuso y los resguardos descartaron: vuelve a la app (que no
+// lo usa) para poder revisar las pruebas. No se registra en ningún lado.
+type Descartado = { campo: string; valor: unknown };
+
+// Resguardos de la planilla: la palabra clave del campo se dijo y el valor no
+// pasa el máximo
+function cumpleResguardos(columna: string, valor: unknown, resguardos: Resguardos, dictadoSinAcentos: string): boolean {
+  const claves = resguardos.palabrasClave[columna];
+  if (claves && !claves.some((clave) => dictadoSinAcentos.includes(clave))) return false;
+  const maximo = resguardos.maximos[columna];
+  return !(maximo !== undefined && typeof valor === 'number' && valor > maximo);
+}
+
+// Palabras (ver arriba) y números (cifras.ts): un número entero o decimal, o las
+// cifras de un texto (DNI, T.A., valores del ECG), solo se aceptan si se dijeron
+// en esta grabación; además, los resguardos de la planilla. Lo que no se cumple
+// va en null: el campo queda como estaba.
+type Dictado = { palabras: string[]; cifras: CifrasDichas; sinAcentos: string; resguardos: Resguardos };
+
+function exigirQueSeHayaDicho(
+  objeto: Valores, campos: Campo[], dictado: Dictado, anterior: Valores, lugar: string, descartados: Descartado[],
+): Valores {
   campos.forEach((campo) => {
+    const valor = objeto[campo.columna];
+    if (valor === null) return;
     const esTexto = campo.tipo === 'texto' || campo.tipo === 'texto-largo';
-    if (esTexto && objeto[campo.columna] !== null && !seDijo(objeto[campo.columna], palabrasDictadas)) {
+    const esNumero = campo.tipo === 'entero' || campo.tipo === 'decimal';
+    const seDijoAsi = esNumero
+      ? seDijoElNumero(valor as number, dictado.cifras, campo.tipo === 'decimal')
+      : !esTexto || (seDijo(valor, dictado.palabras) && seDijeronLasCifras(String(valor), dictado.cifras, anterior[campo.columna]));
+    const sePuedeAceptar = seDijoAsi && cumpleResguardos(campo.columna, valor, dictado.resguardos, dictado.sinAcentos);
+    if (!sePuedeAceptar) {
       objeto[campo.columna] = null;   // no se dijo en esta grabación: no se toca
+      descartados.push({ campo: `${lugar}.${campo.columna}`, valor });
     }
   });
   return objeto;
@@ -174,7 +214,12 @@ Deno.serve(async (pedido) => {
 
   // Correcciones seguras (siempre iguales), antes de que lo lea el modelo
   const dictado = CORRECCIONES_SEGURAS.reduce((t, [patron, correcto]) => t.replace(patron, correcto), texto);
-  const palabrasDictadas = palabrasDe(dictado);
+  const lodicho: Dictado = {
+    palabras: palabrasDe(dictado),
+    cifras: cifrasDichas(dictado),
+    sinAcentos: sinAcentos(dictado),
+    resguardos: RESGUARDOS[datos.planilla] ?? { palabrasClave: {}, maximos: {} },
+  };
 
   const mensaje = `${listaDeCampos}\n\nTranscripción de esta grabación:\n"""\n${dictado}\n"""\n\n`
     + 'Planilla como está ahora en pantalla (JSON; solo para ubicar los datos y completar '
@@ -196,17 +241,20 @@ Deno.serve(async (pedido) => {
     const devuelto = JSON.parse(respuesta?.choices?.[0]?.message?.content ?? '{}');
 
     // Solo las filas que existen (nunca se crean filas), identificadas por "fila"
+    const descartados: Descartado[] = [];
     const etapas: Valores[] = [];
     (Array.isArray(devuelto.etapas) ? devuelto.etapas : []).forEach((etapa: any) => {
       const fila = etapa?.fila;
       if (Number.isInteger(fila) && fila >= 0 && fila < actual.etapas.length && !etapas.some((e) => e.fila === fila)) {
-        etapas.push({ fila, ...exigirQueSeHayaDicho(limpiarObjeto(etapa, camposEtapa), camposEtapa, palabrasDictadas) });
+        etapas.push({ fila, ...exigirQueSeHayaDicho(limpiarObjeto(etapa, camposEtapa), camposEtapa, lodicho,
+          actual.etapas[fila], `etapas.${fila}`, descartados) });
       }
     });
-    const estudio = exigirQueSeHayaDicho(limpiarObjeto(devuelto.estudio, camposEstudio), camposEstudio, palabrasDictadas);
+    const estudio = exigirQueSeHayaDicho(limpiarObjeto(devuelto.estudio, camposEstudio), camposEstudio, lodicho,
+      actual.estudio, 'estudio', descartados);
 
     // "sin_ubicar" se descarta a propósito (ver esquemaDePlanilla)
-    return responder(pedido, { estudio, etapas });
+    return responder(pedido, { estudio, etapas, descartados });
   } catch {
     console.error('estructurar: no se pudo completar la planilla');
     return responder(pedido, { error: 'no-se-pudo-estructurar' }, 502);

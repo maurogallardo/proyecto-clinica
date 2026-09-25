@@ -4,31 +4,26 @@
    Todos los colores salen de css/tokens.css.
    ============================================================================= */
 
-/* La tira: mismo ancho que la barra, justo arriba de ella. Se desliza de costado. */
+/* La tira: mismo ancho que la barra, justo arriba de ella. Todas las fotos a la
+   vista: hasta 5 por fila y, como el máximo es 10, dos filas como mucho (nada
+   queda escondido ni hay que deslizar). Crece hacia arriba. */
 .miniaturas {
   position: absolute;
   left: 16px;
   right: 16px;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px) + 70px);
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px) + 76px);
   z-index: 5;
   max-width: 528px;
   margin: 0 auto;
-  display: flex;
-  align-items: center;
+  display: grid;
+  /* 5 columnas de hasta 60 px: en celulares angostos se achican un poco */
+  grid-template-columns: repeat(5, minmax(0, 60px));
   gap: 10px;
-  /* Aire alrededor para que la sombra de las miniaturas no quede recortada
-     (la tira se desliza de costado y recorta lo que se sale de ella) */
-  padding: 14px 6px 18px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  padding: 8px 6px;
   /* La tira en sí no recibe toques (solo las miniaturas): lo que quede entre
      ellas sigue siendo la planilla de atrás */
   pointer-events: none;
   transition: opacity 200ms var(--curva);
-}
-
-.miniaturas::-webkit-scrollbar {
-  display: none;
 }
 
 /* Mientras se graba, la tira se aparta: arriba del micrófono va la guía del candado */
@@ -42,9 +37,8 @@
 
 .miniatura {
   position: relative;
-  flex: 0 0 auto;
-  width: 60px;
-  height: 60px;
+  width: 100%;
+  aspect-ratio: 1;
   border: 2px solid var(--miniatura-borde);
   border-radius: 12px;
   overflow: hidden;
@@ -117,7 +111,12 @@
   box-shadow: var(--barra-anillo-foco);
 }
 
-/* Con fotos, el final de la planilla suma aire: la tira no tapa "Confirmar estudio" */
+/* Con fotos, el final de la planilla suma aire (una o dos filas): la tira no tapa
+   "Confirmar estudio" ni el último campo */
 #carga.hay-fotos .carga__final {
-  padding-bottom: 220px;
+  padding-bottom: 210px;
+}
+
+#carga.hay-fotos-2-filas .carga__final {
+  padding-bottom: 280px;
 }
