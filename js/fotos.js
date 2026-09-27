@@ -81,13 +81,13 @@ function elAyudante() {
   return ayudante;
 }
 
-function convertirConAyudante(blob) {
+function convertirConAyudante(blob, opciones) {
   const trabajador = elAyudante();
   if (!trabajador) return Promise.resolve({ error: 'sin-webp' });
   const id = crypto.randomUUID();
   return new Promise((responder) => {
     pedidosAlAyudante.set(id, responder);
-    trabajador.postMessage({ id, foto: blob, opciones: FOTOS });
+    trabajador.postMessage({ id, foto: blob, opciones });
   });
 }
 
@@ -115,12 +115,12 @@ function lienzoABlob(lienzo, calidad) {
 }
 
 // La forma de siempre, en la pantalla (si el ayudante no se puede usar)
-async function convertirEnPantalla(blob) {
+async function convertirEnPantalla(blob, opciones) {
   const imagen = await abrirImagen(blob);
   const ancho = imagen.width;
   const alto = imagen.height;
-  let escala = Math.min(1, FOTOS.ladoMaximoPx / Math.max(ancho, alto));
-  let calidad = FOTOS.calidad;
+  let escala = Math.min(1, opciones.ladoMaximoPx / Math.max(ancho, alto));
+  let calidad = opciones.calidad;
   const lienzo = document.createElement('canvas');
   try {
     for (let intento = 0; intento < 12; intento++) {
@@ -131,8 +131,8 @@ async function convertirEnPantalla(blob) {
       pincel.drawImage(imagen, 0, 0, lienzo.width, lienzo.height);
       const webp = await lienzoABlob(lienzo, calidad);
       if (!webp || webp.type !== 'image/webp') throw new ErrorDeFoto('formato');
-      if (webp.size <= FOTOS.pesoMaximo) return webp;
-      if (calidad > FOTOS.calidadMinima + 0.01) calidad -= 0.1;
+      if (webp.size <= opciones.pesoMaximo) return webp;
+      if (calidad > opciones.calidadMinima + 0.01) calidad -= 0.1;
       else escala *= 0.85;
     }
     throw new ErrorDeFoto('tamano');
@@ -143,11 +143,13 @@ async function convertirEnPantalla(blob) {
   }
 }
 
-async function convertirAWebP(blob) {
-  const respuesta = await convertirConAyudante(blob);
+// opciones: tamaño y peso máximos (por defecto, los de las fotos de los estudios;
+// la foto de perfil usa los suyos, js/perfil.js)
+async function convertirAWebP(blob, opciones = FOTOS) {
+  const respuesta = await convertirConAyudante(blob, opciones);
   if (respuesta.webp) return respuesta.webp;
   if (respuesta.error === 'formato' || respuesta.error === 'tamano') throw new ErrorDeFoto(respuesta.error);
-  return convertirEnPantalla(blob);   // 'sin-webp': el ayudante no pudo; se hace acá
+  return convertirEnPantalla(blob, opciones);   // 'sin-webp': el ayudante no pudo; se hace acá
 }
 
 // --- Leer lo elegido apenas llega ----------------------------------------------------------

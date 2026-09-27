@@ -89,7 +89,15 @@
   box-shadow: var(--sombra-cartel);
 }
 
+/* Foto de perfil (o inicial) al lado del correo */
+.menu__perfil {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .menu__correo {
+  min-width: 0;
   margin: 0;
   font-size: 14px;
   color: var(--texto-secundario);

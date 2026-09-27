@@ -174,6 +174,29 @@
   --miniatura-quitar-fondo: rgba(4, 7, 7, 0.72);
   --miniatura-quitar-icono: var(--blanco);
   --miniatura-cargando: rgba(255, 255, 255, 0.9);
+
+  /* Dashboard de computadora (T030): copia del panel de LoMar con la marca */
+  --panel-lateral-fondo: var(--blanco);
+  --panel-lateral-borde: rgba(4, 7, 7, 0.08);
+  --panel-superficie: var(--blanco);
+  --panel-borde: #D5E3E1;
+  --panel-borde-tenue: #E6EFEE;
+  --panel-hover: rgba(0, 171, 150, 0.07);
+  --panel-texto-tenue: #7A8583;
+  --panel-cabecera-tabla: #F2F7F6;
+  --panel-control-fondo: var(--blanco);
+  --panel-activo-fondo: rgba(0, 171, 150, 0.12);
+  --panel-activo-texto: var(--verde-profundo);
+  --panel-activo-barra: var(--verde-marca);
+  --panel-franja: var(--verde-marca);             /* franja de las tarjetas de números y títulos */
+  --panel-sombra: 0 8px 24px rgba(4, 7, 7, 0.08);
+  --panel-anillo-foco: 0 0 0 3px rgba(0, 171, 150, 0.35);
+  --avatar-fondo: linear-gradient(150deg, var(--verde-marca) 0%, var(--verde-profundo) 100%);
+  --avatar-texto: var(--blanco);
+  --lightbox-velo: rgba(4, 7, 7, 0.88);
+  --lightbox-texto: rgba(255, 255, 255, 0.9);
+  --error-suave-fondo: rgba(217, 63, 63, 0.10);
+  --error-suave-texto: #B32F2F;
 }
 
 /* --- Modo oscuro: la receta de LoMar con otra noche --- */
@@ -227,4 +250,22 @@
   /* Miniaturas: borde apenas más suave y sombra más marcada sobre el fondo oscuro */
   --miniatura-borde: rgba(255, 255, 255, 0.85);
   --miniatura-sombra: 0 4px 12px rgba(0, 0, 0, 0.5);
+  /* Dashboard: la receta del panel de LoMar sobre la noche verde */
+  --panel-lateral-fondo: rgba(4, 12, 11, 0.94);
+  --panel-lateral-borde: rgba(255, 255, 255, 0.10);
+  --panel-superficie: rgba(255, 255, 255, 0.10);
+  --panel-borde: rgba(255, 255, 255, 0.18);
+  --panel-borde-tenue: rgba(255, 255, 255, 0.10);
+  --panel-hover: rgba(255, 255, 255, 0.07);
+  --panel-texto-tenue: rgba(255, 255, 255, 0.48);
+  --panel-cabecera-tabla: rgba(255, 255, 255, 0.07);
+  --panel-control-fondo: rgba(255, 255, 255, 0.08);
+  --panel-activo-fondo: rgba(18, 184, 160, 0.16);
+  --panel-activo-texto: #7FE0CF;
+  --panel-activo-barra: #12B8A0;
+  --panel-franja: #12B8A0;
+  --panel-sombra: 0 12px 30px rgba(0, 0, 0, 0.28);
+  --panel-anillo-foco: 0 0 0 3px rgba(18, 184, 160, 0.45);
+  --error-suave-fondo: rgba(217, 63, 63, 0.20);
+  --error-suave-texto: #FFC6C0;
 }

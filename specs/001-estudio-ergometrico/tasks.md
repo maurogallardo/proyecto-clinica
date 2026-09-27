@@ -133,6 +133,10 @@ de todas las pantallas sigue `guia-visual.md`.
 - **T042** Diseño adaptativo: que la app se vea bien y muestre la vista correcta
   según el dispositivo (carga en celular, dashboard en computadora). *(cubre
   RF-018)*
+  - *Decisión (Fase 4):* una sola app y un solo link; decide por el tamaño de la
+    pantalla: chica = carga (el celular es solo para cargar), grande =
+    dashboard. Sin versión del dashboard para celular. Se hace junto con la
+    Tanda 1 del dashboard.
 - **T043** Manejo del permiso de micrófono, con atención especial a iPhone:
   pedirlo y mostrar un mensaje claro si está denegado. *(cubre RF-020)*
 - ✅ **T044** Manejo de error de transcripción: si el dictado no se entiende o falla,
@@ -158,19 +162,62 @@ de todas las pantallas sigue `guia-visual.md`.
 
 ## Fase 4 — Historia 3 (P3): dashboard (consultar, editar, imprimir)
 
-- **T030** Vista de dashboard (computadora): listado de estudios con paciente y
-  fecha.
-- **T031** Abrir un estudio completo con todos sus datos e imágenes.
-- **T032** Editar un estudio ya guardado.
+*Base:* el panel de LoMar (`lomar-smart-panel`, solo lectura) en forma y
+comportamiento, con la marca de la Cañada. **No** se copia su seguridad: se entra
+con el login de Supabase y se lee directo de Supabase con las reglas de acceso
+actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
+
+**Tanda 1 — ver los estudios**
+- **T030** Vista de dashboard (computadora): login en la compu, barra lateral
+  (logo, perfil con foto o inicial del correo con el correo debajo, "Estudios",
+  "Configuración", "Cerrar sesión"), números (Total, Hoy, Esta semana = de lunes
+  a hoy, Este mes = desde el día 1), filtros (buscar por nombre o DNI, desde,
+  hasta, limpiar), "Actualizar" con contador, estados cargando / error / vacío,
+  y tabla (N°, fecha y hora, paciente, DNI, médico solicitante, conclusión
+  resumida, cantidad de fotos). La tabla, los números y los filtros usan la fecha
+  y hora de carga. Corte de pantalla: 1024 px de ancho.
+- **T031** Abrir un estudio completo: todos los campos de la planilla (los vacíos
+  con "—", ninguno oculto) y las fotos del electro en miniatura, que se agrandan
+  al tocarlas (vista ampliada como la de LoMar). La fecha del estudio se ve acá.
+- **T049** Configuración: modo de color (Claro / Oscuro / Automático, el mismo del
+  celular), "Ingresaste como <correo>" y foto de perfil (depósito privado nuevo,
+  una por profesional, cada uno solo la suya; se achica y comprime como las fotos
+  de los estudios, a 512 px). La foto se ve en la barra lateral y en el menú del
+  celular (en el celular solo se ve). El modo de color se guarda en cada aparato.
+
+**Tanda 2 — imprimir y PDF**
+- **T033** "Imprimir" y "Descargar PDF" desde la ficha, con un único PDF armado
+  en la computadora (no se guarda en Supabase): hoja 1 la planilla completa en A4
+  igual a `planilla-delacanada.jpg`; hojas siguientes, las fotos del electro (si
+  tiene). El DNI va a la derecha de "Paciente". Nombre:
+  `Ergometrico-<número>-<nombre del paciente>-<AAAA-MM-DD>.pdf`, con el nombre
+  tal cual está cargado, sin acentos y con guiones entre palabras (ej.:
+  `Ergometrico-12-Carlos-Mendez-2026-09-26.pdf`). Librería desde jsdelivr con
+  versión fija e `integrity`.
+  - *Conclusión:* es un campo de texto largo que va en la hoja 1 (no hay segunda
+    hoja de conclusiones). Hay que resolver cómo se ve si es muy larga, o si hay
+    más de cuatro etapas, para que la planilla entre en una sola A4 (RF-022).
+
+**Tanda 3 — editar**
+- **T032** Editar un estudio ya guardado, desde la ficha: se corrigen los datos y
+  las etapas (valores, agregar y quitar), con la misma planilla del celular; no
+  las fotos (no se agregan ni se borran desde el dashboard). Queda registrado
+  quién lo cambió, cuándo y cómo estaba antes (historial de cambios, lo escribe
+  la base). En la ficha se ve solo "Última edición: día y hora" (la lista
+  completa, después de la demo).
+  - Se quita el permiso directo de modificar estudios y etapas: toda corrección
+    pasa por la función que deja registro. Después, verificar que el guardado
+    desde el celular siga funcionando.
+  - Dos pantallas corrigiendo el mismo estudio: la segunda en guardar recibe un
+    aviso y no pisa el cambio.
   - *No olvidar (trazabilidad):* al guardar una edición, guardar también la fila
-    de `estudios` aunque solo hayan cambiado etapas o imágenes. Así el trigger
-    registra `modificado_por`/`modificado_en` (el trigger solo mira la tabla
-    `estudios`).
-- **T033** Imprimir / exportar a PDF con el mismo aspecto que la planilla original
-  en papel.
-  - *Conclusión:* es un campo de texto largo que va en la misma hoja (no hay
-    segunda hoja de conclusiones). Hay que resolver cómo se ve si es muy larga,
-    para que todo entre en una sola A4 vertical (RF-022).
+    de `estudios` aunque solo hayan cambiado etapas. Así el trigger registra
+    `modificado_por`/`modificado_en` (el trigger solo mira la tabla `estudios`).
+
+## Preguntas para el médico
+
+- ¿Quiere el **DNI** en la planilla impresa? (La planilla en papel no lo tiene;
+  por ahora el PDF lo muestra a la derecha de "Paciente".)
 
 ## Fase 5 — Pruebas y cierre de la demo
 
@@ -189,6 +236,8 @@ de todas las pantallas sigue `guia-visual.md`.
 
 - **T041** Juntar referencias de Dribbble y pasárselas a Claude Code al construir
   las pantallas (no bloquea las fases de base y datos).
+  - Para el dashboard la referencia pasa a ser el panel de LoMar con la marca de
+    la Cañada (no Dribbble).
 
 ---
 
@@ -200,7 +249,7 @@ de todas las pantallas sigue `guia-visual.md`.
 - Empaquetado como app nativa.
 - Menú del encabezado tipo hamburguesa (con X para cerrar), con foto de perfil y
   nombre del usuario, modo de color y cerrar sesión. (Requiere guardar el nombre
-  y la foto de cada usuario, que hoy la base no tiene.)
+  de cada usuario, que hoy la base no tiene; la foto llega con la T049.)
 - Fotos en iPhone: sumar un conversor a WebP para los celulares que no lo crean
   solos.
 - Probar el acceso restringido con una segunda cuenta real (que un usuario no vea

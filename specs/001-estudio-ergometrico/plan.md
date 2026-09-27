@@ -70,9 +70,11 @@ Son tres piezas, como veníamos diciendo: el celular, la base, y la pantalla.
 3. **La pantalla (vista de dashboard):** la misma app abierta en una computadora,
    que muestra el listado, la consulta, la edición y la impresión.
 
-El celular y la pantalla son **la misma aplicación** publicada en Vercel, que se
-ve distinta según el dispositivo. Las dos le hablan a Supabase por internet, de
-forma cifrada.
+El celular y la pantalla son **la misma aplicación** publicada en Vercel, con un
+solo link, que decide qué mostrar según el **tamaño de la pantalla**: chica =
+carga, grande = dashboard (corte: **1024 px de ancho**; un celular acostado
+mide menos y sigue viendo la carga). Las
+dos le hablan a Supabase por internet, de forma cifrada.
 
 ### El paso delicado: la clave secreta
 
@@ -81,6 +83,42 @@ vivir en el celular** (cualquiera la vería). Por eso esas llamadas pasan por un
 **Edge Function** de Supabase: una pieza de servidor que guarda la clave a salvo.
 El celular le habla a la Edge Function, y la Edge Function le habla al servicio
 de IA. La clave nunca sale del servidor.
+
+---
+
+## El dashboard (computadora)
+
+Copia la forma y el comportamiento del **panel de LoMar**
+(`lomar-smart-panel`, solo como referencia): barra lateral, tarjetas de números,
+filtros, botón "Actualizar" con contador, estados cargando / error / vacío,
+tabla clickeable, ficha y vista ampliada de fotos. Con la marca de la Cañada y
+los mismos tokens de color de la app (claro y oscuro).
+
+**Lo que NO se copia de LoMar:** su seguridad (contraseña fija, token propio,
+sesión guardada a mano, webhooks de n8n). Acá se entra con el **mismo login de
+Supabase** de la app y los datos se leen **directo de Supabase** con
+supabase-js, respetando las reglas de Row Level Security actuales: cada
+profesional ve los estudios que cargó él.
+
+- **Barra lateral:** logo, perfil (foto, o círculo con la inicial del correo, con
+  el correo debajo: la base no guarda el nombre), "Estudios", "Configuración" y
+  "Cerrar sesión".
+- **Estudios:** números (Total, Hoy, Esta semana = de lunes a hoy, Este mes =
+  desde el día 1), filtros (buscar por nombre o DNI, desde, hasta, limpiar),
+  tabla (N°, fecha y hora, paciente, DNI, médico solicitante, conclusión
+  resumida, cantidad de fotos) y la ficha con todos los campos (vacíos con "—")
+  y las fotos del electro (enlaces firmados que caducan, T029), que se agrandan
+  al tocarlas. La fecha y hora de la tabla, los
+  números y los filtros usan la fecha de **carga** (`creado_en`); la fecha del
+  estudio se ve en la ficha.
+- **Configuración:** modo de color (el mismo selector que el celular; la
+  preferencia se guarda en cada aparato), "Ingresaste como <correo>" y la foto
+  de perfil (512 px).
+- **Editar (T032):** desde la ficha se corrigen los datos y las etapas (valores,
+  agregar y quitar), con la misma planilla del celular; no las fotos. Con
+  registro de cambios (ver "Historial de cambios"). La ficha muestra "Última
+  edición: día y hora".
+- **Imprimir y PDF (T033):** ver la sección "Impresión y PDF".
 
 ---
 
@@ -210,6 +248,35 @@ Cada foto recibe un código al agregarla en el celular: ese código es el nombre
 archivo (`<estudio_id>/<código>.webp`) y el `id` de su fila en `imagenes`. Así,
 reintentar la subida nunca duplica ni archivos ni filas.
 
+### Historial de cambios (T032)
+
+Cada edición desde el dashboard guarda **cómo estaba el estudio antes** (sus
+datos y sus etapas), **quién** lo cambió y **cuándo**, en una tabla aparte de
+historial (una fila por edición). La escribe la base, no la app: la edición se
+hace con una función de la base "todo o nada" (como `guardar_estudio`), que
+primero guarda la foto de "antes" y después aplica el cambio. Así no se puede
+editar sin dejar registro. `modificado_por`/`modificado_en` siguen diciendo cuál
+fue la última edición. El SQL va en un archivo nuevo de `supabase/`, que Mauro
+pega en el SQL Editor.
+
+- **Sin permiso directo de modificar:** a la app se le quita el permiso de
+  modificar estudios y etapas directamente; toda corrección pasa por la función
+  que deja registro. El guardado desde el celular no se afecta (usa
+  `guardar_estudio`).
+- **Dos pestañas a la vez:** la función recibe la fecha de la última edición que
+  vio la pantalla; si el estudio cambió mientras tanto, no guarda y avisa, así el
+  segundo en guardar no pisa el cambio del primero.
+- **Qué se muestra:** en la ficha, solo "Última edición: día y hora". La lista
+  completa de cambios queda guardada y se muestra después de la demo.
+
+### Foto de perfil (Configuración)
+
+Una foto por profesional, en un **depósito privado nuevo** de Supabase (aparte
+del de los estudios), en WebP, achicada y comprimida en la computadora con el
+mismo proceso que las fotos de los estudios, a 512 px. Cada uno solo puede subir, cambiar
+y ver la suya. Se muestra con un enlace firmado que caduca, en la barra lateral
+del dashboard y en el menú del celular.
+
 ### Para el futuro (no en la demo)
 
 Tabla `pacientes` para agrupar todos los estudios de una misma persona por
@@ -227,7 +294,11 @@ arme, los datos ya van a estar.
   nunca por dirección pública.
 - **Clave de IA:** guardada en la Edge Function, nunca en el celular ni en el
   código del navegador.
-- **Login:** usuario y contraseña; alta por administrador (Mauro).
+- **Login:** usuario y contraseña; alta por administrador (Mauro). El dashboard
+  usa el mismo login de Supabase: no tiene contraseña propia ni token aparte.
+- **Dashboard:** lee y edita directo en Supabase con la sesión del usuario; valen
+  las mismas reglas de Row Level Security. El PDF se arma en la computadora y no
+  se guarda en el servidor.
 
 ---
 
@@ -245,6 +316,24 @@ diseño del PDF y la impresión. La planilla anterior
 (`planilla-original.jpg`) tiene los mismos campos con la marca anterior; queda
 solo como referencia.
 
+**Cómo se arma (T033):**
+- Un **único PDF**, armado en la computadora con una librería de PDF cargada
+  desde jsdelivr con versión fija e `integrity` (como supabase-js). No se guarda
+  en Supabase.
+- **Hoja 1:** la planilla completa en A4 vertical, igual a
+  `planilla-delacanada.jpg`. **Hojas siguientes:** las fotos del electro, solo si
+  el estudio tiene.
+- **Dos botones en la ficha:** "Imprimir" abre ese mismo PDF en la ventana de
+  impresión del navegador; "Descargar PDF" lo guarda en Descargas. El papel y el
+  archivo salen idénticos.
+- **Nombre del archivo:** `Ergometrico-<número>-<nombre del paciente>-<AAAA-MM-DD>.pdf`,
+  con el nombre **tal cual está cargado** (sin reordenar ni adivinar el
+  apellido), sin acentos y con guiones entre palabras (ej.: "Carlos Méndez" →
+  `Ergometrico-12-Carlos-Mendez-2026-09-26.pdf`).
+- **DNI:** la planilla en papel no lo tiene; en el PDF va a la derecha de
+  "Paciente", sin romper el diseño (pregunta pendiente para el médico: si lo
+  quiere en la planilla impresa).
+
 ---
 
 ## Referencia visual (para la etapa de pantallas)
@@ -258,8 +347,10 @@ cambia la constitución, la spec ni este plan: los complementa.
 Referencias que usa la guía:
 - Logos del Sanatorio de la Cañada: ver la guía, sección 2.
 - Capturas de LoMar (referencia principal de componentes y comportamiento) y de
-  Dribbble (paleta en claro, barra inferior, tarjetas del dashboard):
+  Dribbble (paleta en claro, barra inferior):
   `specs/001-estudio-ergometrico/assets/referencias-diseno/`.
+- Dashboard: el **panel de LoMar** (`lomar-smart-panel`, solo lectura) con la
+  marca de la Cañada.
 
 ---
 
@@ -291,7 +382,8 @@ proyecto/
 - **Privacidad por diseño:** TLS + RLS + bucket privado + clave en servidor. ✔
 - **Bajo costo:** Vercel y Supabase en plan gratuito; sin Railway ni n8n. ✔
 - **Trazabilidad:** `cargado_por` y `creado_en` (quién cargó y cuándo);
-  `modificado_por` y `modificado_en` (quién editó por última vez y cuándo). ✔
+  `modificado_por` y `modificado_en` (quién editó por última vez y cuándo); y el
+  historial de cambios (cómo estaba antes de cada edición). ✔
 
 ---
 

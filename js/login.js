@@ -57,12 +57,18 @@ function prepararOjitoContrasena() {
   });
 }
 
-// Después del login: la pantalla de carga del estudio (T013)
+// Después del login: la carga del estudio (T013) en el celular, o el dashboard
+// (T030) en la compu (js/vista.js). El correo y la foto de perfil se ven en los dos.
 async function entrarALaApp() {
   const sesion = await Sesion.actual();
-  const correo = document.getElementById('menu-correo');
-  if (correo && sesion) correo.textContent = sesion.user.email;
-  mostrarPantalla(PANTALLA_PRINCIPAL);
+  if (sesion) {
+    ['menu-correo', 'lateral-correo', 'configuracion-correo'].forEach((id) => {
+      const lugar = document.getElementById(id);
+      if (lugar) lugar.textContent = sesion.user.email;
+    });
+    Perfil.mostrar(sesion.user);
+  }
+  mostrarPantalla(pantallaPrincipal());
 }
 
 // Botón "Cerrar sesión" del menú del encabezado
@@ -90,6 +96,8 @@ Sesion.alCerrarse(() => {
   reiniciarCarga();
   reiniciarFotos();
   olvidarEstudioEnCurso();
+  reiniciarDashboard();
+  Perfil.olvidar();
   document.getElementById('login-formulario').reset();
   document.getElementById('login-contrasena').type = 'password';
   document.getElementById('login-ver-contrasena').classList.remove('esta-visible');

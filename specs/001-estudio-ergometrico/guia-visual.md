@@ -17,8 +17,9 @@ modo claro y oscuro.
 - De **LoMar** se toma: componentes, movimiento, sombras, legibilidad, y la
   técnica del vidrio liviano.
 - De la **marca delacañada** se toma: logo, colores.
-- De **Dribbble** se toma: la paleta en claro, la barra inferior tipo píldora y
-  el estilo de tarjetas para el dashboard de computadora.
+- De **Dribbble** se toma: la paleta en claro y la barra inferior tipo píldora.
+- Del **panel de LoMar** (`lomar-smart-panel`) se toma el dashboard de
+  computadora: forma y comportamiento, vestidos con la marca de la Cañada.
 - **No** se toma de LoMar: el naranja y el azul (son la marca de LoMar).
 
 ---
@@ -200,19 +201,36 @@ no por detrás (como en LoMar).
 
 - **Celular = vista de carga:** una columna, secciones apiladas, barra de voz
   fija abajo, encabezado compacto con isologo.
-- **Computadora = dashboard:** encabezado con logo completo; listado de estudios
-  en tarjetas o filas (paciente, fecha); al abrir un estudio, sus datos
-  ordenados como la planilla, con las imágenes y los botones Editar / Imprimir.
-  Estilo de tarjetas de referencia: capturas de Dribbble (tarjetas blancas,
-  bordes redondeados, el activo en verde).
+- **Computadora = dashboard:** copia del **panel de LoMar** en forma y
+  comportamiento, con la marca de la Cañada y los mismos tokens (claro y
+  oscuro):
+  - **Barra lateral fija:** logo completo, perfil (foto redonda o círculo con la
+    inicial del correo, con el correo debajo), "Estudios", "Configuración" y
+    "Cerrar sesión". La sección activa, en verde.
+  - **Estudios:** antetítulo y título de sección, "Actualizar" con contador;
+    cuatro tarjetas de números (Total, Hoy, Esta semana, Este mes); fila de
+    filtros (buscar por nombre o DNI, desde, hasta, limpiar); estados cargando
+    (ruedita), error (con "Reintentar") y vacío; tabla en tarjeta, con filas que
+    se resaltan al pasar el mouse y abren la ficha.
+  - **Ficha:** cabecera con "← Volver", título y logo; los datos agrupados como
+    la planilla (los vacíos con "—"); fotos del electro en miniatura; botones
+    "Editar", "Imprimir" y "Descargar PDF".
+  - **Vista ampliada de fotos:** como la de LoMar, por encima de todo, con ✕
+    para cerrar.
+  - **Configuración:** modo de color (mismo selector que el celular), correo con
+    que ingresó y foto de perfil.
+- **Pantalla chica = carga; pantalla grande = dashboard** (corte: 1024 px de
+  ancho). No hay dashboard para celular.
 
 ---
 
 ## 10. Impresión y PDF
 
-- Hoja **A4 vertical, una sola página** (RF-022).
-- Copia la planilla: `specs/001-estudio-ergometrico/assets/planilla-delacanada.jpg`
-  (encabezado, marca de agua, campos, tabla, pie).
+- **Hoja 1:** la planilla en **A4 vertical, una sola página** (RF-022). Copia
+  `specs/001-estudio-ergometrico/assets/planilla-delacanada.jpg` (encabezado,
+  marca de agua, campos, tabla, pie).
+- **Hojas siguientes:** las fotos del electro, solo si el estudio tiene.
+- Un único PDF para imprimir y para descargar: salen idénticos.
 - Siempre en claro, sin los estilos de la app (sin vidrio, sin sombras).
 
 ---
@@ -223,8 +241,10 @@ En `specs/001-estudio-ergometrico/assets/referencias-diseno/`:
 
 - `lomar/` — capturas de LoMar: splash, login, ficha, tarjetas de control,
   barra de voz, carteles. **Referencia principal** de componentes y comportamiento.
-- `dribbble/` — app médica verde y su paleta: tomar la barra inferior, el modo
-  claro y las tarjetas del dashboard.
+- `dribbble/` — app médica verde y su paleta: tomar la barra inferior y el modo
+  claro.
+- Dashboard: el panel de LoMar
+  (`C:\Users\LENOVO\Desktop\Proyectos\Lo-Mar\lomar-smart-panel`, solo lectura).
 
 ---
 

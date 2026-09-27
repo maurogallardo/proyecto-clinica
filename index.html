@@ -36,6 +36,7 @@
   <link rel="stylesheet" href="css/barra-voz.css">
   <link rel="stylesheet" href="css/fotos.css">
   <link rel="stylesheet" href="css/avisos.css">
+  <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
   <!-- Splash (T047): visible desde el primer instante; js/splash.js lo cambia a los 2,5 s -->
@@ -99,7 +100,11 @@
       </div>
 
       <div class="menu" id="menu-panel" hidden>
-        <p class="menu__correo">Ingresaste como <strong id="menu-correo"></strong></p>
+        <!-- Foto de perfil (T049): en el celular solo se ve; se sube desde la compu -->
+        <div class="menu__perfil">
+          <span class="avatar avatar--menu" aria-hidden="true"></span>
+          <p class="menu__correo">Ingresaste como <strong id="menu-correo"></strong></p>
+        </div>
         <p class="menu__rotulo">Modo de color</p>
         <div class="selector-tema" role="group" aria-label="Modo de color">
           <button type="button" data-modo="claro">Claro</button>
@@ -232,6 +237,192 @@
     <audio id="audio-vista-previa" hidden></audio>
   </section>
 
+  <!-- Dashboard de computadora (T030, T031, T049): copia del panel de LoMar
+       (lomar-smart-panel) en forma y comportamiento, con la marca de la Cañada.
+       Se muestra en pantallas grandes (js/vista.js). Los datos se leen de
+       Supabase con la sesión del usuario (js/dashboard.js y js/ficha.js). -->
+  <section id="dashboard" class="pantalla" hidden>
+    <div class="panel">
+      <aside class="lateral">
+        <img class="lateral__logo solo-tema-claro" src="assets/logos/logo-completo.svg"
+             alt="Sanatorio de la Cañada - Sanatorio Privado Río Tercero">
+        <img class="lateral__logo solo-tema-oscuro" src="assets/logos/logo-completo-claro.svg"
+             alt="Sanatorio de la Cañada - Sanatorio Privado Río Tercero">
+
+        <div class="lateral__perfil">
+          <span class="avatar avatar--lateral" aria-hidden="true"></span>
+          <span class="lateral__correo" id="lateral-correo"></span>
+        </div>
+
+        <nav class="navegacion" aria-label="Secciones">
+          <button type="button" class="navegacion__item esta-activa" data-seccion="estudios" aria-current="page">
+            <svg class="navegacion__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1z" />
+              <path d="M16 5h2a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2" />
+              <path d="M9 11h6M9 15h4" />
+            </svg>
+            <span>Estudios</span>
+          </button>
+          <button type="button" class="navegacion__item" data-seccion="configuracion">
+            <svg class="navegacion__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+              <circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" />
+            </svg>
+            <span>Configuración</span>
+          </button>
+        </nav>
+
+        <button type="button" class="panel-boton panel-boton--fantasma lateral__salir" id="panel-cerrar-sesion">Cerrar sesión</button>
+      </aside>
+
+      <div class="panel__contenido">
+        <!-- Estudios: la lista -->
+        <main class="vista" id="vista-estudios">
+          <div class="encabezado-seccion">
+            <div>
+              <span class="encabezado-seccion__antetitulo">Servicio de Cardiología</span>
+              <h1 class="encabezado-seccion__titulo">Estudios ergométricos</h1>
+            </div>
+            <div class="encabezado-seccion__derecha">
+              <span class="contador" id="panel-contador" hidden></span>
+              <button type="button" class="panel-boton panel-boton--fantasma" id="panel-actualizar" hidden>Actualizar</button>
+            </div>
+          </div>
+
+          <!-- Números: sobre TODOS los estudios cargados (no cambian al filtrar) -->
+          <div class="numeros-panel" id="panel-numeros" hidden>
+            <div class="numero"><span class="numero__valor" id="numero-total">0</span><span class="numero__etiqueta">Total</span></div>
+            <div class="numero"><span class="numero__valor" id="numero-hoy">0</span><span class="numero__etiqueta">Hoy</span></div>
+            <div class="numero"><span class="numero__valor" id="numero-semana">0</span><span class="numero__etiqueta">Esta semana</span></div>
+            <div class="numero"><span class="numero__valor" id="numero-mes">0</span><span class="numero__etiqueta">Este mes</span></div>
+          </div>
+
+          <!-- Filtros: se resuelven en la compu sobre los estudios ya cargados -->
+          <div class="filtros" id="panel-filtros" hidden>
+            <div class="filtros__campo filtros__campo--buscar">
+              <label class="filtros__etiqueta" for="filtro-texto">Buscar</label>
+              <input class="filtros__control" type="search" id="filtro-texto" placeholder="Buscar por nombre o DNI" autocomplete="off">
+            </div>
+            <div class="filtros__campo">
+              <label class="filtros__etiqueta" for="filtro-desde">Desde</label>
+              <input class="filtros__control" type="date" id="filtro-desde">
+            </div>
+            <div class="filtros__campo">
+              <label class="filtros__etiqueta" for="filtro-hasta">Hasta</label>
+              <input class="filtros__control" type="date" id="filtro-hasta">
+            </div>
+            <button type="button" class="panel-boton panel-boton--fantasma filtros__limpiar" id="filtro-limpiar">Limpiar filtros</button>
+          </div>
+
+          <div class="estado-panel" id="panel-cargando">
+            <span class="ruedita" aria-hidden="true"></span>
+            <p class="estado-panel__texto">Cargando estudios…</p>
+          </div>
+          <div class="estado-panel estado-panel--error" id="panel-error" hidden>
+            <p class="estado-panel__texto" id="panel-error-texto">No se pudieron cargar los estudios.</p>
+            <button type="button" class="panel-boton" id="panel-reintentar">Reintentar</button>
+          </div>
+          <div class="estado-panel" id="panel-vacio" hidden>
+            <p class="estado-panel__texto" id="panel-vacio-texto">Todavía no hay estudios cargados.</p>
+          </div>
+
+          <div class="tarjeta-panel tarjeta-tabla" id="panel-tabla" hidden>
+            <div class="tabla-desplazable">
+              <table class="tabla-panel">
+                <thead>
+                  <tr>
+                    <th scope="col" class="tabla-panel__col-numero">N°</th>
+                    <th scope="col" class="tabla-panel__col-fecha">Fecha y hora</th>
+                    <th scope="col">Paciente</th>
+                    <th scope="col" class="tabla-panel__col-dni">DNI</th>
+                    <th scope="col">Médico solicitante</th>
+                    <th scope="col">Conclusión</th>
+                    <th scope="col" class="tabla-panel__col-fotos">Fotos</th>
+                  </tr>
+                </thead>
+                <tbody id="panel-filas"></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+
+        <!-- Ficha de un estudio (se alterna con la lista) -->
+        <section class="vista ficha" id="vista-ficha" hidden>
+          <div class="tarjeta-panel ficha__cabecera">
+            <button type="button" class="panel-boton panel-boton--fantasma" id="ficha-volver">← Volver</button>
+            <h2 class="ficha__titulo" id="ficha-titulo">Estudio ergométrico</h2>
+            <img class="ficha__logo solo-tema-claro" src="assets/logos/logo-completo.svg" alt="Sanatorio de la Cañada">
+            <img class="ficha__logo solo-tema-oscuro" src="assets/logos/logo-completo-claro.svg" alt="Sanatorio de la Cañada">
+          </div>
+          <div class="estado-panel" id="ficha-cargando">
+            <span class="ruedita" aria-hidden="true"></span>
+            <p class="estado-panel__texto">Cargando estudio…</p>
+          </div>
+          <div class="estado-panel estado-panel--error" id="ficha-error" hidden>
+            <p class="estado-panel__texto" id="ficha-error-texto">No se pudo cargar el estudio.</p>
+            <div class="estado-panel__acciones">
+              <button type="button" class="panel-boton" id="ficha-reintentar">Reintentar</button>
+              <button type="button" class="panel-boton panel-boton--fantasma" id="ficha-volver-lista">Volver a la lista</button>
+            </div>
+          </div>
+          <div class="ficha__cuerpo" id="ficha-cuerpo" hidden></div>
+        </section>
+
+        <!-- Configuración (T049) -->
+        <section class="vista" id="vista-configuracion" hidden>
+          <div class="encabezado-seccion">
+            <div>
+              <span class="encabezado-seccion__antetitulo">Servicio de Cardiología</span>
+              <h1 class="encabezado-seccion__titulo">Configuración</h1>
+            </div>
+          </div>
+          <div class="configuracion">
+            <section class="tarjeta-panel configuracion__bloque">
+              <h3 class="titulo-bloque">Modo de color</h3>
+              <div class="selector-tema selector-tema--panel" role="group" aria-label="Modo de color">
+                <button type="button" data-modo="claro">Claro</button>
+                <button type="button" data-modo="oscuro">Oscuro</button>
+                <button type="button" data-modo="auto">Automático</button>
+              </div>
+            </section>
+            <section class="tarjeta-panel configuracion__bloque">
+              <h3 class="titulo-bloque">Cuenta</h3>
+              <p class="configuracion__texto">Ingresaste como <strong id="configuracion-correo"></strong></p>
+            </section>
+            <section class="tarjeta-panel configuracion__bloque">
+              <h3 class="titulo-bloque">Foto de perfil</h3>
+              <div class="configuracion__foto">
+                <span class="avatar avatar--grande" aria-hidden="true"></span>
+                <div class="configuracion__foto-acciones">
+                  <button type="button" class="panel-boton" id="perfil-elegir">Subir foto</button>
+                  <p class="configuracion__ayuda" id="perfil-estado">Se ve en la barra lateral y en el menú del celular.</p>
+                </div>
+              </div>
+              <input type="file" id="perfil-archivo" accept="image/*" hidden>
+            </section>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Vista ampliada de una foto (como la de LoMar), por encima de todo -->
+    <div class="lightbox" id="lightbox" hidden>
+      <div class="lightbox__fondo" id="lightbox-fondo"></div>
+      <div class="lightbox__caja" role="dialog" aria-modal="true" aria-labelledby="lightbox-titulo">
+        <div class="lightbox__barra">
+          <span class="lightbox__titulo" id="lightbox-titulo"></span>
+          <button type="button" class="lightbox__cerrar" id="lightbox-cerrar" aria-label="Cerrar vista ampliada">✕</button>
+        </div>
+        <img class="lightbox__imagen" id="lightbox-imagen" alt="">
+        <p class="lightbox__aviso" id="lightbox-aviso" hidden>No se pudo cargar la imagen.</p>
+        <a class="panel-boton panel-boton--fantasma lightbox__original" id="lightbox-original" target="_blank"
+           rel="noopener noreferrer">Abrir original en una pestaña</a>
+      </div>
+    </div>
+  </section>
+
   <!-- Cartel de confirmación (js/cartel.js). Uno solo para toda la app. -->
   <div class="cartel-velo" id="cartel" hidden>
     <div class="cartel" role="alertdialog" aria-modal="true"
@@ -261,6 +452,7 @@
   <script src="js/config.js"></script>
   <script src="js/sesion.js"></script>
   <script src="js/pantallas.js"></script>
+  <script src="js/vista.js"></script>
   <script src="js/planillas/ergometrico.js"></script>
   <script src="js/cartel.js"></script>
   <script src="js/formulario.js"></script>
@@ -271,6 +463,9 @@
   <script src="js/grabacion.js"></script>
   <script src="js/fotos.js"></script>
   <script src="js/guardado.js"></script>
+  <script src="js/perfil.js"></script>
+  <script src="js/ficha.js"></script>
+  <script src="js/dashboard.js"></script>
   <script src="js/login.js"></script>
   <script src="js/splash.js"></script>
   <script src="js/app.js"></script>

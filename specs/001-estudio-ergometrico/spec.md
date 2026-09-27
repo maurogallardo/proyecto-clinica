@@ -103,10 +103,13 @@ verifica que quedan guardadas con él y que se pueden ver al consultarlo.
 
 ### Historia 3 — Consultar, imprimir y editar los estudios (dashboard) (Prioridad: P3)
 
-Desde una computadora, una persona autorizada ve el listado de estudios
-cargados, abre uno para ver todos sus datos e imágenes, lo puede editar, y lo
-puede imprimir o exportar a PDF con el mismo aspecto que la planilla original en
-papel.
+Desde una computadora, una persona autorizada entra con el mismo usuario y
+contraseña de la app, ve los números de su trabajo (total, hoy, esta semana, este
+mes), busca y filtra el listado de estudios cargados, abre uno para ver todos sus
+datos e imágenes, lo puede corregir (quedando registrado quién lo cambió, cuándo y
+cómo estaba antes), y lo puede imprimir o descargar en PDF con el mismo aspecto
+que la planilla original en papel. También configura su modo de color y su foto
+de perfil. El celular es solo para cargar: el dashboard se ve en pantalla grande.
 
 **Por qué es P3:** cierra el círculo y es lo que se muestra "en la pantalla
 grande", pero depende de que primero existan estudios cargados (P1).
@@ -119,21 +122,43 @@ imprimir/exportar con el formato de la planilla original.
 
 1. **Dado** que hay estudios guardados,
    **cuando** la persona autorizada abre el dashboard en la computadora,
-   **entonces** ve el listado de estudios con datos básicos para identificarlos
-   (paciente, fecha).
+   **entonces** ve los números (total, hoy, esta semana, este mes) y el listado
+   de estudios (N°, fecha y hora, paciente, DNI, médico solicitante, conclusión
+   resumida y cantidad de fotos).
 
 2. **Dado** el listado,
-   **cuando** abre un estudio,
-   **entonces** ve todos los campos cargados y las imágenes adjuntas.
+   **cuando** busca por nombre o DNI, o filtra por fechas desde/hasta,
+   **entonces** la tabla muestra solo los estudios que cumplen, y "Limpiar"
+   vuelve a mostrar todos.
 
-3. **Dado** un estudio abierto,
-   **cuando** el profesional lo edita y guarda los cambios,
-   **entonces** el estudio queda actualizado.
+3. **Dado** el listado,
+   **cuando** abre un estudio,
+   **entonces** ve todos los campos de la planilla (los vacíos con "—", ninguno
+   oculto) y las fotos del electro en miniatura, que se agrandan al tocarlas.
 
 4. **Dado** un estudio abierto,
-   **cuando** elige imprimir o exportar a PDF,
-   **entonces** se genera una salida con el mismo aspecto que la planilla
-   original en papel (Servicio de Cardiología — Estudio Ergométrico).
+   **cuando** el profesional corrige datos y guarda,
+   **entonces** el estudio queda actualizado y queda registrado quién lo cambió,
+   cuándo y cómo estaba antes. Las fotos no se agregan ni se borran desde el
+   dashboard.
+
+5. **Dado** un estudio abierto,
+   **cuando** elige "Imprimir" o "Descargar PDF",
+   **entonces** se arma un único PDF: la hoja 1 es la planilla completa con el
+   mismo aspecto que la original en papel, y las hojas siguientes, las fotos del
+   electro (si tiene). "Imprimir" abre ese PDF en la ventana de impresión y
+   "Descargar PDF" lo guarda, así papel y archivo salen idénticos.
+
+6. **Dado** el dashboard,
+   **cuando** entra en Configuración,
+   **entonces** puede elegir el modo de color (Claro / Oscuro / Automático), ve
+   con qué correo ingresó y puede subir o cambiar su foto de perfil, que después
+   se ve en la barra lateral del dashboard y en el menú del celular.
+
+7. **Dado** que se abre la app,
+   **cuando** la pantalla es chica (celular),
+   **entonces** muestra la pantalla de carga; **cuando** es grande (computadora),
+   muestra el dashboard. Es la misma app y el mismo link.
 
 ### Casos límite a tener en cuenta
 
@@ -145,7 +170,11 @@ imprimir/exportar con el formato de la planilla original.
   varias tandas de voz, no en una sola).
 - Se intenta guardar un estudio casi vacío (permitido, salvo los datos mínimos).
 - La prueba tiene más o menos etapas que las cuatro habituales.
-- Dos personas abren el dashboard al mismo tiempo.
+- Dos personas abren el dashboard al mismo tiempo (o el mismo profesional en dos
+  pestañas) y corrigen el mismo estudio.
+- Un estudio con una conclusión muy larga o con más de cuatro etapas: la hoja 1
+  del PDF igual tiene que entrar en una sola A4.
+- Un estudio sin fotos: el PDF tiene solo la hoja 1.
 
 ---
 
@@ -195,20 +224,37 @@ imprimir/exportar con el formato de la planilla original.
   (campo FECHA de la planilla) la puede dictar o corregir el profesional, porque
   un estudio puede cargarse después de realizado.
 - **RF-017:** El sistema debe ofrecer una vista de dashboard (pensada para
-  computadora) que liste los estudios guardados y permita abrir cada uno
-  completo.
-- **RF-018:** El sistema debe adaptar su interfaz al dispositivo: vista de carga
-  en el celular, vista de dashboard en la computadora.
+  computadora) con barra lateral (logo, perfil, "Estudios", "Configuración",
+  "Cerrar sesión"), números (total, hoy, esta semana, este mes), filtros (buscar
+  por nombre o DNI, desde, hasta, limpiar), botón "Actualizar" con contador, y
+  una tabla de estudios (N°, fecha y hora, paciente, DNI, médico solicitante,
+  conclusión resumida, cantidad de fotos) que abre la ficha completa de cada uno.
+  La ficha muestra todos los campos de la planilla (los vacíos con "—") y las
+  fotos del electro en miniatura, que se agrandan al tocarlas.
+- **RF-018:** El sistema debe adaptar su interfaz al tamaño de la pantalla, con
+  una sola app y un solo link: pantalla chica = vista de carga (el celular es solo
+  para cargar); pantalla grande = dashboard. No hay versión del dashboard para
+  celular.
 - **RF-019:** El sistema debe restringir el acceso a los datos e imágenes según
   la autorización de cada usuario. (Si distintos usuarios de un mismo servicio
   comparten estudios se define al escalar; en la demo hay un solo usuario.)
 - **RF-020:** El sistema debe funcionar en Android y en iPhone (iOS).
 - **RF-021:** El sistema debe permitir **editar** y **consultar** un estudio ya
-  guardado.
-- **RF-022:** El sistema debe permitir **imprimir** y **exportar a PDF** un
-  estudio. La salida (al menos en computadora) debe verse **igual que la planilla
-  original en papel** del Servicio de Cardiología, en hoja **A4 vertical** y en
-  **una sola página**.
+  guardado, desde el dashboard. Se corrigen los datos del estudio; las fotos no se
+  agregan ni se borran desde el dashboard. Cada edición queda **registrada**:
+  quién lo cambió, cuándo y cómo estaba antes.
+- **RF-022:** El sistema debe permitir **imprimir** y **descargar en PDF** un
+  estudio, desde la ficha del dashboard. Se arma **un único PDF** y los dos
+  botones usan ese mismo archivo ("Imprimir" lo abre en la ventana de impresión;
+  "Descargar PDF" lo guarda), así el papel y el archivo salen idénticos. La
+  **hoja 1** es la planilla completa, en **A4 vertical** y en **una sola página**,
+  igual que la planilla original en papel del Servicio de Cardiología; las
+  **hojas siguientes** son las fotos del electro, solo si el estudio tiene. En la
+  hoja 1 el **DNI** va a la derecha de "Paciente" (la planilla en papel no lo
+  tiene). El archivo se llama
+  `Ergometrico-<número>-<nombre del paciente>-<AAAA-MM-DD>.pdf`, con el nombre
+  tal cual está cargado, sin acentos y con guiones entre palabras (ej.:
+  `Ergometrico-12-Carlos-Mendez-2026-09-26.pdf`), y no se guarda en el servidor.
 - **RF-023:** Los **datos mínimos** para poder guardar un estudio son el **DNI** y
   el **nombre del paciente**. La planilla no necesita estar completa para
   guardarse.
@@ -225,6 +271,15 @@ imprimir/exportar con el formato de la planilla original.
   ejemplo, "Guardado con éxito — planilla N°X").
 - **RF-026:** Las imágenes se almacenan y se muestran en formato **WebP**, tanto
   en celular como en computadora.
+- **RF-027:** El dashboard debe tener una sección **Configuración** con: modo de
+  color (Claro / Oscuro / Automático, igual que en el celular), "Ingresaste como
+  <correo>" (solo para ver) y la **foto de perfil**. La foto se achica y comprime
+  como las fotos de los estudios, hay una sola por profesional y cada uno solo
+  puede subir o cambiar la suya. Se ve en la barra lateral del dashboard y en el
+  menú del celular (en el celular solo se ve, no se sube). Sin foto, se muestra un
+  círculo con la inicial.
+- **RF-028:** Al dashboard se entra con el **mismo login** de la app (RF-001) y
+  los datos se leen respetando las mismas reglas de acceso (RF-019).
 
 ### Entidades de datos principales
 
@@ -241,7 +296,10 @@ imprimir/exportar con el formato de la planilla original.
   paciente, u otro), almacenada en formato WebP.
 - **Usuario:** la persona que ingresa al sistema (médico o enfermero); tiene un
   tipo de acceso. Para la demo, un único tipo. El administrador (Mauro) da de
-  alta a los usuarios. Multi-rol es posterior.
+  alta a los usuarios. Multi-rol es posterior. Puede tener una **foto de perfil**.
+- **Cambio de un estudio (historial):** cada edición hecha desde el dashboard:
+  quién la hizo, cuándo, y cómo estaba el estudio (con sus etapas) antes del
+  cambio.
 
 ---
 
@@ -263,8 +321,10 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
   iPhone.
 - **CE-007:** Ningún usuario puede ver estudios o imágenes que no le
   corresponden.
-- **CE-008:** La impresión/exportación a PDF se ve igual que la planilla original
-  en papel.
+- **CE-008:** La hoja 1 de la impresión y del PDF se ve igual que la planilla
+  original en papel, y lo impreso y el archivo descargado salen idénticos.
+- **CE-010:** Toda edición de un estudio guardado queda registrada (quién, cuándo
+  y cómo estaba antes).
 - **CE-009:** *(POSTERIOR A LA DEMO)* Si se cae la conexión al guardar, la
   planilla no se pierde y se envía sola al volver internet, con confirmación.
 
@@ -310,6 +370,37 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
 14. **Corrección de un estudio guardado:** una vez guardado, no se edita desde el
     celular; se corrige desde la computadora (dashboard, T032).
 15. **Datos mínimos para guardar:** DNI y nombre del paciente.
+16. **Dashboard, base:** copia la forma y el comportamiento del panel de LoMar
+    (barra lateral, números, filtros, "Actualizar" con contador, estados
+    cargando / error / vacío, tabla clickeable, ficha, vista ampliada de fotos),
+    con la marca de la Cañada y modo claro y oscuro. **No** copia la seguridad de
+    LoMar: se entra con el login de Supabase y los datos se leen directo de
+    Supabase con las reglas de acceso actuales.
+17. **Una sola app, un solo link:** pantalla chica = carga; pantalla grande =
+    dashboard. Sin versión del dashboard para celular.
+18. **Menú lateral:** logo, perfil (foto o inicial), "Estudios", "Configuración"
+    y "Cerrar sesión". Nada más.
+19. **Configuración:** modo de color (igual que el celular; se guarda en cada
+    aparato), correo con que ingresó (solo ver) y foto de perfil (una por
+    profesional; solo la propia; 512 px). Sin foto: círculo con la inicial del
+    correo, con el correo debajo (la base no guarda el nombre).
+20. **Imprimir y PDF:** un único PDF armado en la computadora (no se guarda en el
+    servidor): hoja 1 la planilla (con el DNI a la derecha de "Paciente"), hojas
+    siguientes las fotos del electro. Nombre:
+    `Ergometrico-<número>-<nombre del paciente tal cual, sin acentos, con
+    guiones>-<AAAA-MM-DD>.pdf`.
+21. **Editar:** desde la ficha se corrigen los datos y las etapas (valores,
+    agregar y quitar), con la misma planilla del celular; no las fotos. Queda
+    registrado quién, cuándo y cómo estaba antes. En la ficha se ve solo "Última
+    edición: día y hora"; la lista completa, después de la demo. Si dos pantallas
+    corrigen el mismo estudio, la segunda en guardar recibe un aviso y no pisa el
+    cambio.
+22. **Corte de pantalla:** 1024 px de ancho.
+23. **Fechas del dashboard:** la tabla, los números y los filtros usan la fecha y
+    hora de **carga**; la fecha del estudio se ve en la ficha. "Esta semana" = de
+    lunes a hoy; "Este mes" = desde el día 1.
+24. **Sin permiso directo de modificar:** toda corrección de estudios y etapas
+    pasa por la función que deja registro.
 
 ---
 

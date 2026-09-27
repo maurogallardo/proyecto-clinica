@@ -1,0 +1,864 @@
+/* =============================================================================
+   Dashboard de computadora (T030, T031, T049): copia del panel de LoMar
+   (lomar-smart-panel/css/styles.css) en forma y comportamiento, con la marca de
+   la Cañada. Todos los colores salen de css/tokens.css (claro y oscuro).
+   Guía: specs/001-estudio-ergometrico/guia-visual.md, sección 9.
+   ============================================================================= */
+
+/* --- Dos zonas: barra lateral fija y el contenido, que es el que se desplaza --- */
+.panel {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.panel__contenido {
+  flex: 1 1 auto;
+  min-width: 0;   /* sin esto, una tabla ancha estira la columna */
+}
+
+/* --- Barra lateral --- */
+.lateral {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex: 0 0 240px;
+  width: 240px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 16px 20px;
+  background: var(--panel-lateral-fondo);
+  border-right: 1px solid var(--panel-lateral-borde);
+}
+
+.lateral__logo {
+  align-self: center;
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+}
+
+.lateral__perfil {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 12px;
+  background: var(--panel-hover);
+  border: 1px solid var(--panel-borde-tenue);
+  border-radius: 14px;
+}
+
+.lateral__correo {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lateral__salir {
+  margin-top: auto;
+}
+
+.navegacion {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.navegacion__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-secundario);
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color var(--duracion-corta) var(--curva), color var(--duracion-corta) var(--curva);
+}
+
+.navegacion__item:hover {
+  color: var(--texto);
+  background: var(--panel-hover);
+}
+
+.navegacion__item:focus-visible {
+  outline: none;
+  box-shadow: var(--panel-anillo-foco);
+}
+
+/* Sección actual: fondo verde suave y una barra al ras del borde izquierdo */
+.navegacion__item.esta-activa {
+  color: var(--panel-activo-texto);
+  background: var(--panel-activo-fondo);
+}
+
+.navegacion__item.esta-activa::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  width: 3px;
+  height: 22px;
+  background: var(--panel-activo-barra);
+  border-radius: 0 3px 3px 0;
+  transform: translateY(-50%);
+}
+
+.navegacion__icono {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+/* --- Botones del panel (más chicos que los del celular) --- */
+.panel-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--boton-texto);
+  text-decoration: none;
+  white-space: nowrap;
+  background: var(--boton-fondo);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: filter var(--duracion-corta) var(--curva), background-color var(--duracion-corta) var(--curva);
+}
+
+.panel-boton:hover {
+  filter: brightness(0.93);
+}
+
+.panel-boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.panel-boton:focus-visible {
+  outline: none;
+  box-shadow: var(--panel-anillo-foco);
+}
+
+.panel-boton--fantasma {
+  color: var(--texto);
+  background: transparent;
+  border-color: var(--panel-borde);
+}
+
+.panel-boton--fantasma:hover {
+  filter: none;
+  background: var(--panel-hover);
+}
+
+/* --- Contenido --- */
+.vista {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.encabezado-seccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.encabezado-seccion__antetitulo {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--panel-texto-tenue);
+}
+
+.encabezado-seccion__titulo {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+.encabezado-seccion__derecha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.contador {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-secundario);
+  white-space: nowrap;
+  background: var(--panel-superficie);
+  border: 1px solid var(--panel-borde);
+  border-radius: var(--radio-pildora);
+}
+
+/* --- Tarjetas de números: el panorama de todo lo cargado --- */
+.numeros-panel {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.numero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px 18px;
+  background: var(--panel-superficie);
+  border: 1px solid var(--panel-borde);
+  border-left: 3px solid var(--panel-franja);
+  border-radius: 16px;
+  box-shadow: var(--panel-sombra);
+}
+
+.numero__valor {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.numero__etiqueta {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--panel-texto-tenue);
+}
+
+/* --- Filtros --- */
+.filtros {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--panel-superficie);
+  border: 1px solid var(--panel-borde);
+  border-radius: 16px;
+  box-shadow: var(--panel-sombra);
+}
+
+.filtros__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.filtros__campo--buscar {
+  flex: 1 1 260px;
+}
+
+.filtros__etiqueta {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--panel-texto-tenue);
+}
+
+.filtros__control {
+  min-height: 40px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texto);
+  background: var(--panel-control-fondo);
+  border: 1px solid var(--panel-borde);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color var(--duracion-corta) var(--curva), box-shadow var(--duracion-corta) var(--curva);
+}
+
+.filtros__control::placeholder {
+  color: var(--panel-texto-tenue);
+}
+
+.filtros__control:focus {
+  border-color: var(--panel-activo-barra);
+  box-shadow: var(--panel-anillo-foco);
+}
+
+.filtros__limpiar {
+  margin-left: auto;
+}
+
+/* --- Tarjeta y tabla --- */
+.tarjeta-panel {
+  background: var(--panel-superficie);
+  border: 1px solid var(--panel-borde);
+  border-radius: 16px;
+  box-shadow: var(--panel-sombra);
+}
+
+.tarjeta-tabla {
+  overflow: hidden;
+}
+
+.tabla-desplazable {
+  overflow-x: auto;
+}
+
+.tabla-panel {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla-panel th {
+  position: sticky;
+  top: 0;
+  padding: 14px 18px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--texto-secundario);
+  background: var(--panel-cabecera-tabla);
+  border-bottom: 1px solid var(--panel-borde);
+}
+
+.tabla-panel td {
+  padding: 14px 18px;
+  color: var(--texto-secundario);
+  vertical-align: middle;
+  border-bottom: 1px solid var(--panel-borde-tenue);
+}
+
+.tabla-panel tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Cada fila abre la ficha de ese estudio */
+.tabla-panel tbody tr {
+  cursor: pointer;
+  transition: background-color var(--duracion-corta) var(--curva);
+}
+
+.tabla-panel tbody tr:hover {
+  background: var(--panel-hover);
+}
+
+.tabla-panel tbody tr:focus-visible {
+  outline: 2px solid var(--panel-activo-barra);
+  outline-offset: -2px;
+}
+
+.tabla-panel__col-numero { width: 70px; }
+.tabla-panel__col-fecha { width: 160px; }
+.tabla-panel__col-dni { width: 120px; }
+.tabla-panel__col-fotos { width: 80px; }
+
+.celda-numero,
+.celda-paciente {
+  font-weight: 600;
+  color: var(--texto);
+}
+
+.celda-paciente {
+  white-space: nowrap;
+}
+
+.celda-fecha,
+.celda-dni,
+.celda-fotos {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* La conclusión llega resumida desde js/dashboard.js y además se corta con "…" para
+   ocupar solo el espacio que sobra (así entran todas las columnas); el texto
+   completo queda en el title */
+.celda-conclusion {
+  width: 100%;
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vacio {
+  color: var(--panel-texto-tenue);
+}
+
+/* Las tablas de la ficha no llevan a ningún lado */
+.tabla-panel--ficha {
+  min-width: 620px;
+}
+
+.tabla-panel--ficha tbody tr {
+  cursor: default;
+}
+
+.tabla-panel--ficha tbody tr:hover {
+  background: none;
+}
+
+.tabla-panel--ficha th {
+  position: static;
+}
+
+/* --- Estados: cargando, error, vacío --- */
+.estado-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 240px;
+  padding: 32px;
+  text-align: center;
+  background: var(--panel-superficie);
+  border: 1px dashed var(--panel-borde);
+  border-radius: 16px;
+}
+
+.estado-panel__texto {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--texto-secundario);
+}
+
+.estado-panel--error {
+  background: var(--error-suave-fondo);
+  border-style: solid;
+}
+
+.estado-panel--error .estado-panel__texto {
+  color: var(--error-suave-texto);
+}
+
+.estado-panel__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.ruedita {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--panel-borde);
+  border-top-color: var(--panel-activo-barra);
+  border-radius: 50%;
+  animation: panel-gira 800ms linear infinite;
+}
+
+@keyframes panel-gira {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Ficha --- */
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ficha__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.ficha__titulo {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto);
+}
+
+.ficha__logo {
+  flex: 0 0 auto;
+  width: 150px;
+  height: auto;
+}
+
+.ficha__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ficha__seccion {
+  padding: 18px 20px 20px;
+}
+
+/* Título de bloque con la franja verde al costado (ficha y Configuración) */
+.titulo-bloque {
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+  border-bottom: 1px solid var(--panel-borde-tenue);
+}
+
+.titulo-bloque::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 11px;
+  margin-right: 9px;
+  vertical-align: -1px;
+  background: var(--panel-franja);
+  border-radius: 2px;
+}
+
+.ficha__grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px 24px;
+}
+
+.ficha__subtitulo {
+  margin: 20px 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--panel-texto-tenue);
+}
+
+.ficha__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* Los textos largos (antecedentes, conclusión) ocupan la fila entera */
+.ficha__campo--ancho {
+  grid-column: 1 / -1;
+}
+
+.ficha__etiqueta {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--panel-texto-tenue);
+}
+
+.ficha__valor {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--texto);
+  white-space: pre-wrap;        /* respeta los saltos de línea cargados */
+  overflow-wrap: break-word;
+}
+
+.ficha__valor.vacio {
+  color: var(--panel-texto-tenue);
+}
+
+.ficha__nota {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--panel-texto-tenue);
+  background: var(--panel-hover);
+  border: 1px dashed var(--panel-borde-tenue);
+  border-radius: 12px;
+}
+
+.ficha__seccion--pie .ficha__valor {
+  font-size: 14px;
+  color: var(--texto-secundario);
+}
+
+/* --- Fotos del electro (miniaturas que se agrandan) --- */
+.adjuntos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 132px);
+  gap: 16px 14px;
+}
+
+.adjunto {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 132px;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: zoom-in;
+}
+
+.adjunto:disabled {
+  cursor: default;
+}
+
+.adjunto__caja {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 132px;
+  height: 132px;
+  overflow: hidden;
+  background: var(--panel-hover);
+  border: 1px solid var(--panel-borde);
+  border-radius: 12px;
+  transition: border-color var(--duracion-corta) var(--curva), transform var(--duracion-corta) var(--curva);
+}
+
+.adjunto:hover:not(:disabled) .adjunto__caja {
+  border-color: var(--panel-activo-barra);
+  transform: translateY(-2px);
+}
+
+.adjunto:focus-visible {
+  outline: none;
+}
+
+.adjunto:focus-visible .adjunto__caja {
+  box-shadow: var(--panel-anillo-foco);
+}
+
+.adjunto__miniatura {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adjunto__icono {
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--panel-texto-tenue);
+}
+
+.adjunto__nombre {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto-secundario);
+}
+
+/* --- Vista ampliada (por encima de la barra lateral) --- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.lightbox__fondo {
+  position: absolute;
+  inset: 0;
+  background: var(--lightbox-velo);
+  cursor: zoom-out;
+}
+
+.lightbox__caja {
+  position: relative;
+  z-index: 1;
+  max-width: min(1200px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.lightbox__barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+.lightbox__titulo {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--lightbox-texto);
+}
+
+.lightbox__cerrar {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blanco);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.lightbox__cerrar:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.lightbox__cerrar:focus-visible {
+  outline: none;
+  box-shadow: var(--panel-anillo-foco);
+}
+
+.lightbox__imagen {
+  max-width: 100%;
+  max-height: calc(100vh - 190px);
+  object-fit: contain;
+  background: var(--blanco);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox__aviso {
+  margin: 0;
+  padding: 14px 18px;
+  font-size: 14px;
+  color: #FFC6C0;
+  background: rgba(217, 63, 63, 0.2);
+  border: 1px solid rgba(255, 138, 126, 0.34);
+  border-radius: 12px;
+}
+
+.lightbox .panel-boton--fantasma {
+  color: var(--blanco);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* --- Configuración (T049) --- */
+.configuracion {
+  display: grid;
+  gap: 16px;
+  max-width: 720px;
+}
+
+.configuracion__bloque {
+  padding: 18px 20px 20px;
+}
+
+.configuracion__texto {
+  margin: 0;
+  font-size: 15px;
+  color: var(--texto-secundario);
+  overflow-wrap: anywhere;
+}
+
+.configuracion__texto strong {
+  color: var(--texto);
+}
+
+.configuracion__foto {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.configuracion__foto-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.configuracion__ayuda {
+  margin: 0;
+  font-size: 13px;
+  color: var(--panel-texto-tenue);
+}
+
+.avatar--grande {
+  width: 96px;
+  height: 96px;
+  font-size: 38px;
+}
+
+/* El selector de modo, dentro de una tarjeta del panel */
+.selector-tema--panel {
+  box-shadow: none;
+  background: var(--panel-hover);
+  border-color: var(--panel-borde-tenue);
+}
+
+/* --- Pantallas medianas (de 1024 a 1279 px): barra lateral y tabla más compactas,
+       así entran todas las columnas sin desplazar de costado --- */
+@media (max-width: 1279px) {
+  .lateral {
+    flex-basis: 204px;
+    width: 204px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .navegacion__item.esta-activa::before {
+    left: -12px;
+  }
+
+  .vista {
+    padding: 22px 20px;
+  }
+
+  .tabla-panel {
+    min-width: 0;
+    font-size: 13.5px;
+  }
+
+  .tabla-panel th,
+  .tabla-panel td {
+    padding: 12px 10px;
+  }
+
+  .tabla-panel__col-fecha { width: 140px; }
+  .tabla-panel__col-dni { width: 96px; }
+  .tabla-panel__col-fotos { width: 60px; }
+}

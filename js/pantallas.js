@@ -2,8 +2,8 @@
 // Cada pantalla es un <section class="pantalla" id="..."> en index.html.
 // (Misma idea que mostrarPantalla de LoMar.)
 
-// Pantalla a la que se llega después del login: la carga del estudio (T013)
-const PANTALLA_PRINCIPAL = 'carga';
+// La pantalla a la que se llega después del login la decide js/vista.js según
+// el tamaño de la pantalla: la carga del estudio (T013) o el dashboard (T030).
 
 function mostrarPantalla(id) {
   document.querySelectorAll('.pantalla').forEach((pantalla) => {

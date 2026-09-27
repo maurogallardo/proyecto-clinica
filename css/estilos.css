@@ -292,6 +292,33 @@ textarea.campo {
   box-shadow: var(--anillo-foco);
 }
 
+/* --- Círculo de perfil (T049): la foto, o la inicial del correo si no hay ---
+   Lo usan el menú del celular y el dashboard (js/perfil.js). */
+.avatar {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--avatar-texto);
+  background: var(--avatar-fondo);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(4, 7, 7, 0.18);
+  user-select: none;
+}
+
+.avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* --- Si el dispositivo pide "reducir movimiento", se apagan las animaciones --- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
