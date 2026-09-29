@@ -277,11 +277,54 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
   - *No olvidar (trazabilidad):* al guardar una edición, guardar también la fila
     de `estudios` aunque solo hayan cambiado etapas. Así el trigger registra
     `modificado_por`/`modificado_en` (el trigger solo mira la tabla `estudios`).
+    *(Resuelto en T062: la función marca quién y cuándo explícitamente.)*
+- **T062** Editar, base de datos: `supabase/edicion.sql` (cubre RF-032).
+  - Tabla `estudios_historial`: el estudio y sus etapas como estaban, quién y
+    cuándo. Sin acceso desde la app, ni para leer.
+  - Función `editar_estudio`: todo o nada; exige sesión y que el estudio sea
+    propio; rechaza la Papelera y la edición cruzada (código `CL409`); usa la
+    lista blanca de `guardar_estudio`; si no hay cambios, no registra nada.
+  - "Última edición" marcada aunque solo cambien las etapas.
+  - Se quitan a la app UPDATE, DELETE y TRUNCATE sobre `estudios` y `etapas`, y
+    las reglas que quedaron sin uso.
+  - Probado en la base de prueba de la compu (76 comprobaciones, con los permisos
+    de los archivos y con los de Supabase por defecto). Mauro lo corrió en
+    Supabase.
+  - Sin tope de etapas por ahora: queda para producción.
+- **T061** Editar, pantalla (`js/edicion.js`, `js/ficha.js`; cubre RF-032).
+  - "Editar" neutro, a la izquierda de "Borrar". La ficha pasa a la misma
+    planilla del celular, con ids con prefijo, solo con teclado y sin micrófono ni
+    fotos. "Cancelar" y "Guardar cambios" en el encabezado fijo.
+  - Mismos criterios que la carga: coma, mayúscula inicial, DNI y nombre,
+    números bien escritos.
+  - Cartel para guardar; "No hay cambios para guardar"; aviso verde, vuelta a la
+    ficha con "Última edición" y la lista actualizada.
+  - Edición cruzada con "Cargar la versión nueva" o "Seguir editando". Errores en
+    criollo.
+  - "¿Seguro?" al salir con cambios, también con el menú y "Cerrar sesión". Al
+    cerrar sesión se borra la planilla. Doble clic sin efecto.
+  - Probada con Supabase simulado (90 comprobaciones) y contra el Supabase real
+    con los estudios de prueba N° 24 y 20 (quedaron con sus datos de antes).
+  - Falta que Mauro la pruebe.
+- **T063** Consulta de solo lectura del historial (`supabase/ver_historial.sql`).
+  - Para el SQL Editor. Muestra solo cantidades, horas y el correo de quien
+    editó, sin datos del paciente.
+  - El historial no se mira con la clave de servicio.
 
 ## Preguntas para el médico
 
 - ¿Quiere el **DNI** en la planilla impresa? (La planilla en papel no lo tiene;
   por ahora el PDF lo muestra a la derecha de "Paciente".)
+
+## Estudios de prueba a limpiar más adelante
+
+Estudios creados solo para probar, que hay que sacar de la base antes de usarla
+de verdad. Desde la app no se borran: se hace a mano en Supabase, cuando se
+decida.
+
+- **N° 25 "PRUEBA EDICION T061"**: lo creó la prueba real de Editar (T061) para
+  comprobar que la carga desde el celular sigue andando sin los permisos
+  directos. Quedó en la Papelera.
 
 ## Fase 5 — Pruebas y cierre de la demo
 

@@ -387,6 +387,13 @@
             </div>
           </div>
           <div class="ficha__cuerpo" id="ficha-cuerpo" hidden></div>
+          <!-- Editar (T061, js/edicion.js): la MISMA planilla del celular, solo con
+               teclado (sin micrófono ni fotos). "Cancelar" y "Guardar cambios" van
+               en el encabezado fijo. -->
+          <div class="edicion" id="ficha-edicion" hidden>
+            <p class="edicion__ayuda">Corregí los datos con el teclado. Las fotos no se cambian desde acá.</p>
+            <div class="edicion__formulario" id="ficha-edicion-formulario"></div>
+          </div>
         </section>
 
         <!-- Configuración (T049) -->
@@ -555,6 +562,7 @@
   <script src="js/calendario.js"></script>
   <script src="js/recortador.js"></script>
   <script src="js/papelera.js"></script>
+  <script src="js/edicion.js"></script>
   <script src="js/ficha.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/login.js"></script>

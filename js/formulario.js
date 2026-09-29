@@ -2,27 +2,33 @@
 // cargado. Sirve para cualquier planilla: sumar una nueva es escribir su
 // configuración, sin tocar este archivo.
 
-let contadorEtapas = 0;   // para que cada etapa tenga ids únicos
+let contadorEtapas = 0;   // para que cada etapa tenga ids únicos (no se reinicia: puede haber dos planillas)
 
 // --- Dibujar ---------------------------------------------------------------
 
-function dibujarPlanilla(planilla, contenedor) {
-  contadorEtapas = 0;
-  contenedor.replaceChildren(...planilla.secciones.map((seccion) => dibujarSeccion(seccion, planilla)));
+// opciones (para la edición en el dashboard, T061):
+//   prefijo  -> antepuesto a los ids, así la planilla de edición y la de carga
+//               pueden estar en la misma página sin chocar
+//   valores  -> { estudio: {columna: valor}, etapas: [{...}] } de un estudio ya
+//               guardado: se muestran esos (y sus etapas, no las del papel), y lo
+//               vacío queda vacío (no se pone la fecha de hoy)
+function dibujarPlanilla(planilla, contenedor, opciones = {}) {
+  const { prefijo = '', valores = null } = opciones;
+  contenedor.replaceChildren(...planilla.secciones.map((seccion) => dibujarSeccion(seccion, planilla, prefijo, valores)));
   ajustarTodasLasAlturas(contenedor);
 }
 
-function dibujarSeccion(seccion, planilla) {
+function dibujarSeccion(seccion, planilla, prefijo, valores) {
   const tarjeta = crear('section', 'tarjeta seccion');
   tarjeta.append(crear('h2', 'titulo-seccion', seccion.titulo));
 
   if (seccion.tipo === 'etapas') {
     const lista = crear('div', 'etapas');
-    lista.id = 'etapas';
-    planilla.etapas.iniciales.forEach((valores) => {
-      lista.append(dibujarEtapa(planilla.etapas.campos, valores));
+    lista.id = `${prefijo}etapas`;
+    (valores ? valores.etapas : planilla.etapas.iniciales).forEach((valoresEtapa) => {
+      lista.append(dibujarEtapa(planilla.etapas.campos, valoresEtapa, prefijo));
     });
-    tarjeta.append(lista, dibujarBotonAgregarEtapa(planilla.etapas.campos, lista));
+    tarjeta.append(lista, dibujarBotonAgregarEtapa(planilla.etapas.campos, lista, prefijo));
     return tarjeta;
   }
 
@@ -30,7 +36,7 @@ function dibujarSeccion(seccion, planilla) {
   seccion.campos.forEach((campo) => {
     grilla.append(campo.subtitulo
       ? crear('p', 'subtitulo-campos a-lo-ancho', campo.subtitulo)
-      : dibujarCampo(campo, `campo-${campo.columna}`));
+      : dibujarCampo(campo, `${prefijo}campo-${campo.columna}`, valores ? valores.estudio[campo.columna] : undefined, Boolean(valores)));
   });
   tarjeta.append(grilla);
   return tarjeta;
@@ -38,7 +44,7 @@ function dibujarSeccion(seccion, planilla) {
 
 // Tarjeta de etapa (como la tarjeta "Control" de LoMar): rótulo y tacho arriba;
 // Tiempo y Carga destacados; MET, T.A., F.C., ECG y Clínica en grilla
-function dibujarEtapa(campos, valores = {}) {
+function dibujarEtapa(campos, valores = {}, prefijo = '') {
   const numero = contadorEtapas++;
   const tarjeta = crear('div', 'etapa');
 
@@ -53,7 +59,7 @@ function dibujarEtapa(campos, valores = {}) {
   const cabecera = crear('div', 'etapa__cabecera');
   const grilla = crear('div', 'etapa__grilla');
   campos.forEach((campo) => {
-    const grupo = dibujarCampo(campo, `etapa-${numero}-${campo.columna}`, valores[campo.columna]);
+    const grupo = dibujarCampo(campo, `${prefijo}etapa-${numero}-${campo.columna}`, valores[campo.columna]);
     (campo.destacado ? cabecera : grilla).append(grupo);
   });
   tarjeta.append(encabezado, cabecera, grilla);
@@ -62,11 +68,11 @@ function dibujarEtapa(campos, valores = {}) {
 
 // "+ Agregar etapa" (como "+ Agregar control" de LoMar). La etapa nueva arranca
 // VACÍA, también Tiempo y Carga: los completa el profesional (nunca inventar).
-function dibujarBotonAgregarEtapa(campos, lista) {
+function dibujarBotonAgregarEtapa(campos, lista, prefijo = '') {
   const boton = crear('button', 'agregar-etapa', '+ Agregar etapa');
   boton.type = 'button';
   boton.addEventListener('click', () => {
-    const nueva = dibujarEtapa(campos);
+    const nueva = dibujarEtapa(campos, {}, prefijo);
     nueva.classList.add('etapa--nueva');
     lista.append(nueva);
     ajustarTodasLasAlturas(nueva);
@@ -114,7 +120,7 @@ const ICONO_TACHO = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"
   <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
 </svg>`;
 
-function dibujarCampo(campo, id, valor) {
+function dibujarCampo(campo, id, valor, sinValorInicial = false) {
   const grupo = crear('div', campo.ancho === 'completo' ? 'campo-grupo a-lo-ancho' : 'campo-grupo');
   const etiqueta = crear('label', campo.etiquetaOculta ? 'campo-etiqueta solo-lectores' : 'campo-etiqueta', campo.etiqueta);
   etiqueta.htmlFor = id;
@@ -123,8 +129,8 @@ function dibujarCampo(campo, id, valor) {
   control.id = id;
   control.dataset.columna = campo.columna;
   control.dataset.tipo = campo.tipo;
-  if (valor !== undefined && valor !== null) control.value = valor;
-  else if (campo.valorInicial === 'hoy') control.value = fechaDeHoy();
+  if (valor !== undefined && valor !== null) control.value = textoDeValor(valor, campo.tipo);
+  else if (campo.valorInicial === 'hoy' && !sinValorInicial) control.value = fechaDeHoy();
 
   grupo.append(etiqueta, control);
   return grupo;
@@ -252,11 +258,46 @@ function tomarFotoPlanilla(contenedor) {
 
 // Escribe un valor en un campo, sin destello (y acomoda el alto de las cajas de texto)
 function escribirValor(control, valor) {
-  let texto = valor === null || valor === undefined ? '' : String(valor);
-  // Los decimales se muestran con coma ("1,75"); se guardan igual, como número
-  if (control.dataset.tipo === 'decimal' && typeof valor === 'number') texto = texto.replace('.', ',');
-  control.value = texto;
+  control.value = textoDeValor(valor, control.dataset.tipo);
   if (control.tagName === 'TEXTAREA') ajustarAltura(control);
+}
+
+// Cómo se ve un valor en su campo: los decimales con coma ("1,75"); se guardan
+// igual, como número
+function textoDeValor(valor, tipo) {
+  const texto = valor === null || valor === undefined ? '' : String(valor);
+  return tipo === 'decimal' && typeof valor === 'number' ? texto.replace('.', ',') : texto;
+}
+
+// --- Para guardar (la carga del celular y la edición del dashboard) ----------------
+
+// El control de un campo del estudio (no de una etapa) dentro de una planilla
+function controlDeCampo(contenedor, columna) {
+  return [...contenedor.querySelectorAll(`[data-columna="${columna}"]`)].find((control) => !control.closest('.etapa')) || null;
+}
+
+// Lo que se manda a la base: los campos de la planilla (lo vacío va en null), el
+// DNI limpio (sin puntos) y sin las filas de etapa completamente vacías
+function datosParaGuardarDe(contenedor) {
+  const { estudio, etapas } = leerPlanilla(contenedor);
+  if (estudio.documento !== null && estudio.documento !== undefined) estudio.documento = String(estudio.documento).replace(/\D/g, '');
+  const conDatos = etapas.filter((etapa) => Object.values(etapa).some((valor) => valor !== null));
+  return { estudio, etapas: conDatos };
+}
+
+// Los campos marcados en la planilla con "mayusculaInicial" (textos libres como la
+// conclusión; no los nombres): solo la primera letra pasa a mayúscula, el resto
+// del texto queda tal cual. Se ve en pantalla antes del cartel de confirmar.
+function ponerMayusculaInicialEn(contenedor, planilla) {
+  planilla.secciones.flatMap((s) => s.campos || []).filter((c) => c.mayusculaInicial).forEach((campo) => {
+    const control = controlDeCampo(contenedor, campo.columna);
+    if (!control) return;
+    const texto = control.value;
+    const primera = texto.search(/\S/);
+    if (primera < 0) return;
+    const nuevo = texto.slice(0, primera) + texto.charAt(primera).toLocaleUpperCase('es') + texto.slice(primera + 1);
+    if (nuevo !== texto) escribirValor(control, nuevo);
+  });
 }
 
 // --- Ayudante ------------------------------------------------------------------

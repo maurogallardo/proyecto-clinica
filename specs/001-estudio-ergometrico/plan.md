@@ -145,10 +145,11 @@ profesional ve los estudios que cargó él.
   de perfil (1024 px, calidad 0,92). Antes de subirla se acomoda en un **recortador** con un
   círculo (zoom con la ruedita o una barrita, arrastrar; la foto siempre cubre el
   círculo; "Guardar" / "Cancelar" / Esc). Se sube lo que se ve en el círculo.
-- **Editar (T032):** desde la ficha se corrigen los datos y las etapas (valores,
-  agregar y quitar), con la misma planilla del celular; no las fotos. Con
-  registro de cambios (ver "Historial de cambios"). La ficha muestra "Última
-  edición: día y hora".
+- **Editar (T032, T061):** botón "Editar" (neutro, a la izquierda de "Borrar")
+  en el encabezado de la ficha. Se corrigen los datos y las etapas (valores,
+  agregar y quitar) con la misma planilla del celular, solo con teclado; no las
+  fotos. Con registro de cambios (ver "Historial de cambios"). La ficha muestra
+  "Última edición: día y hora".
 - **Imprimir y PDF (T033):** ver la sección "Impresión y PDF".
 
 ---
@@ -300,6 +301,50 @@ pega en el SQL Editor.
 - **Qué se muestra:** en la ficha, solo "Última edición: día y hora". La lista
   completa de cambios queda guardada y se muestra después de la demo.
 
+**Cómo quedó hecho (T061 y T062):**
+
+- **`supabase/edicion.sql`** (ya corrido en Supabase):
+  - tabla `estudios_historial`: el estudio completo y todas sus etapas como
+    estaban, quién (id y copia del correo) y cuándo (hora del servidor). RLS
+    encendido, sin reglas y sin ningún permiso para la app: ni leerla. Tiene
+    datos de pacientes;
+  - función `editar_estudio(id, datos, etapas, modificado_en)`: todo o nada,
+    `security definer`. Exige sesión, que el estudio sea del usuario y que no esté
+    en la Papelera. Usa la misma lista blanca de campos que `guardar_estudio`: no
+    cambia número, `cargado_por`, `creado_en`, la Papelera ni las fotos. Si no hay
+    cambios, no guarda nada y avisa "sin cambios". Si los hay, primero va al
+    historial, después el estudio y las etapas (se reemplazan todas);
+  - edición cruzada: compara `modificado_en` con `is not distinct from` (un
+    estudio nunca editado tiene null). Si no coincide, error con código propio
+    `CL409` y no cambia nada. La app devuelve el valor **como texto, tal cual
+    vino**: pasado por `Date` de JavaScript perdería los microsegundos y nunca
+    coincidiría;
+  - "Última edición": `editar_estudio` prende una marca de la transacción
+    (`clinica.edicion`) y pone ella misma quién y cuándo; el trigger
+    `registrar_modificacion`, al ver la marca, respeta esos valores. Así queda
+    marcada aunque solo cambien las etapas, y la Papelera sigue sin contar como
+    edición;
+  - permisos: la app (`authenticated`) pierde UPDATE, DELETE y TRUNCATE sobre
+    `estudios` y `etapas`, y se sacan las reglas de UPDATE y DELETE que quedaron
+    sin uso. Se conservan SELECT e INSERT (`guardar_estudio` los usa);
+  - sin tope de cantidad de etapas por ahora, igual que `guardar_estudio`. Queda
+    anotado para producción.
+- **`js/edicion.js`** + `js/ficha.js`:
+  - la ficha pasa a la misma planilla del celular (`dibujarPlanilla` con un
+    prefijo en los ids, para no chocar con la de carga, y con los valores del
+    estudio). Solo con teclado: sin micrófono, grabación ni fotos;
+  - mismos criterios que la carga (funciones compartidas en `js/formulario.js`):
+    decimales con coma, mayúscula inicial, DNI y nombre obligatorios, números bien
+    escritos;
+  - "Cancelar", "← Volver", el menú y "Cerrar sesión" preguntan "¿Seguro?" si hay
+    cambios sin guardar. Al cerrar sesión, la planilla se borra de la pantalla;
+  - la edición cruzada ofrece "Cargar la versión nueva" o "Seguir editando" (para
+    no perder lo escrito sin avisar).
+- **`supabase/ver_historial.sql`:** consulta de **solo lectura** para el SQL Editor,
+  que muestra el historial de los estudios de prueba **sin datos del paciente**
+  (cantidades, horas y correo de quien editó). El historial no se mira con la
+  clave de servicio.
+
 ### Foto de perfil (Configuración)
 
 Una foto por profesional, en un **depósito privado nuevo** de Supabase (aparte
@@ -345,7 +390,7 @@ número no se reutiliza.
   consola. El cartel de toda la app ahora mantiene el foco adentro (Tab da vueltas
   entre sus botones).
 - **Para la Tanda 3 (Editar):** la función de edición tiene que rechazar un
-  estudio que esté en la Papelera.
+  estudio que esté en la Papelera. *(Hecho: `editar_estudio` lo rechaza.)*
 
 ### Para el futuro (no en la demo)
 

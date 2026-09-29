@@ -490,6 +490,44 @@
   padding: 6px 14px;
 }
 
+/* --- Editar (T061): la misma planilla del celular, con las tarjetas del panel --- */
+.edicion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edicion__ayuda {
+  margin: 0;
+  font-size: 14px;
+  color: var(--texto-secundario);
+}
+
+.edicion__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 980px;
+}
+
+.edicion .tarjeta {
+  background: var(--panel-superficie);
+  border-color: var(--panel-borde);
+  border-radius: 16px;
+  box-shadow: var(--panel-sombra);
+}
+
+/* Con lugar, las etapas van en columnas (en el celular, una debajo de la otra) */
+.edicion .etapas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.edicion .campo,
+.edicion .etapa {
+  scroll-margin-top: 110px;   /* que el encabezado fijo no tape el campo al ir a él */
+}
+
 /* Títulos que reciben el foco al volver (después de borrar o restaurar) */
 .encabezado-seccion__titulo:focus {
   outline: none;

@@ -345,6 +345,31 @@ imprimir/exportar con el formato de la planilla original.
   el resto del texto no cambia), y se ve en pantalla antes del cartel de
   confirmación. No se aplica a nombres ni al médico solicitante, ni cambia los
   estudios ya guardados.
+- **RF-032 (Editar, con historial):** desde la ficha del dashboard, el botón
+  **"Editar"** pasa a la **misma planilla del celular** con los datos del estudio,
+  con **"Guardar cambios"** y **"Cancelar"**. Detalla el RF-021:
+  - Solo con teclado: sin micrófono, sin grabación y sin fotos (las fotos no se
+    tocan).
+  - Se corrigen los datos y las etapas (cambiar, agregar y quitar). El número del
+    estudio no cambia.
+  - Mismos criterios que la carga: decimales con coma, mayúscula inicial (RF-031),
+    DNI y nombre obligatorios (RF-023) y números bien escritos.
+  - "Guardar cambios" pregunta antes. Si no hubo cambios, avisa "No hay cambios
+    para guardar" y no registra nada.
+  - Salir con cambios sin guardar ("Cancelar", volver, otra sección o cerrar
+    sesión) pregunta "¿Seguro? Se pierden los cambios".
+  - Cada edición guarda en un **historial** cómo estaba el estudio antes (con sus
+    etapas), quién (con su correo) y cuándo (hora del servidor). El historial no se
+    ve ni se puede cambiar desde la app. En la ficha se ve solo "Última edición:
+    día y hora".
+  - **Edición cruzada:** si otra persona u otra pestaña lo cambió mientras tanto,
+    no se guarda y avisa en criollo. Se puede elegir cargar la versión nueva o
+    seguir editando, para no perder lo escrito sin aviso.
+  - No se editan estudios que están en la Papelera (RF-029).
+  - Toda corrección pasa por una sola función del servidor, todo o nada. La app no
+    puede modificar ni borrar estudios ni etapas de forma directa.
+  - Al cerrar sesión, la planilla de edición se borra de la pantalla, y en la
+    consola no aparecen datos del paciente.
 
 ### Entidades de datos principales
 
@@ -500,6 +525,15 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     sin información, por el ancho. La vista se decide al abrir la app o al
     iniciar sesión y no cambia sola. Sin botón manual ni opción en el menú. Los
     celulares con S Pen quedan cubiertos, pero no se probaron en un aparato real.
+30. **Editar con historial (RF-032, T061 y T062):**
+    - "Editar" va a la izquierda de "Borrar", con estilo neutro.
+    - Edición solo con teclado.
+    - "Cerrar sesión" con cambios sin guardar también pregunta "¿Seguro?".
+    - **Sin tope** de cantidad de etapas por ahora, igual que en la carga; queda
+      anotado para producción.
+    - El historial **no se mira con la clave de servicio**: para revisarlo hay una
+      consulta de solo lectura (`supabase/ver_historial.sql`) que muestra solo
+      cantidades, horas y el correo de quien editó, nunca datos del paciente.
 
 ---
 

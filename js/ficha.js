@@ -23,8 +23,11 @@ const Ficha = (() => {
     lightboxOriginal: document.getElementById('lightbox-original'),
   };
   let idActual = null;
+  let estudioActual = null;   // como vino del servidor (lo usa la edición)
+  let editando = false;
   let alVolver = () => {};
   let alMandarALaPapelera = () => {};
+  let alGuardarCambios = () => {};
 
   // --- Cómo se muestra cada valor ---------------------------------------------------
 
@@ -218,8 +221,114 @@ const Ficha = (() => {
     seccionPie.classList.add('ficha__seccion--pie');
     secciones.push(seccionPie);
     el.cuerpo.replaceChildren(...secciones);
-    el.acciones.replaceChildren(botonBorrar(estudio));
+    estudioActual = estudio;
+    el.acciones.replaceChildren(botonEditar(), botonBorrar(estudio));
     mostrarSolo('ficha');
+  }
+
+  // --- Editar (T061, js/edicion.js) ---------------------------------------------------------
+  // "Editar" (neutro, como "Volver") a la izquierda de "Borrar". En modo edición el
+  // encabezado muestra "Cancelar" y "Guardar cambios".
+
+  function boton(texto, clase, id, alTocar) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = clase;
+    b.id = id;
+    b.textContent = texto;
+    b.addEventListener('click', alTocar);
+    return b;
+  }
+
+  const botonEditar = () => boton('Editar', 'panel-boton panel-boton--fantasma', 'ficha-editar', entrarAEdicion);
+
+  function entrarAEdicion() {
+    if (!estudioActual || editando) return;
+    editando = true;
+    cerrarLightbox();
+    el.cuerpo.hidden = true;
+    Edicion.abrir(estudioActual);
+    el.titulo.textContent = `Editando · Estudio ergométrico · N° ${estudioActual.numero ?? '—'}`;
+    el.acciones.replaceChildren(
+      boton('Cancelar', 'panel-boton panel-boton--fantasma', 'ficha-cancelar', cancelar),
+      boton('Guardar cambios', 'panel-boton', 'ficha-guardar', guardar),
+    );
+    window.scrollTo(0, 0);
+    Edicion.primerCampo().focus({ preventScroll: true });
+  }
+
+  // Vuelve a la ficha tal como estaba (sin pedirla de nuevo)
+  function salirDeEdicion() {
+    Edicion.cerrar();
+    editando = false;
+    if (!estudioActual) return;
+    el.titulo.textContent = `Estudio ergométrico · N° ${estudioActual.numero ?? '—'}`;
+    el.acciones.replaceChildren(botonEditar(), botonBorrar(estudioActual));
+    el.cuerpo.hidden = false;
+    document.getElementById('ficha-editar').focus();
+  }
+
+  // Con cambios sin guardar, se pregunta antes de perderlos
+  async function puedeSalir() {
+    if (!editando || !Edicion.hayCambios()) return true;
+    return preguntar({
+      titulo: '¿Seguro?',
+      texto: 'Se pierden los cambios que no guardaste.',
+      textoConfirmar: 'Descartar cambios',
+      textoVolver: 'Seguir editando',
+      peligro: true,
+    });
+  }
+
+  async function cancelar() {
+    if (await puedeSalir()) salirDeEdicion();
+  }
+
+  let guardando = false;
+  async function guardar() {
+    if (guardando) return;   // un doble clic no guarda dos veces
+    guardando = true;
+    const id = idActual;
+    const botones = [...el.acciones.querySelectorAll('button')];
+    const botonGuardar = document.getElementById('ficha-guardar');
+    let resultado = null;
+    let seMando = false;
+    try {
+      // Los botones se deshabilitan recién al mandar (así el cartel devuelve el foco a
+      // "Guardar cambios", y un aviso de "falta el DNI" deja el cursor en el campo)
+      resultado = await Edicion.guardar({
+        alEmpezar: () => {
+          seMando = true;
+          botones.forEach((b) => { b.disabled = true; });
+          botonGuardar.textContent = 'Guardando…';
+        },
+      });
+    } finally {
+      guardando = false;
+      if (seMando && botonGuardar.isConnected) {
+        botones.forEach((b) => { b.disabled = false; });
+        botonGuardar.textContent = 'Guardar cambios';
+      }
+    }
+    if (idActual !== id || !editando) return;   // mientras tanto se salió o se cerró sesión
+    if (resultado === 'guardado') {
+      alGuardarCambios();
+      Edicion.cerrar();
+      editando = false;
+      await abrir(id);   // la ficha con los datos nuevos y su "Última edición"
+      const editar = document.getElementById('ficha-editar');
+      if (editar && idActual === id) editar.focus();
+    } else if (resultado === 'recargar') {
+      Edicion.cerrar();
+      editando = false;
+      await abrir(id);
+      const editar = document.getElementById('ficha-editar');
+      if (editar && idActual === id) editar.focus();
+    } else if (resultado === 'sin-cambios') {
+      salirDeEdicion();
+    } else if (botonGuardar.isConnected && (document.activeElement === document.body || !document.activeElement)) {
+      botonGuardar.focus();   // el foco se había perdido mientras el botón estaba deshabilitado
+    }
   }
 
   // --- Borrar = mandar a la Papelera (T059) ----------------------------------------------
@@ -277,6 +386,9 @@ const Ficha = (() => {
 
   async function abrir(id) {
     idActual = id;
+    estudioActual = null;
+    editando = false;
+    Edicion.cerrar();
     el.titulo.textContent = 'Estudio ergométrico';
     el.cuerpo.replaceChildren();
     el.acciones.replaceChildren();
@@ -392,11 +504,17 @@ const Ficha = (() => {
   function cerrar() {
     cerrarLightbox();
     idActual = null;
+    estudioActual = null;
+    editando = false;
+    Edicion.cerrar();              // tampoco la planilla de edición
     el.cuerpo.replaceChildren();   // los datos del paciente no quedan en la pantalla
     el.acciones.replaceChildren();
   }
 
-  document.getElementById('ficha-volver').addEventListener('click', () => alVolver());
+  // "← Volver": si se está editando con cambios, pregunta antes
+  document.getElementById('ficha-volver').addEventListener('click', async () => {
+    if (await puedeSalir()) alVolver();
+  });
   document.getElementById('ficha-volver-lista').addEventListener('click', () => alVolver());
   document.getElementById('ficha-reintentar').addEventListener('click', () => { if (idActual) abrir(idActual); });
 
@@ -405,6 +523,8 @@ const Ficha = (() => {
     cerrar,
     alVolverALaLista: (funcion) => { alVolver = funcion; },
     alMandarALaPapelera: (funcion) => { alMandarALaPapelera = funcion; },
+    alGuardarCambios: (funcion) => { alGuardarCambios = funcion; },
+    puedeSalir,
     fechaHora,
   };
 })();

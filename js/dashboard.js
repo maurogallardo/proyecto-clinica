@@ -264,7 +264,9 @@ const Dashboard = (() => {
     if (evento.detail.id === 'dashboard' && !yaCargo) cargar();
   });
 
-  el.navegacion.forEach((boton) => boton.addEventListener('click', () => {
+  el.navegacion.forEach((boton) => boton.addEventListener('click', async () => {
+    // Si se está editando un estudio con cambios sin guardar, se pregunta antes
+    if (!(await Ficha.puedeSalir())) return;
     const seccion = boton.dataset.seccion;
     if (seccion === 'configuracion' || seccion === 'papelera') {
       Ficha.cerrar();
@@ -286,6 +288,8 @@ const Dashboard = (() => {
     cargar();
     mostrarAviso(`Estudio N° ${numero} enviado a la Papelera`, 'exito', 4000);
   });
+  // Editar (T061): después de guardar, la lista muestra los datos nuevos
+  Ficha.alGuardarCambios(() => { if (yaCargo) cargar(); });
   // Restaurar desde la Papelera: la lista de estudios lo vuelve a tener
   Papelera.alRestaurarUno(() => { if (yaCargo) cargar(); });
   el.filas.addEventListener('click', (evento) => {
@@ -307,7 +311,9 @@ const Dashboard = (() => {
 
   // Cerrar sesión: el mismo aviso de siempre (Sesion.alCerrarse) lleva al login
   $('panel-cerrar-sesion').addEventListener('click', async (evento) => {
-    evento.currentTarget.disabled = true;
+    const boton = evento.currentTarget;
+    if (!(await Ficha.puedeSalir())) return;   // editando con cambios: pregunta antes
+    boton.disabled = true;
     await Sesion.salir();
     $('panel-cerrar-sesion').disabled = false;
   });

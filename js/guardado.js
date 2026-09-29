@@ -55,8 +55,9 @@ function hayDictadoAMedias() {
   return true;
 }
 
-// DNI y nombre: si falta alguno, avisa cuál y va a ese campo
-function faltanDatosMinimos(estudio) {
+// DNI y nombre: si falta alguno, avisa cuál y va a ese campo (también lo usa la
+// edición del dashboard, con su planilla)
+function faltanDatosMinimos(estudio, contenedor = contenedorCarga) {
   const faltan = DATOS_MINIMOS.filter(({ columna }) => {
     const valor = estudio[columna];
     return valor === null || (columna === 'documento' && String(valor).replace(/\D/g, '') === '');
@@ -64,7 +65,7 @@ function faltanDatosMinimos(estudio) {
   if (faltan.length === 0) return false;
   const lista = faltan.map((d) => d.falta).join(' y ');
   mostrarAviso(`Para guardar, falta ${lista} del paciente.`, 'error', 5000);
-  irAlCampo(document.getElementById(`campo-${faltan[0].columna}`));
+  irAlCampo(controlDeCampo(contenedor, faltan[0].columna));
   return true;
 }
 
@@ -87,19 +88,9 @@ function hayNumeroMalEscrito(contenedor) {
 
 // --- 2 y 3) Confirmar y guardar ---------------------------------------------------------
 
-// Los campos marcados en la planilla con "mayusculaInicial" (textos libres como la
-// conclusión; no los nombres): solo la primera letra pasa a mayúscula, el resto
-// del texto queda tal cual
+// Primera letra en mayúscula en los textos libres (js/formulario.js)
 function ponerMayusculaInicial() {
-  PLANILLA_ERGOMETRICO.secciones.flatMap((s) => s.campos || []).filter((c) => c.mayusculaInicial).forEach((campo) => {
-    const control = document.getElementById(`campo-${campo.columna}`);
-    if (!control) return;
-    const texto = control.value;
-    const primera = texto.search(/\S/);
-    if (primera < 0) return;
-    const nuevo = texto.slice(0, primera) + texto.charAt(primera).toLocaleUpperCase('es') + texto.slice(primera + 1);
-    if (nuevo !== texto) escribirValor(control, nuevo);
-  });
+  ponerMayusculaInicialEn(contenedorCarga, PLANILLA_ERGOMETRICO);
 }
 
 async function confirmarEstudio() {
@@ -126,13 +117,10 @@ async function confirmarEstudio() {
   }
 }
 
-// Lo que se manda a la base: los campos de la planilla (lo vacío va en null)
+// Lo que se manda a la base (js/formulario.js): lo vacío en null, DNI limpio y sin
+// filas de etapa completamente vacías
 function datosParaGuardar() {
-  const { estudio, etapas } = leerCarga();
-  if (estudio.documento !== null) estudio.documento = estudio.documento.replace(/\D/g, '');   // DNI limpio, sin puntos
-  // Una fila de etapa completamente vacía no tiene ningún dato: no se guarda
-  const conDatos = etapas.filter((etapa) => Object.values(etapa).some((valor) => valor !== null));
-  return { estudio, etapas: conDatos };
+  return datosParaGuardarDe(contenedorCarga);
 }
 
 function ponerBoton(texto, desactivado) {
