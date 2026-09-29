@@ -64,7 +64,10 @@ async function entrarALaApp() {
   if (sesion) {
     ['menu-correo', 'lateral-correo', 'configuracion-correo'].forEach((id) => {
       const lugar = document.getElementById(id);
-      if (lugar) lugar.textContent = sesion.user.email;
+      if (lugar) {
+        lugar.textContent = sesion.user.email;
+        lugar.title = sesion.user.email;   // si no entra y se corta, se ve completo al pasar el mouse
+      }
     });
     Perfil.mostrar(sesion.user);
   }
@@ -98,6 +101,7 @@ Sesion.alCerrarse(() => {
   olvidarEstudioEnCurso();
   reiniciarDashboard();
   Perfil.olvidar();
+  Enlaces.olvidar();
   document.getElementById('login-formulario').reset();
   document.getElementById('login-contrasena').type = 'password';
   document.getElementById('login-ver-contrasena').classList.remove('esta-visible');

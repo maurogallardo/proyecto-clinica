@@ -71,10 +71,17 @@ Son tres piezas, como veníamos diciendo: el celular, la base, y la pantalla.
    que muestra el listado, la consulta, la edición y la impresión.
 
 El celular y la pantalla son **la misma aplicación** publicada en Vercel, con un
-solo link, que decide qué mostrar según el **tamaño de la pantalla**: chica =
-carga, grande = dashboard (corte: **1024 px de ancho**; un celular acostado
-mide menos y sigue viendo la carga). Las
-dos le hablan a Supabase por internet, de forma cifrada.
+solo link, que decide qué mostrar según el **tipo de aparato** (no por el tamaño
+de la ventana, que cambia con el zoom del navegador): si tiene **mouse o
+trackpad** = dashboard, siempre; si **solo es táctil** (celular o tablet, aunque
+esté acostado) = carga, siempre. El teclado no cuenta. La app se lo pregunta al
+navegador (consulta de "tipo de puntero": ¿hay algún puntero preciso?) y sigue
+escuchando por si se conecta o desconecta un mouse. Si el navegador no informa,
+decide por el ancho (1024 px) como red de seguridad. Como una compu puede tener
+la ventana angosta o mucho zoom, el dashboard se acomoda (hasta 200% de zoom en
+una pantalla de 1280 px): la barra lateral pasa arriba y la tabla se desplaza de
+costado, sin ocultar información. Las dos le hablan a Supabase por internet, de
+forma cifrada.
 
 ### El paso delicado: la clave secreta
 
@@ -104,16 +111,26 @@ profesional ve los estudios que cargó él.
   el correo debajo: la base no guarda el nombre), "Estudios", "Configuración" y
   "Cerrar sesión".
 - **Estudios:** números (Total, Hoy, Esta semana = de lunes a hoy, Este mes =
-  desde el día 1), filtros (buscar por nombre o DNI, desde, hasta, limpiar),
-  tabla (N°, fecha y hora, paciente, DNI, médico solicitante, conclusión
-  resumida, cantidad de fotos) y la ficha con todos los campos (vacíos con "—")
-  y las fotos del electro (enlaces firmados que caducan, T029), que se agrandan
-  al tocarlas. La fecha y hora de la tabla, los
+  desde el día 1), filtros (buscar por nombre o DNI, un solo calendario de
+  rango de fechas en castellano, limpiar), tabla (N°, fecha y hora, paciente,
+  DNI, médico solicitante, conclusión resumida, cantidad de fotos) y la ficha con
+  todos los campos (vacíos con "—") y las fotos del electro (enlaces firmados que
+  caducan, T029), que se agrandan al tocarlas. La fecha y hora de la tabla, los
   números y los filtros usan la fecha de **carga** (`creado_en`); la fecha del
   estudio se ve en la ficha.
+- **Ficha, encabezado fijo:** "← Volver", el título con el N° y el logo quedan
+  fijos arriba al bajar, sin tapar el contenido. Ahí mismo van a ir "Imprimir",
+  "Descargar PDF" (Tanda 2) y "Editar" (Tanda 3).
+- **Enlaces que se renuevan solos:** la app recuerda cuándo vence cada enlace
+  firmado; si ya está viejo cuando se toca una foto (o "Abrir original en una
+  pestaña"), pide uno nuevo antes de usarlo. Es una sola función que también va
+  a usar el PDF (Tanda 2). La foto de perfil, si falla porque venció, pide un
+  enlace nuevo una vez antes de volver a la inicial.
 - **Configuración:** modo de color (el mismo selector que el celular; la
   preferencia se guarda en cada aparato), "Ingresaste como <correo>" y la foto
-  de perfil (512 px).
+  de perfil (512 px). Antes de subirla se acomoda en un **recortador** con un
+  círculo (zoom con la ruedita o una barrita, arrastrar; la foto siempre cubre el
+  círculo; "Guardar" / "Cancelar" / Esc). Se sube lo que se ve en el círculo.
 - **Editar (T032):** desde la ficha se corrigen los datos y las etapas (valores,
   agregar y quitar), con la misma planilla del celular; no las fotos. Con
   registro de cambios (ver "Historial de cambios"). La ficha muestra "Última

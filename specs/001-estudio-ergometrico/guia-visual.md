@@ -209,18 +209,33 @@ no por detrás (como en LoMar).
     "Cerrar sesión". La sección activa, en verde.
   - **Estudios:** antetítulo y título de sección, "Actualizar" con contador;
     cuatro tarjetas de números (Total, Hoy, Esta semana, Este mes); fila de
-    filtros (buscar por nombre o DNI, desde, hasta, limpiar); estados cargando
-    (ruedita), error (con "Reintentar") y vacío; tabla en tarjeta, con filas que
-    se resaltan al pasar el mouse y abren la ficha.
-  - **Ficha:** cabecera con "← Volver", título y logo; los datos agrupados como
-    la planilla (los vacíos con "—"); fotos del electro en miniatura; botones
-    "Editar", "Imprimir" y "Descargar PDF".
+    filtros (buscar por nombre o DNI, un solo calendario de rango, limpiar);
+    estados cargando (ruedita), error (con "Reintentar") y vacío; tabla en
+    tarjeta, con filas que se resaltan al pasar el mouse y abren la ficha.
+  - **Calendario de rango:** se abre desde un botón con el rango elegido (o
+    "Todas las fechas"); mes en castellano, semana desde el lunes; el día de
+    inicio y el de fin en verde lleno, los del medio en verde suave, el día de hoy
+    marcado con un borde. Mismos tokens en claro y oscuro. Se usa con teclado
+    (flechas para moverse, Enter para elegir, Esc para cerrar).
+  - **Ficha:** cabecera **fija arriba** al bajar (opaca, con una sombra suave para
+    separarla del contenido) con "← Volver", título y logo, y lugar para los
+    botones "Imprimir", "Descargar PDF" y "Editar"; los datos agrupados como la
+    planilla (los vacíos con "—"); fotos del electro en miniatura.
   - **Vista ampliada de fotos:** como la de LoMar, por encima de todo, con ✕
     para cerrar.
   - **Configuración:** modo de color (mismo selector que el celular), correo con
     que ingresó y foto de perfil.
-- **Pantalla chica = carga; pantalla grande = dashboard** (corte: 1024 px de
-  ancho). No hay dashboard para celular.
+  - **Recortador de la foto de perfil:** cartel por encima de todo con la foto y
+    un círculo marcado (lo de afuera, oscurecido); barrita de zoom con "−" y "+";
+    "Cancelar" (secundario) y "Guardar" (verde). Mismos tokens en claro y oscuro.
+  - **Ventana angosta o mucho zoom** (como las reglas del panel de LoMar para
+    pantallas chicas): la barra lateral pasa a ser una barra arriba (logo, perfil
+    y "Cerrar sesión" en una fila; las secciones en otra); los números pasan a dos
+    por fila; los filtros se apilan; la tabla se desplaza de costado. No se oculta
+    información.
+- **Aparato solo táctil = carga; aparato con mouse o trackpad = dashboard**,
+  siempre, sin importar el tamaño de la ventana ni el zoom. No hay dashboard
+  para celular.
 
 ---
 

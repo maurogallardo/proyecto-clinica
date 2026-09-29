@@ -197,6 +197,19 @@
   --lightbox-texto: rgba(255, 255, 255, 0.9);
   --error-suave-fondo: rgba(217, 63, 63, 0.10);
   --error-suave-texto: #B32F2F;
+  /* Tanda 1b: encabezado fijo de la ficha, calendario y recortador (opacos: nada se transparenta) */
+  --panel-fijo-fondo: var(--blanco);
+  --panel-fijo-sombra: 0 6px 18px rgba(4, 7, 7, 0.12);
+  --panel-flotante-fondo: var(--blanco);
+  --panel-flotante-sombra: 0 16px 40px rgba(4, 7, 7, 0.18);
+  --calendario-extremo-fondo: var(--verde-profundo);
+  --calendario-extremo-texto: var(--blanco);
+  --calendario-rango-fondo: rgba(0, 171, 150, 0.16);
+  --calendario-hoy-borde: var(--verde-marca);
+  --recortador-velo: rgba(4, 7, 7, 0.55);
+  --recortador-afuera: rgba(4, 7, 7, 0.55);
+  --recortador-borde: rgba(255, 255, 255, 0.95);
+  --recortador-area-fondo: #DCE7E5;
 }
 
 /* --- Modo oscuro: la receta de LoMar con otra noche --- */
@@ -268,4 +281,15 @@
   --panel-anillo-foco: 0 0 0 3px rgba(18, 184, 160, 0.45);
   --error-suave-fondo: rgba(217, 63, 63, 0.20);
   --error-suave-texto: #FFC6C0;
+  --panel-fijo-fondo: #13302B;
+  --panel-fijo-sombra: 0 8px 22px rgba(0, 0, 0, 0.45);
+  --panel-flotante-fondo: #0F2A27;
+  --panel-flotante-sombra: 0 18px 44px rgba(0, 0, 0, 0.55);
+  --calendario-extremo-fondo: #12B8A0;
+  --calendario-extremo-texto: #04110F;
+  --calendario-rango-fondo: rgba(18, 184, 160, 0.20);
+  --calendario-hoy-borde: #12B8A0;
+  --recortador-velo: rgba(0, 0, 0, 0.7);
+  --recortador-afuera: rgba(0, 0, 0, 0.6);
+  --recortador-area-fondo: #0A1E1B;
 }

@@ -239,7 +239,7 @@
 
   <!-- Dashboard de computadora (T030, T031, T049): copia del panel de LoMar
        (lomar-smart-panel) en forma y comportamiento, con la marca de la Cañada.
-       Se muestra en pantallas grandes (js/vista.js). Los datos se leen de
+       Se muestra en aparatos con mouse o trackpad (js/vista.js). Los datos se leen de
        Supabase con la sesión del usuario (js/dashboard.js y js/ficha.js). -->
   <section id="dashboard" class="pantalla" hidden>
     <div class="panel">
@@ -305,13 +305,21 @@
               <label class="filtros__etiqueta" for="filtro-texto">Buscar</label>
               <input class="filtros__control" type="search" id="filtro-texto" placeholder="Buscar por nombre o DNI" autocomplete="off">
             </div>
-            <div class="filtros__campo">
-              <label class="filtros__etiqueta" for="filtro-desde">Desde</label>
-              <input class="filtros__control" type="date" id="filtro-desde">
-            </div>
-            <div class="filtros__campo">
-              <label class="filtros__etiqueta" for="filtro-hasta">Hasta</label>
-              <input class="filtros__control" type="date" id="filtro-hasta">
+            <!-- Un solo calendario de rango (T052): día de inicio y día de fin (js/calendario.js) -->
+            <div class="filtros__campo filtros__campo--fechas">
+              <span class="filtros__etiqueta" id="filtro-fechas-etiqueta">Fechas de carga</span>
+              <div class="calendario">
+                <button type="button" class="filtros__control calendario__boton" id="filtro-fechas"
+                        aria-haspopup="dialog" aria-expanded="false" aria-controls="filtro-fechas-panel">
+                  <svg class="calendario__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" />
+                  </svg>
+                  <span id="filtro-fechas-texto">Todas las fechas</span>
+                </button>
+                <div class="calendario__panel" id="filtro-fechas-panel" role="dialog"
+                     aria-label="Elegir el rango de fechas de carga" hidden></div>
+              </div>
             </div>
             <button type="button" class="panel-boton panel-boton--fantasma filtros__limpiar" id="filtro-limpiar">Limpiar filtros</button>
           </div>
@@ -350,9 +358,12 @@
 
         <!-- Ficha de un estudio (se alterna con la lista) -->
         <section class="vista ficha" id="vista-ficha" hidden>
+          <!-- Encabezado fijo arriba al bajar (T050): se puede volver desde cualquier punto -->
           <div class="tarjeta-panel ficha__cabecera">
             <button type="button" class="panel-boton panel-boton--fantasma" id="ficha-volver">← Volver</button>
             <h2 class="ficha__titulo" id="ficha-titulo">Estudio ergométrico</h2>
+            <!-- Lugar para "Imprimir", "Descargar PDF" (Tanda 2) y "Editar" (Tanda 3) -->
+            <div class="ficha__acciones" id="ficha-acciones"></div>
             <img class="ficha__logo solo-tema-claro" src="assets/logos/logo-completo.svg" alt="Sanatorio de la Cañada">
             <img class="ficha__logo solo-tema-oscuro" src="assets/logos/logo-completo-claro.svg" alt="Sanatorio de la Cañada">
           </div>
@@ -421,6 +432,28 @@
            rel="noopener noreferrer">Abrir original en una pestaña</a>
       </div>
     </div>
+
+    <!-- Recortador de la foto de perfil (T053, js/recortador.js): solo en la compu -->
+    <div class="recortador" id="recortador" hidden>
+      <div class="recortador__fondo"></div>
+      <div class="recortador__caja" role="dialog" aria-modal="true" aria-labelledby="recortador-titulo">
+        <h2 class="recortador__titulo" id="recortador-titulo">Acomodá tu foto</h2>
+        <p class="recortador__ayuda">Arrastrá la foto para moverla y usá la ruedita del mouse o la barrita para acercar o alejar.</p>
+        <div class="recortador__area" id="recortador-area" tabindex="0"
+             aria-label="Foto de perfil: arrastrá o usá las flechas para moverla, y las teclas + y − para acercar o alejar">
+          <canvas class="recortador__lienzo" id="recortador-lienzo"></canvas>
+        </div>
+        <div class="recortador__zoom">
+          <button type="button" class="panel-boton panel-boton--fantasma recortador__zoom-boton" id="recortador-alejar" aria-label="Alejar">−</button>
+          <input type="range" class="recortador__barra" id="recortador-barra" min="1" max="4" step="0.01" value="1" aria-label="Zoom">
+          <button type="button" class="panel-boton panel-boton--fantasma recortador__zoom-boton" id="recortador-acercar" aria-label="Acercar">+</button>
+        </div>
+        <div class="recortador__acciones">
+          <button type="button" class="panel-boton panel-boton--fantasma" id="recortador-cancelar">Cancelar</button>
+          <button type="button" class="panel-boton" id="recortador-guardar">Guardar</button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- Cartel de confirmación (js/cartel.js). Uno solo para toda la app. -->
@@ -463,7 +496,10 @@
   <script src="js/grabacion.js"></script>
   <script src="js/fotos.js"></script>
   <script src="js/guardado.js"></script>
+  <script src="js/enlaces.js"></script>
   <script src="js/perfil.js"></script>
+  <script src="js/calendario.js"></script>
+  <script src="js/recortador.js"></script>
   <script src="js/ficha.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/login.js"></script>

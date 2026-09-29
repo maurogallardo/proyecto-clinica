@@ -133,10 +133,14 @@ de todas las pantallas sigue `guia-visual.md`.
 - **T042** Diseño adaptativo: que la app se vea bien y muestre la vista correcta
   según el dispositivo (carga en celular, dashboard en computadora). *(cubre
   RF-018)*
-  - *Decisión (Fase 4):* una sola app y un solo link; decide por el tamaño de la
-    pantalla: chica = carga (el celular es solo para cargar), grande =
-    dashboard. Sin versión del dashboard para celular. Se hace junto con la
-    Tanda 1 del dashboard.
+  - *Decisión (Fase 4):* una sola app y un solo link. Sin versión del dashboard
+    para celular.
+  - *Cambio (Tanda 1b):* ya no decide por el tamaño de la ventana (con zoom del
+    navegador el dashboard desaparecía), sino por el **tipo de aparato**: con
+    mouse o trackpad = dashboard, siempre; solo táctil = carga, siempre, aunque
+    esté acostado. El teclado no cuenta. Si el navegador no informa, decide por
+    el ancho (1024 px). Sigue escuchando si se conecta o desconecta un mouse. El
+    dashboard aguanta ventana angosta y zoom de hasta 200% en 1280 px.
 - **T043** Manejo del permiso de micrófono, con atención especial a iPhone:
   pedirlo y mostrar un mensaje claro si está denegado. *(cubre RF-020)*
 - ✅ **T044** Manejo de error de transcripción: si el dictado no se entiende o falla,
@@ -175,7 +179,7 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
   hasta, limpiar), "Actualizar" con contador, estados cargando / error / vacío,
   y tabla (N°, fecha y hora, paciente, DNI, médico solicitante, conclusión
   resumida, cantidad de fotos). La tabla, los números y los filtros usan la fecha
-  y hora de carga. Corte de pantalla: 1024 px de ancho.
+  y hora de carga. (Qué vista mostrar: ver T042 y la Tanda 1b.)
 - **T031** Abrir un estudio completo: todos los campos de la planilla (los vacíos
   con "—", ninguno oculto) y las fotos del electro en miniatura, que se agrandan
   al tocarlas (vista ampliada como la de LoMar). La fecha del estudio se ve acá.
@@ -184,6 +188,30 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
   una por profesional, cada uno solo la suya; se achica y comprime como las fotos
   de los estudios, a 512 px). La foto se ve en la barra lateral y en el menú del
   celular (en el celular solo se ve). El modo de color se guarda en cada aparato.
+
+**Tanda 1b — ajustes** (después de que Mauro probó la Tanda 1; antes de la 2)
+- **T050** Encabezado fijo en la ficha: "← Volver", el título (ESTUDIO
+  ERGOMÉTRICO · N° X) y el logo quedan fijos arriba al bajar, sin tapar el
+  contenido, en claro y oscuro. Con lugar preparado para "Imprimir", "Descargar
+  PDF" (Tanda 2) y "Editar" (Tanda 3).
+- **T051** Enlaces de fotos que se renuevan solos: al tocar una miniatura y en
+  "Abrir original en una pestaña", si el enlace ya está viejo se pide uno nuevo.
+  Función reutilizable (la va a usar el PDF de la Tanda 2). Foto de perfil: si
+  falla por enlace vencido, pedir uno nuevo una vez antes de volver a la inicial.
+- **T052** Un solo calendario de rango en los filtros (reemplaza "Desde" y
+  "Hasta"): se toca el día de inicio y el de fin y los del medio se pintan; con
+  un solo día, filtra ese día. "Limpiar filtros" también lo limpia. Usa la fecha
+  de carga. En castellano (semana desde el lunes), claro y oscuro con nuestros
+  colores, y usable con teclado.
+- **T053** Recortador de la foto de perfil (solo la de perfil, no las del
+  electro): recuadro con un círculo, zoom (ruedita y barrita) y arrastrar; la
+  foto siempre cubre el círculo. "Guardar" recorta, achica a 512 px, pasa a WebP
+  (mismo proceso de `js/fotos.js`) y sube a `fotos-perfil` (reemplaza la
+  anterior); "Cancelar" o Esc no sube nada. Solo en la compu (mouse).
+- **T054** Vista según el tipo de aparato (ver T042): con mouse o trackpad =
+  dashboard; solo táctil = carga. El dashboard se acomoda a ventanas angostas y
+  zoom de hasta 200% en 1280 px (barra lateral arriba, tabla que se desplaza de
+  costado), sin ocultar información.
 
 **Tanda 2 — imprimir y PDF**
 - **T033** "Imprimir" y "Descargar PDF" desde la ficha, con un único PDF armado

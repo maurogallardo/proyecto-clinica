@@ -493,11 +493,30 @@
   gap: 16px;
 }
 
+/* Encabezado fijo arriba al bajar (T050): opaco, con una sombra suave que lo
+   separa del contenido que pasa por debajo */
 .ficha__cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 8;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  padding: 14px 20px;
+  background: var(--panel-fijo-fondo);
+  box-shadow: var(--panel-fijo-sombra);
+}
+
+/* Lugar para "Imprimir", "Descargar PDF" (Tanda 2) y "Editar" (Tanda 3) */
+.ficha__acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ficha__acciones:empty {
+  display: none;
 }
 
 .ficha__titulo {
@@ -861,4 +880,390 @@
   .tabla-panel__col-fecha { width: 140px; }
   .tabla-panel__col-dni { width: 96px; }
   .tabla-panel__col-fotos { width: 60px; }
+}
+
+/* --- Calendario de rango de fechas (T052) --- */
+.filtros__campo--fechas {
+  flex: 0 1 280px;
+}
+
+.calendario {
+  position: relative;
+}
+
+.calendario__boton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 220px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendario__boton.esta-activo {
+  border-color: var(--panel-activo-barra);
+  color: var(--panel-activo-texto);
+  font-weight: 600;
+}
+
+.calendario__icono {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.calendario__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: 300px;
+  padding: 14px;
+  background: var(--panel-flotante-fondo);
+  border: 1px solid var(--panel-borde);
+  border-radius: 16px;
+  box-shadow: var(--panel-flotante-sombra);
+}
+
+.calendario__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.calendario__mes {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.calendario__mes::first-letter {
+  text-transform: uppercase;
+}
+
+.calendario__flecha {
+  width: 34px;
+  height: 34px;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--texto);
+  background: transparent;
+  border: 1px solid var(--panel-borde);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.calendario__flecha:hover {
+  background: var(--panel-hover);
+}
+
+.calendario__grilla {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calendario__fila {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendario__nombre-dia {
+  padding: 4px 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--panel-texto-tenue);
+}
+
+.calendario__dia {
+  width: 100%;
+  height: 36px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texto);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendario__dia:hover {
+  background: var(--panel-hover);
+}
+
+.calendario__dia.es-de-otro-mes {
+  color: var(--panel-texto-tenue);
+}
+
+.calendario__dia.es-hoy {
+  border-color: var(--calendario-hoy-borde);
+}
+
+/* Los días del medio del rango, en verde suave y unidos */
+.calendario__dia.esta-en-rango {
+  background: var(--calendario-rango-fondo);
+  border-radius: 0;
+}
+
+/* El día de inicio y el de fin, en verde lleno */
+.calendario__dia.es-extremo {
+  font-weight: 700;
+  color: var(--calendario-extremo-texto);
+  background: var(--calendario-extremo-fondo);
+}
+
+.calendario__dia.es-inicio {
+  border-radius: 10px 0 0 10px;
+}
+
+.calendario__dia.es-fin {
+  border-radius: 0 10px 10px 0;
+}
+
+.calendario__dia:focus-visible,
+.calendario__flecha:focus-visible {
+  outline: none;
+  box-shadow: var(--panel-anillo-foco);
+}
+
+.calendario__pie {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--texto-secundario);
+}
+
+/* --- Recortador de la foto de perfil (T053) --- */
+.recortador {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.recortador__fondo {
+  position: absolute;
+  inset: 0;
+  background: var(--recortador-velo);
+}
+
+.recortador__caja {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(420px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: 22px;
+  background: var(--panel-flotante-fondo);
+  border: 1px solid var(--panel-borde);
+  border-radius: var(--radio-cartel);
+  box-shadow: var(--panel-flotante-sombra);
+}
+
+.recortador__titulo {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.recortador__ayuda {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--texto-secundario);
+}
+
+.recortador__area {
+  width: min(320px, 100%);
+  aspect-ratio: 1;
+  align-self: center;
+  overflow: hidden;
+  background: var(--recortador-area-fondo);
+  border-radius: 14px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.recortador__area.esta-arrastrando {
+  cursor: grabbing;
+}
+
+.recortador__area:focus-visible {
+  outline: none;
+  box-shadow: var(--panel-anillo-foco);
+}
+
+.recortador__lienzo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.recortador__zoom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recortador__zoom-boton {
+  flex: 0 0 auto;
+  width: 40px;
+  padding: 0;
+  font-size: 20px;
+}
+
+.recortador__barra {
+  flex: 1 1 auto;
+  accent-color: var(--panel-activo-barra);
+}
+
+.recortador__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* --- Ventana angosta o mucho zoom en la compu (T054): como el panel de LoMar en
+       pantallas medianas. La barra lateral pasa a ser una barra arriba y el
+       contenido se queda con el ancho completo. No se oculta información. --- */
+@media (max-width: 900px) {
+  .panel {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+  }
+
+  /* Arriba y sin quedarse fija: así el encabezado de la ficha puede quedar fijo */
+  .lateral {
+    position: relative;
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    padding: 10px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--panel-lateral-borde);
+  }
+
+  .lateral__logo {
+    width: 130px;
+    max-width: none;
+    align-self: center;
+  }
+
+  .lateral__perfil {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0;
+    background: none;
+    border: none;
+  }
+
+  .lateral__salir {
+    order: 2;
+    margin-top: 0;
+  }
+
+  .navegacion {
+    order: 3;
+    flex: 1 1 100%;
+    flex-direction: row;
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .navegacion__item {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  /* En horizontal la barrita del costado no tiene dónde apoyarse */
+  .navegacion__item.esta-activa::before {
+    display: none;
+  }
+
+  .vista {
+    padding: 18px 16px;
+  }
+
+  .numeros-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filtros {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .filtros__campo--fechas {
+    flex: none;
+  }
+
+  .filtros__limpiar {
+    margin-left: 0;
+    justify-self: start;
+  }
+
+  /* La tabla no entra: se desplaza de costado dentro de su tarjeta */
+  .tabla-panel {
+    min-width: 720px;
+  }
+
+  .celda-conclusion {
+    max-width: 260px;
+    width: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .encabezado-seccion__titulo {
+    font-size: 20px;
+  }
+
+  .ficha__cabecera {
+    padding: 12px 14px;
+  }
+
+  .ficha__titulo {
+    font-size: 15px;
+  }
+
+  .ficha__logo {
+    width: 110px;
+  }
+
+  .ficha__seccion {
+    padding: 16px 14px 18px;
+  }
+
+  .numero {
+    padding: 14px 15px;
+  }
+
+  .numero__valor {
+    font-size: 26px;
+  }
+
+  .calendario__panel {
+    width: min(300px, calc(100vw - 48px));
+  }
 }

@@ -109,7 +109,8 @@ mes), busca y filtra el listado de estudios cargados, abre uno para ver todos su
 datos e imágenes, lo puede corregir (quedando registrado quién lo cambió, cuándo y
 cómo estaba antes), y lo puede imprimir o descargar en PDF con el mismo aspecto
 que la planilla original en papel. También configura su modo de color y su foto
-de perfil. El celular es solo para cargar: el dashboard se ve en pantalla grande.
+de perfil. El celular es solo para cargar: el dashboard se ve en la computadora
+(el aparato con mouse o trackpad), con cualquier tamaño de ventana y de zoom.
 
 **Por qué es P3:** cierra el círculo y es lo que se muestra "en la pantalla
 grande", pero depende de que primero existan estudios cargados (P1).
@@ -127,14 +128,20 @@ imprimir/exportar con el formato de la planilla original.
    resumida y cantidad de fotos).
 
 2. **Dado** el listado,
-   **cuando** busca por nombre o DNI, o filtra por fechas desde/hasta,
+   **cuando** busca por nombre o DNI, o elige un rango de fechas en un solo
+   calendario (toca el día de inicio y el de fin; los días del medio se pintan;
+   con un solo día toca, filtra solo ese día),
    **entonces** la tabla muestra solo los estudios que cumplen, y "Limpiar"
-   vuelve a mostrar todos.
+   vuelve a mostrar todos (también limpia el rango).
 
 3. **Dado** el listado,
    **cuando** abre un estudio,
    **entonces** ve todos los campos de la planilla (los vacíos con "—", ninguno
    oculto) y las fotos del electro en miniatura, que se agrandan al tocarlas.
+   El encabezado de la ficha ("← Volver", el título con el N° y el logo) queda
+   fijo arriba mientras baja, para volver a la lista desde cualquier punto. Las
+   fotos se ven aunque la ficha haya quedado abierta mucho tiempo (los enlaces
+   se renuevan solos).
 
 4. **Dado** un estudio abierto,
    **cuando** el profesional corrige datos y guarda,
@@ -152,13 +159,17 @@ imprimir/exportar con el formato de la planilla original.
 6. **Dado** el dashboard,
    **cuando** entra en Configuración,
    **entonces** puede elegir el modo de color (Claro / Oscuro / Automático), ve
-   con qué correo ingresó y puede subir o cambiar su foto de perfil, que después
-   se ve en la barra lateral del dashboard y en el menú del celular.
+   con qué correo ingresó y puede subir o cambiar su foto de perfil: antes de
+   subirla la acomoda en un círculo (zoom y arrastrar; la foto siempre cubre el
+   círculo) y elige "Guardar" o "Cancelar". La foto después se ve en la barra
+   lateral del dashboard y en el menú del celular.
 
 7. **Dado** que se abre la app,
-   **cuando** la pantalla es chica (celular),
-   **entonces** muestra la pantalla de carga; **cuando** es grande (computadora),
-   muestra el dashboard. Es la misma app y el mismo link.
+   **cuando** el aparato solo tiene pantalla táctil (celular o tablet, aunque
+   esté acostado),
+   **entonces** muestra la pantalla de carga; **cuando** tiene mouse o trackpad
+   (computadora), muestra el dashboard, con cualquier tamaño de ventana y
+   cualquier zoom del navegador. Es la misma app y el mismo link.
 
 ### Casos límite a tener en cuenta
 
@@ -172,6 +183,12 @@ imprimir/exportar con el formato de la planilla original.
 - La prueba tiene más o menos etapas que las cuatro habituales.
 - Dos personas abren el dashboard al mismo tiempo (o el mismo profesional en dos
   pestañas) y corrigen el mismo estudio.
+- En la computadora, el médico usa zoom en el navegador (hasta 200%) o una ventana
+  angosta: sigue viendo el dashboard, sin nada tapado ni oculto.
+- La ficha queda abierta más tiempo que lo que dura el enlace de las fotos: al
+  tocar una foto, se ve igual.
+- Se conecta o desconecta un mouse (por ejemplo, a una tablet): la app acompaña
+  el cambio.
 - Un estudio con una conclusión muy larga o con más de cuatro etapas: la hoja 1
   del PDF igual tiene que entrar en una sola A4.
 - Un estudio sin fotos: el PDF tiene solo la hoja 1.
@@ -226,15 +243,27 @@ imprimir/exportar con el formato de la planilla original.
 - **RF-017:** El sistema debe ofrecer una vista de dashboard (pensada para
   computadora) con barra lateral (logo, perfil, "Estudios", "Configuración",
   "Cerrar sesión"), números (total, hoy, esta semana, este mes), filtros (buscar
-  por nombre o DNI, desde, hasta, limpiar), botón "Actualizar" con contador, y
-  una tabla de estudios (N°, fecha y hora, paciente, DNI, médico solicitante,
-  conclusión resumida, cantidad de fotos) que abre la ficha completa de cada uno.
-  La ficha muestra todos los campos de la planilla (los vacíos con "—") y las
-  fotos del electro en miniatura, que se agrandan al tocarlas.
-- **RF-018:** El sistema debe adaptar su interfaz al tamaño de la pantalla, con
-  una sola app y un solo link: pantalla chica = vista de carga (el celular es solo
-  para cargar); pantalla grande = dashboard. No hay versión del dashboard para
-  celular.
+  por nombre o DNI, un solo calendario de rango de fechas, limpiar), botón
+  "Actualizar" con contador, y una tabla de estudios (N°, fecha y hora, paciente,
+  DNI, médico solicitante, conclusión resumida, cantidad de fotos) que abre la
+  ficha completa de cada uno. La ficha muestra todos los campos de la planilla
+  (los vacíos con "—") y las fotos del electro en miniatura, que se agrandan al
+  tocarlas; su encabezado ("← Volver", título con el N° y logo) queda fijo
+  arriba al bajar. Los enlaces de las fotos se renuevan solos cuando vencen.
+  - *Calendario de rango:* un solo calendario en castellano (semana desde el
+    lunes), usable con teclado: se toca el día de inicio y el de fin, y los del
+    medio se pintan; con un solo día tocado, filtra solo ese día. Usa la fecha de
+    carga.
+- **RF-018:** El sistema debe mostrar la vista según el **tipo de aparato**, con
+  una sola app y un solo link: si el aparato tiene **mouse o trackpad**
+  (computadora) = dashboard, **siempre**, sin importar el tamaño de la ventana ni
+  el zoom del navegador; si **solo tiene pantalla táctil** (celular o tablet,
+  aunque esté acostado) = vista de carga, siempre (el celular es solo para
+  cargar). El teclado no cuenta. Si el navegador no informa qué tiene el aparato,
+  decide por el ancho (1024 px). Si se conecta o desconecta un mouse, la app
+  acompaña el cambio. El dashboard tiene que poder usarse con zoom de hasta 200%
+  en una pantalla de 1280 px (unos 640 px de ancho), sin ocultar información. No
+  hay versión del dashboard para celular.
 - **RF-019:** El sistema debe restringir el acceso a los datos e imágenes según
   la autorización de cada usuario. (Si distintos usuarios de un mismo servicio
   comparten estudios se define al escalar; en la demo hay un solo usuario.)
@@ -278,6 +307,13 @@ imprimir/exportar con el formato de la planilla original.
   puede subir o cambiar la suya. Se ve en la barra lateral del dashboard y en el
   menú del celular (en el celular solo se ve, no se sube). Sin foto, se muestra un
   círculo con la inicial.
+  - *Recortar antes de subir (solo la foto de perfil, no las del electro):* al
+    elegirla se abre un recuadro con un círculo; se puede hacer zoom (ruedita del
+    mouse y una barrita) y arrastrar la foto en todas las direcciones; la foto
+    siempre cubre todo el círculo. "Guardar" recorta lo que se ve en el círculo y
+    lo sube; "Cancelar" (o Esc) no sube nada. Alcanza con que ande con mouse.
+  - Si el enlace de la foto venció, se pide uno nuevo una vez antes de volver a
+    la inicial.
 - **RF-028:** Al dashboard se entra con el **mismo login** de la app (RF-001) y
   los datos se leen respetando las mismas reglas de acceso (RF-019).
 
@@ -376,8 +412,9 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     con la marca de la Cañada y modo claro y oscuro. **No** copia la seguridad de
     LoMar: se entra con el login de Supabase y los datos se leen directo de
     Supabase con las reglas de acceso actuales.
-17. **Una sola app, un solo link:** pantalla chica = carga; pantalla grande =
-    dashboard. Sin versión del dashboard para celular.
+17. **Una sola app, un solo link:** aparato solo táctil = carga; aparato con
+    mouse o trackpad = dashboard (ver decisión 22). Sin versión del dashboard para
+    celular.
 18. **Menú lateral:** logo, perfil (foto o inicial), "Estudios", "Configuración"
     y "Cerrar sesión". Nada más.
 19. **Configuración:** modo de color (igual que el celular; se guarda en cada
@@ -395,12 +432,21 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     edición: día y hora"; la lista completa, después de la demo. Si dos pantallas
     corrigen el mismo estudio, la segunda en guardar recibe un aviso y no pisa el
     cambio.
-22. **Corte de pantalla:** 1024 px de ancho.
+22. **Qué vista mostrar (reemplaza el "corte de 1024 px"):** se decide por el
+    **tipo de aparato**, no por el tamaño de la ventana (con zoom del navegador el
+    ancho cambia y el dashboard desaparecía). Con mouse o trackpad = dashboard,
+    siempre; solo táctil = carga, siempre, aunque esté acostado. El teclado no
+    cuenta. Si el navegador no informa, decide por el ancho (1024 px). El
+    dashboard aguanta zoom de hasta 200% en una pantalla de 1280 px.
 23. **Fechas del dashboard:** la tabla, los números y los filtros usan la fecha y
     hora de **carga**; la fecha del estudio se ve en la ficha. "Esta semana" = de
     lunes a hoy; "Este mes" = desde el día 1.
 24. **Sin permiso directo de modificar:** toda corrección de estudios y etapas
     pasa por la función que deja registro.
+25. **Ajustes de la Tanda 1 (Tanda 1b):** encabezado fijo en la ficha (listo para
+    sumar "Imprimir", "Descargar PDF" y "Editar"); enlaces de fotos que se renuevan
+    solos; un solo calendario de rango en los filtros; recortador de la foto de
+    perfil (solo en la compu); y la vista según el tipo de aparato (decisión 22).
 
 ---
 

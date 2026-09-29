@@ -155,9 +155,21 @@ const Ficha = (() => {
         imagen.src = foto.enlace;
         imagen.alt = nombre;
         imagen.setAttribute('loading', 'lazy');
-        imagen.addEventListener('error', () => caja.replaceChildren(textoSinImagen()));
+        // Si no carga (por ejemplo, el enlace venció antes de que se viera), se
+        // pide uno nuevo UNA vez; si igual no carga, "No disponible"
+        let reintento = false;
+        imagen.addEventListener('error', async () => {
+          if (reintento) { caja.replaceChildren(textoSinImagen()); return; }
+          reintento = true;
+          const nuevo = await Enlaces.vigente(FOTOS.deposito, foto.ruta_archivo, FOTOS.enlaceSegundos, { renovar: true });
+          if (nuevo) imagen.src = nuevo; else caja.replaceChildren(textoSinImagen());
+        });
         caja.appendChild(imagen);
-        boton.addEventListener('click', () => abrirLightbox(foto.enlace, nombre, boton));
+        // Al tocarla: un enlace que sirva AHORA (si el de la ficha ya es viejo, uno nuevo)
+        boton.addEventListener('click', async () => {
+          const url = await Enlaces.vigente(FOTOS.deposito, foto.ruta_archivo, FOTOS.enlaceSegundos);
+          abrirLightbox(url, nombre, boton, foto.ruta_archivo);
+        });
       } else {
         caja.appendChild(textoSinImagen());
         boton.disabled = true;
@@ -239,14 +251,11 @@ const Ficha = (() => {
       // Etapas en orden de tiempo (las que no tienen tiempo, al final)
       data.etapas.sort((a, b) => (a.tiempo ?? Infinity) - (b.tiempo ?? Infinity));
       const imagenes = [...data.imagenes].sort((a, b) => String(a.creado_en).localeCompare(String(b.creado_en)));
-      let enlaces = [];
-      if (imagenes.length) {
-        const respuesta = await clienteSupabase.storage.from(FOTOS.deposito)
-          .createSignedUrls(imagenes.map((i) => i.ruta_archivo), FOTOS.enlaceSegundos);
-        enlaces = respuesta.error ? [] : respuesta.data;
-      }
+      const enlaces = imagenes.length
+        ? await Enlaces.vigentes(FOTOS.deposito, imagenes.map((i) => i.ruta_archivo), FOTOS.enlaceSegundos)
+        : [];
       if (idActual !== id) return;
-      render(data, imagenes.map((imagen, i) => ({ ...imagen, enlace: enlaces[i] && !enlaces[i].error ? enlaces[i].signedUrl : null })));
+      render(data, imagenes.map((imagen, i) => ({ ...imagen, enlace: enlaces[i] })));
     } catch (error) {
       if (idActual !== id) return;
       const sinConexion = !navigator.onLine || /fetch|network|abort|sin conexión/i.test(String(error && error.message));
@@ -263,18 +272,32 @@ const Ficha = (() => {
   // --- Vista ampliada de una foto --------------------------------------------------------
 
   let origenLightbox = null;
+  let rutaLightbox = null;   // de qué foto es, para renovar su enlace si hace falta
 
-  function abrirLightbox(url, nombre, origen) {
+  function abrirLightbox(url, nombre, origen, ruta) {
     origenLightbox = origen || null;
+    rutaLightbox = ruta || null;
+    delete el.lightboxImagen.dataset.renovado;
     el.lightboxTitulo.textContent = nombre;
-    el.lightboxAviso.hidden = true;
-    el.lightboxImagen.hidden = false;
+    el.lightboxAviso.hidden = !!url;
+    el.lightboxImagen.hidden = !url;
     el.lightboxImagen.alt = nombre;
-    el.lightboxImagen.src = url;
-    el.lightboxOriginal.href = url;
+    if (url) el.lightboxImagen.src = url; else el.lightboxImagen.removeAttribute('src');
+    el.lightboxOriginal.href = url || '#';
     el.lightbox.hidden = false;
     document.getElementById('lightbox-cerrar').focus();
   }
+
+  // "Abrir original en una pestaña": si el enlace ya es viejo, se pide uno nuevo
+  // y recién ahí se abre la pestaña (si sirve, el navegador lo abre directo)
+  el.lightboxOriginal.addEventListener('click', async (evento) => {
+    if (!rutaLightbox || Enlaces.sigueSirviendo(FOTOS.deposito, rutaLightbox)) return;
+    evento.preventDefault();
+    const url = await Enlaces.vigente(FOTOS.deposito, rutaLightbox, FOTOS.enlaceSegundos);
+    if (!url) { mostrarAviso('No se pudo abrir la foto. Probá de nuevo.', 'error'); return; }
+    el.lightboxOriginal.href = url;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  });
 
   function cerrarLightbox() {
     if (el.lightbox.hidden) return;
@@ -282,13 +305,26 @@ const Ficha = (() => {
     el.lightboxImagen.removeAttribute('src');   // que no quede en memoria
     if (origenLightbox) origenLightbox.focus();
     origenLightbox = null;
+    rutaLightbox = null;
   }
 
-  el.lightboxImagen.addEventListener('error', () => {
+  el.lightboxImagen.addEventListener('error', async () => {
     if (el.lightbox.hidden || !el.lightboxImagen.getAttribute('src')) return;
+    // Primero se prueba UNA vez con un enlace nuevo
+    const ruta = rutaLightbox;
+    if (ruta && !el.lightboxImagen.dataset.renovado) {
+      el.lightboxImagen.dataset.renovado = '1';
+      const nuevo = await Enlaces.vigente(FOTOS.deposito, ruta, FOTOS.enlaceSegundos, { renovar: true });
+      if (nuevo && rutaLightbox === ruta) {
+        el.lightboxImagen.src = nuevo;
+        el.lightboxOriginal.href = nuevo;
+        return;
+      }
+    }
     el.lightboxImagen.hidden = true;
     el.lightboxAviso.hidden = false;
   });
+  el.lightboxImagen.addEventListener('load', () => { delete el.lightboxImagen.dataset.renovado; });
   document.getElementById('lightbox-cerrar').addEventListener('click', cerrarLightbox);
   document.getElementById('lightbox-fondo').addEventListener('click', cerrarLightbox);
   document.addEventListener('keydown', (evento) => { if (evento.key === 'Escape') cerrarLightbox(); });

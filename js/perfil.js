@@ -19,6 +19,30 @@ const Perfil = (() => {
   const archivoDe = (u) => `${u.id}.webp`;
   const inicialDe = (correo) => (Array.from(String(correo || '').trim())[0] || '?').toUpperCase();
 
+  let renovando = false;        // ya se está pidiendo un enlace nuevo: no se pide otro
+  let yaSeRenovo = false;       // ya se probó una vez con un enlace nuevo
+
+  // Si la foto de perfil falla (por ejemplo, el enlace de 1 hora venció), se pide
+  // un enlace nuevo UNA vez; si igual falla, vuelve a la inicial
+  async function alFallar(evento) {
+    // Una imagen que ya no es la actual (quedó de antes de renovar) no cuenta
+    if (evento && evento.target && evento.target.getAttribute('src') !== enlace) return;
+    if (!usuario || renovando) return;
+    if (yaSeRenovo) {
+      enlace = null;
+      pintar();
+      return;
+    }
+    yaSeRenovo = true;
+    renovando = true;
+    const u = usuario;
+    const nuevo = await Enlaces.vigente(PERFIL.deposito, archivoDe(u), PERFIL.enlaceSegundos, { renovar: true });
+    renovando = false;
+    if (usuario !== u) return;
+    enlace = nuevo;
+    pintar();
+  }
+
   // Dibuja todos los círculos de perfil de la app (celular y dashboard)
   function pintar() {
     document.querySelectorAll('.avatar').forEach((circulo) => {
@@ -26,8 +50,8 @@ const Perfil = (() => {
         const imagen = document.createElement('img');
         imagen.src = enlace;
         imagen.alt = '';
-        // Si el enlace no abre (por ejemplo, venció), vuelve a la inicial
-        imagen.addEventListener('error', () => { circulo.replaceChildren(inicialDe(usuario && usuario.email)); });
+        imagen.addEventListener('load', () => { yaSeRenovo = false; });   // cuando vuelva a vencer, se renueva otra vez
+        imagen.addEventListener('error', alFallar);
         circulo.replaceChildren(imagen);
       } else {
         circulo.replaceChildren(usuario ? inicialDe(usuario.email) : '');
@@ -38,18 +62,14 @@ const Perfil = (() => {
   }
 
   // Busca si el profesional tiene foto (y pide su enlace firmado)
-  async function mostrar(u) {
+  async function mostrar(u, { renovar = false } = {}) {
     usuario = u;
     enlace = null;
+    yaSeRenovo = false;
     pintar();
-    try {
-      const { data, error } = await clienteSupabase.storage.from(PERFIL.deposito)
-        .createSignedUrl(archivoDe(u), PERFIL.enlaceSegundos);
-      if (usuario !== u) return;   // mientras tanto se cerró la sesión
-      enlace = error ? null : data.signedUrl;
-    } catch {
-      enlace = null;   // sin conexión: queda la inicial
-    }
+    const url = await Enlaces.vigente(PERFIL.deposito, archivoDe(u), PERFIL.enlaceSegundos, { renovar });
+    if (usuario !== u) return;   // mientras tanto se cerró la sesión
+    enlace = url;                 // null: sin foto o sin conexión (queda la inicial)
     pintar();
   }
 
@@ -71,7 +91,7 @@ const Perfil = (() => {
       console.error('No se pudo subir la foto de perfil');
       return 'No se pudo subir la foto. Probá de nuevo.';
     }
-    await mostrar(usuario);
+    await mostrar(usuario, { renovar: true });   // enlace nuevo: que se vea la foto nueva, no la anterior
     return null;
   }
 

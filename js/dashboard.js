@@ -19,8 +19,6 @@ const Dashboard = (() => {
     numeros: $('panel-numeros'),
     filtros: $('panel-filtros'),
     texto: $('filtro-texto'),
-    desde: $('filtro-desde'),
-    hasta: $('filtro-hasta'),
     cargando: $('panel-cargando'),
     error: $('panel-error'),
     errorTexto: $('panel-error-texto'),
@@ -33,6 +31,14 @@ const Dashboard = (() => {
   let yaCargo = false;
   let pedido = 0;   // cada carga tiene su número: una respuesta vieja no pisa a una nueva
 
+  // Un solo calendario de rango (T052): al elegir días, se filtra enseguida
+  const calendario = Calendario.crear({
+    boton: $('filtro-fechas'),
+    texto: $('filtro-fechas-texto'),
+    panel: $('filtro-fechas-panel'),
+    alCambiar: () => aplicarFiltros(),
+  });
+
   // --- Utilidades ---------------------------------------------------------------------
 
   const normalizar = (t) => String(t ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -41,14 +47,6 @@ const Dashboard = (() => {
 
   function inicioDelDia(fecha, dias = 0) {
     return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate() + dias);
-  }
-
-  // "2026-09-26" -> comienzo o fin de ese día, en hora local
-  function limiteDelDia(valor, finDelDia) {
-    const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(valor).trim());
-    if (!partes) return null;
-    const [, a, m, d] = partes.map(Number);
-    return finDelDia ? new Date(a, m - 1, d, 23, 59, 59, 999) : new Date(a, m - 1, d);
   }
 
   function celda(valor, clase) {
@@ -98,8 +96,7 @@ const Dashboard = (() => {
   function leerFiltros() {
     return {
       texto: normalizar(el.texto.value.trim()),
-      desde: limiteDelDia(el.desde.value, false),
-      hasta: limiteDelDia(el.hasta.value, true),
+      ...(calendario.rango() || { desde: null, hasta: null }),
     };
   }
 
@@ -129,8 +126,7 @@ const Dashboard = (() => {
 
   function limpiarFiltros() {
     el.texto.value = '';
-    el.desde.value = '';
-    el.hasta.value = '';
+    calendario.limpiar();
     aplicarFiltros();
   }
 
@@ -279,7 +275,7 @@ const Dashboard = (() => {
       abrirEstudio(fila.dataset.estudioId);
     }
   });
-  [el.texto, el.desde, el.hasta].forEach((control) => control.addEventListener('input', aplicarFiltros));
+  el.texto.addEventListener('input', aplicarFiltros);
   $('filtro-limpiar').addEventListener('click', limpiarFiltros);
   el.actualizar.addEventListener('click', cargar);
   $('panel-reintentar').addEventListener('click', cargar);
@@ -302,9 +298,24 @@ const Dashboard = (() => {
     if (!archivo) return;
     const boton = $('perfil-elegir');
     const estado = $('perfil-estado');
+    if (!archivo.type.startsWith('image/')) {
+      estado.textContent = 'Elegí una foto (imagen).';
+      mostrarAviso('Elegí una foto (imagen).', 'error', 4000);
+      return;
+    }
+    // Primero se acomoda en el círculo (T053); "Cancelar" no sube nada
+    let recorte;
+    try {
+      recorte = await Recortador.abrir(archivo);
+    } catch {
+      estado.textContent = 'No se pudo abrir la foto. Probá con otra.';
+      mostrarAviso('No se pudo abrir la foto. Probá con otra.', 'error', 4000);
+      return;
+    }
+    if (!recorte) return;
     boton.disabled = true;
     estado.textContent = 'Subiendo foto…';
-    const problema = await Perfil.subir(archivo);
+    const problema = await Perfil.subir(recorte);
     boton.disabled = false;
     estado.textContent = problema || 'Listo: la foto se ve en la barra lateral y en el menú del celular.';
     mostrarAviso(problema || 'Foto de perfil actualizada.', problema ? 'error' : 'exito', 4000);
@@ -317,8 +328,9 @@ const Dashboard = (() => {
     yaCargo = false;
     el.filas.replaceChildren();
     el.texto.value = '';
-    el.desde.value = '';
-    el.hasta.value = '';
+    calendario.limpiar();
+    calendario.cerrar();
+    Recortador.cancelar();
     Ficha.cerrar();
     mostrarVista('estudios');
     mostrarSolo('cargando');
