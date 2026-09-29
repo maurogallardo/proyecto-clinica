@@ -316,6 +316,22 @@ imprimir/exportar con el formato de la planilla original.
     la inicial.
 - **RF-028:** Al dashboard se entra con el **mismo login** de la app (RF-001) y
   los datos se leen respetando las mismas reglas de acceso (RF-019).
+- **RF-029 (Papelera):** "Borrar" un estudio lo manda a la **Papelera**: nunca se
+  borra de verdad desde la app (se conservan el estudio, sus etapas y sus fotos).
+  Un estudio en la Papelera no aparece en el listado, ni en los números, ni en la
+  búsqueda; su número no se reutiliza; no se edita estando ahí (para verlo, se
+  restaura entero). Cada borrado y cada restauración quedan registrados (quién,
+  con su correo, y a qué hora, puesta por el servidor), y ese registro no se
+  puede editar ni borrar desde la app. Solo se hace con dos funciones del
+  servidor (anular y restaurar), que exigen usuario logueado.
+- **RF-030:** En la carga (celular), los números con decimales (peso, talla, MET,
+  porcentaje) se muestran y se aceptan con **coma**; si se escribe un punto, se
+  convierte en coma. Se guardan igual que antes (como número).
+- **RF-031:** Al confirmar, los textos libres **Motivo, Antecedentes, Conclusión e
+  Interrupción de la prueba** pasan su **primera letra a mayúscula** (solo esa;
+  el resto del texto no cambia), y se ve en pantalla antes del cartel de
+  confirmación. No se aplica a nombres ni al médico solicitante, ni cambia los
+  estudios ya guardados.
 
 ### Entidades de datos principales
 
@@ -336,6 +352,8 @@ imprimir/exportar con el formato de la planilla original.
 - **Cambio de un estudio (historial):** cada edición hecha desde el dashboard:
   quién la hizo, cuándo, y cómo estaba el estudio (con sus etapas) antes del
   cambio.
+- **Registro de la Papelera:** cada vez que un estudio va a la Papelera o se
+  restaura: qué se hizo, quién (su id y una copia de su correo) y a qué hora.
 
 ---
 
@@ -419,7 +437,7 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     y "Cerrar sesión". Nada más.
 19. **Configuración:** modo de color (igual que el celular; se guarda en cada
     aparato), correo con que ingresó (solo ver) y foto de perfil (una por
-    profesional; solo la propia; 512 px). Sin foto: círculo con la inicial del
+    profesional; solo la propia; 1024 px, ver decisión 26). Sin foto: círculo con la inicial del
     correo, con el correo debajo (la base no guarda el nombre).
 20. **Imprimir y PDF:** un único PDF armado en la computadora (no se guarda en el
     servidor): hoja 1 la planilla (con el DNI a la derecha de "Paciente"), hojas
@@ -447,6 +465,16 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     sumar "Imprimir", "Descargar PDF" y "Editar"); enlaces de fotos que se renuevan
     solos; un solo calendario de rango en los filtros; recortador de la foto de
     perfil (solo en la compu); y la vista según el tipo de aparato (decisión 22).
+26. **Foto de perfil nítida (Tanda 1c):** el cuadro del recortador es siempre
+    cuadrado (con ventana baja o zoom se aplastaba y la foto se veía chata y
+    borrosa); la foto sale de 1024 px, achicada por pasos, en WebP calidad 0,92
+    (hasta 900 KB).
+27. **Decimales con coma en el celular** (RF-030) y **mayúscula inicial** en los
+    textos libres al confirmar (RF-031).
+28. **Papelera (RF-029):** borrado lógico, con registro de quién y cuándo en
+    cada borrado y restauración. Puede borrar y restaurar cualquier usuario
+    logueado, sobre los estudios que puede ver según la regla de acceso actual
+    (hoy, los que cargó él). La pantalla se hace cuando el SQL ya esté corrido.
 
 ---
 

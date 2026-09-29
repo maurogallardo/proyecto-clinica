@@ -4,12 +4,14 @@
 // Se abre un recuadro con la foto y un círculo: se hace zoom con la ruedita del
 // mouse, con la barrita o con "−" y "+", y se arrastra la foto en todas las
 // direcciones. La foto SIEMPRE cubre todo el círculo (nunca quedan huecos).
-// "Guardar" devuelve lo que se ve en el círculo, en un cuadrado de 512 px (el
+// "Guardar" devuelve lo que se ve en el círculo, en un cuadrado de 1024 px (el
 // círculo lo pone la pantalla al mostrarla); "Cancelar" o Esc no devuelven nada.
+// Para que salga nítida, la foto grande se achica por pasos (a la mitad cada vez)
+// hasta el tamaño final, en lugar de achicarla de golpe.
 // Recortador.abrir(archivo) -> Promise<Blob | null>
 
 const Recortador = (() => {
-  const LADO_SALIDA = 512;
+  const LADO_SALIDA = 1024;
   const ZOOM_MAXIMO = 4;
   const $ = (id) => document.getElementById(id);
   const el = {
@@ -30,8 +32,9 @@ const Recortador = (() => {
   let responder = null;
   let focoAnterior = null;
 
-  // Medidas en píxeles de pantalla (el lienzo se dibuja más fino según la pantalla)
-  const lado = () => el.area.clientWidth;
+  // Medidas en píxeles de pantalla (el lienzo se dibuja más fino según la pantalla).
+  // El lado es el menor entre ancho y alto: el cuadro es cuadrado, pero por las dudas.
+  const lado = () => Math.min(el.area.clientWidth, el.area.clientHeight) || el.area.clientWidth;
   const diametro = () => lado() * 0.82;
   const escalaBase = () => diametro() / Math.min(imagen.width, imagen.height);   // con zoom 1 cubre justo
 
@@ -47,9 +50,10 @@ const Recortador = (() => {
   function dibujar() {
     const densidad = window.devicePixelRatio || 1;
     const l = lado();
-    if (el.lienzo.width !== Math.round(l * densidad)) {
-      el.lienzo.width = Math.round(l * densidad);
-      el.lienzo.height = Math.round(l * densidad);
+    const pixeles = Math.round(l * densidad);
+    if (el.lienzo.width !== pixeles || el.lienzo.height !== pixeles) {   // siempre cuadrado
+      el.lienzo.width = pixeles;
+      el.lienzo.height = pixeles;
     }
     const pincel = el.lienzo.getContext('2d');
     pincel.setTransform(densidad, 0, 0, densidad, 0, 0);
@@ -132,18 +136,45 @@ const Recortador = (() => {
     }
   });
 
-  // --- Guardar: lo que se ve en el círculo, en un cuadrado de 512 px ---
-  function recortar() {
-    const salida = document.createElement('canvas');
-    salida.width = LADO_SALIDA;
-    salida.height = LADO_SALIDA;
-    const k = LADO_SALIDA / diametro();
-    const escala = escalaBase() * zoom * k;
-    const ancho = imagen.width * escala;
-    const alto = imagen.height * escala;
-    const pincel = salida.getContext('2d');
+  // --- Guardar: lo que se ve en el círculo, en un cuadrado de 1024 px ---
+  function lienzoDe(lado) {
+    const c = document.createElement('canvas');
+    c.width = lado;
+    c.height = lado;
+    const pincel = c.getContext('2d');
     pincel.imageSmoothingQuality = 'high';
-    pincel.drawImage(imagen, LADO_SALIDA / 2 + dx * k - ancho / 2, LADO_SALIDA / 2 + dy * k - alto / 2, ancho, alto);
+    return [c, pincel];
+  }
+
+  function recortar() {
+    // El cuadrado de la foto original que queda dentro del círculo (en píxeles de la foto)
+    const escala = escalaBase() * zoom;
+    const ladoEnFoto = diametro() / escala;
+    const x = imagen.width / 2 - dx / escala - ladoEnFoto / 2;
+    const y = imagen.height / 2 - dy / escala - ladoEnFoto / 2;
+    // 1) Se copia ese cuadrado tal cual (a lo sumo el doble del tamaño final)...
+    let lado = Math.max(LADO_SALIDA, Math.min(Math.round(ladoEnFoto), LADO_SALIDA * 2));
+    let [actual, pincel] = lienzoDe(lado);
+    // Si el recorte es mucho más grande, primero se achica a la mitad las veces que haga falta
+    if (ladoEnFoto > LADO_SALIDA * 2) {
+      let ladoPaso = Math.min(Math.round(ladoEnFoto), LADO_SALIDA * 4);   // tope: que una foto enorme no ocupe tanta memoria
+      let [paso, pincelPaso] = lienzoDe(ladoPaso);
+      pincelPaso.drawImage(imagen, x, y, ladoEnFoto, ladoEnFoto, 0, 0, ladoPaso, ladoPaso);
+      while (ladoPaso / 2 >= LADO_SALIDA * 2) {
+        const [menor, pincelMenor] = lienzoDe(Math.round(ladoPaso / 2));
+        pincelMenor.drawImage(paso, 0, 0, ladoPaso, ladoPaso, 0, 0, menor.width, menor.height);
+        paso.width = 0;   // libera la memoria del paso anterior
+        [paso, ladoPaso] = [menor, menor.width];
+      }
+      lado = ladoPaso;
+      [actual, pincel] = [paso, paso.getContext('2d')];
+    } else {
+      pincel.drawImage(imagen, x, y, ladoEnFoto, ladoEnFoto, 0, 0, lado, lado);
+    }
+    // 2) ...y el último paso, al tamaño final
+    const [salida, pincelSalida] = lienzoDe(LADO_SALIDA);
+    pincelSalida.drawImage(actual, 0, 0, lado, lado, 0, 0, LADO_SALIDA, LADO_SALIDA);
+    actual.width = 0;
     return new Promise((r) => salida.toBlob(r, 'image/png'));
   }
 

@@ -10,6 +10,8 @@
 //   tipo     -> 'texto' (crece al escribir), 'texto-largo', 'entero', 'decimal' o 'fecha'
 //   ancho    -> 'completo' ocupa las dos columnas; si no se indica, media
 //   valorInicial -> 'hoy' (solo fechas): arranca con la fecha del día
+//   mayusculaInicial -> true: al confirmar, la primera letra pasa a mayúscula (solo
+//                 esa: el resto del texto no se toca). Textos libres, no nombres.
 //
 // Sumar otra planilla = escribir otro archivo como este (js/formulario.js no cambia).
 
@@ -37,8 +39,8 @@ const PLANILLA_ERGOMETRICO = {
       titulo: 'Estudio',
       campos: [
         { columna: 'medico_solicitante', etiqueta: 'Médico solicitante', tipo: 'texto', ancho: 'completo' },
-        { columna: 'motivo', etiqueta: 'Motivo', tipo: 'texto', ancho: 'completo' },
-        { columna: 'antecedentes', etiqueta: 'Antecedentes', tipo: 'texto-largo', ancho: 'completo' },
+        { columna: 'motivo', etiqueta: 'Motivo', tipo: 'texto', ancho: 'completo', mayusculaInicial: true },
+        { columna: 'antecedentes', etiqueta: 'Antecedentes', tipo: 'texto-largo', ancho: 'completo', mayusculaInicial: true },
         { columna: 'tecnica', etiqueta: 'Técnica', tipo: 'texto' },
         { columna: 'posicion', etiqueta: 'Posición', tipo: 'texto' },
         { columna: 'fc_teorica', etiqueta: 'F.C. teoría', tipo: 'entero' },
@@ -62,7 +64,7 @@ const PLANILLA_ERGOMETRICO = {
       // En la planilla, la conclusión va después del ECG basal y antes de la tabla
       titulo: 'Conclusión',
       campos: [
-        { columna: 'conclusion', etiqueta: 'Conclusión', tipo: 'texto-largo', ancho: 'completo', etiquetaOculta: true },
+        { columna: 'conclusion', etiqueta: 'Conclusión', tipo: 'texto-largo', ancho: 'completo', etiquetaOculta: true, mayusculaInicial: true },
       ],
     },
     {
@@ -72,7 +74,7 @@ const PLANILLA_ERGOMETRICO = {
     {
       titulo: 'Interrupción y postesfuerzo',
       campos: [
-        { columna: 'interrupcion_prueba', etiqueta: 'Interrupción de la prueba', tipo: 'texto-largo', ancho: 'completo' },
+        { columna: 'interrupcion_prueba', etiqueta: 'Interrupción de la prueba', tipo: 'texto-largo', ancho: 'completo', mayusculaInicial: true },
         { subtitulo: "Postesfuerzo a los 5'" },
         { columna: 'post_ta', etiqueta: 'TA', tipo: 'texto' },
         { columna: 'post_fc', etiqueta: 'FC', tipo: 'entero' },

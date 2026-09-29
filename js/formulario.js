@@ -156,7 +156,16 @@ function crearControl(campo) {
     control = document.createElement('input');
     control.type = campo.tipo === 'fecha' ? 'date' : 'text';
     if (campo.tipo === 'entero') control.inputMode = 'numeric';
-    if (campo.tipo === 'decimal') control.inputMode = 'decimal';
+    if (campo.tipo === 'decimal') {
+      control.inputMode = 'decimal';
+      // Decimales con coma, como se escribe acá: si se escribe un punto, pasa a coma
+      control.addEventListener('input', () => {
+        if (!control.value.includes('.')) return;
+        const cursor = control.selectionStart;
+        control.value = control.value.replace(/\./g, ',');
+        control.setSelectionRange(cursor, cursor);
+      });
+    }
   }
   if (campo.teclado) control.inputMode = campo.teclado;
   control.className = campo.tipo === 'entero' || campo.tipo === 'decimal' ? 'campo numeros' : 'campo';
@@ -243,7 +252,10 @@ function tomarFotoPlanilla(contenedor) {
 
 // Escribe un valor en un campo, sin destello (y acomoda el alto de las cajas de texto)
 function escribirValor(control, valor) {
-  control.value = valor === null || valor === undefined ? '' : String(valor);
+  let texto = valor === null || valor === undefined ? '' : String(valor);
+  // Los decimales se muestran con coma ("1,75"); se guardan igual, como número
+  if (control.dataset.tipo === 'decimal' && typeof valor === 'number') texto = texto.replace('.', ',');
+  control.value = texto;
   if (control.tagName === 'TEXTAREA') ajustarAltura(control);
 }
 

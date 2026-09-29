@@ -128,7 +128,7 @@ profesional ve los estudios que cargó él.
   enlace nuevo una vez antes de volver a la inicial.
 - **Configuración:** modo de color (el mismo selector que el celular; la
   preferencia se guarda en cada aparato), "Ingresaste como <correo>" y la foto
-  de perfil (512 px). Antes de subirla se acomoda en un **recortador** con un
+  de perfil (1024 px, calidad 0,92). Antes de subirla se acomoda en un **recortador** con un
   círculo (zoom con la ruedita o una barrita, arrastrar; la foto siempre cubre el
   círculo; "Guardar" / "Cancelar" / Esc). Se sube lo que se ve en el círculo.
 - **Editar (T032):** desde la ficha se corrigen los datos y las etapas (valores,
@@ -290,9 +290,39 @@ pega en el SQL Editor.
 
 Una foto por profesional, en un **depósito privado nuevo** de Supabase (aparte
 del de los estudios), en WebP, achicada y comprimida en la computadora con el
-mismo proceso que las fotos de los estudios, a 512 px. Cada uno solo puede subir, cambiar
-y ver la suya. Se muestra con un enlace firmado que caduca, en la barra lateral
-del dashboard y en el menú del celular.
+mismo proceso que las fotos de los estudios, a 1024 px (achicada por pasos,
+calidad 0,92, hasta 900 KB). Cada uno solo puede subir, cambiar y ver la suya.
+Se muestra con un enlace firmado que caduca, en la barra lateral del dashboard y
+en el menú del celular.
+
+### Papelera (borrado lógico) — `supabase/papelera.sql`
+
+"Borrar" un estudio **no lo borra**: lo marca como "en la Papelera". Así se
+conserva todo (el estudio, sus etapas y sus fotos; Storage no se toca) y el
+número no se reutiliza.
+
+- **En la tabla `estudios`**, cuatro columnas nuevas: `en_papelera` (sí/no),
+  `en_papelera_desde` (cuándo), `en_papelera_por` (id de quién) y
+  `en_papelera_por_correo` (copia de su correo, para mostrarlo). Son la "foto"
+  del último borrado y se vacían al restaurar.
+- **Tabla nueva `estudios_papelera_registro`:** una fila por cada borrado y cada
+  restauración (acción, id y correo de quién, hora del servidor). La app solo la
+  puede leer (y solo la de los estudios que puede ver).
+- **Dos funciones del servidor:** `anular_estudio(id)` y `restaurar_estudio(id)`.
+  Exigen usuario logueado y que el estudio sea uno que puede ver (hoy, los que
+  cargó él). Un doble clic no duplica nada.
+- **La app no puede hacerlo de otra forma:** no tiene permiso de DELETE sobre
+  `estudios`, y un control de la base (trigger) rechaza cualquier UPDATE o INSERT
+  que toque las columnas de la Papelera si no viene de esas funciones.
+- **No cuenta como edición:** mandar a la Papelera o restaurar no cambia la
+  "Última edición" (`modificado_por` / `modificado_en`).
+- **Pantalla (cuando el SQL esté corrido):** ítem "Papelera" en la barra lateral,
+  con la lista de estudios borrados (N°, paciente, DNI, quién lo borró y cuándo)
+  y un botón "Restaurar". En la ficha, un botón "Borrar" discreto, en rojo, con un
+  cartel "¿Seguro?" que avisa que va a la Papelera y se puede restaurar. El
+  listado, los números y la búsqueda piden solo los que no están en la Papelera.
+- **Para la Tanda 3 (Editar):** la función de edición tiene que rechazar un
+  estudio que esté en la Papelera.
 
 ### Para el futuro (no en la demo)
 
@@ -399,8 +429,10 @@ proyecto/
 - **Privacidad por diseño:** TLS + RLS + bucket privado + clave en servidor. ✔
 - **Bajo costo:** Vercel y Supabase en plan gratuito; sin Railway ni n8n. ✔
 - **Trazabilidad:** `cargado_por` y `creado_en` (quién cargó y cuándo);
-  `modificado_por` y `modificado_en` (quién editó por última vez y cuándo); y el
-  historial de cambios (cómo estaba antes de cada edición). ✔
+  `modificado_por` y `modificado_en` (quién editó por última vez y cuándo); el
+  historial de cambios (cómo estaba antes de cada edición); y el registro de la
+  Papelera (quién y cuándo, en cada borrado y restauración). Nada se borra de
+  verdad desde la app. ✔
 
 ---
 

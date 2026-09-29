@@ -3,13 +3,15 @@
 // Cada uno solo ve, sube y cambia la suya (lo controlan las reglas del depósito).
 //   - Se ve en la barra lateral del dashboard, en Configuración y en el menú del
 //     celular. Sin foto: un círculo con la inicial del correo.
-//   - Se sube desde Configuración (en la compu): se achica a 512 px y se pasa a
+//   - Se sube desde Configuración (en la compu): se recorta (js/recortador.js) a 1024 px y se pasa a
 //     WebP con el mismo proceso que las fotos de los estudios (js/fotos.js).
 
 const PERFIL = {
   deposito: 'fotos-perfil',
   enlaceSegundos: 60 * 60,
-  foto: { ladoMaximoPx: 512, calidad: 0.85, calidadMinima: 0.6, pesoMaximo: 900 * 1024 },
+  // 1024 px y calidad 0,92: nítida aunque la pantalla sea de alta densidad. Hasta
+  // 900 KB (el depósito admite 1 MB); si pesara más, baja la calidad sola (js/fotos.js)
+  foto: { ladoMaximoPx: 1024, calidad: 0.92, calidadMinima: 0.6, pesoMaximo: 900 * 1024 },
 };
 
 const Perfil = (() => {

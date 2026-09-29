@@ -186,7 +186,7 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
 - **T049** Configuración: modo de color (Claro / Oscuro / Automático, el mismo del
   celular), "Ingresaste como <correo>" y foto de perfil (depósito privado nuevo,
   una por profesional, cada uno solo la suya; se achica y comprime como las fotos
-  de los estudios, a 512 px). La foto se ve en la barra lateral y en el menú del
+  de los estudios, a 1024 px — Tanda 1c). La foto se ve en la barra lateral y en el menú del
   celular (en el celular solo se ve). El modo de color se guarda en cada aparato.
 
 **Tanda 1b — ajustes** (después de que Mauro probó la Tanda 1; antes de la 2)
@@ -205,13 +205,33 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
   colores, y usable con teclado.
 - **T053** Recortador de la foto de perfil (solo la de perfil, no las del
   electro): recuadro con un círculo, zoom (ruedita y barrita) y arrastrar; la
-  foto siempre cubre el círculo. "Guardar" recorta, achica a 512 px, pasa a WebP
+  foto siempre cubre el círculo. "Guardar" recorta, achica a 1024 px (Tanda 1c), pasa a WebP
   (mismo proceso de `js/fotos.js`) y sube a `fotos-perfil` (reemplaza la
   anterior); "Cancelar" o Esc no sube nada. Solo en la compu (mouse).
 - **T054** Vista según el tipo de aparato (ver T042): con mouse o trackpad =
   dashboard; solo táctil = carga. El dashboard se acomoda a ventanas angostas y
   zoom de hasta 200% en 1280 px (barra lateral arriba, tabla que se desplaza de
   costado), sin ocultar información.
+
+**Tanda 1c — ajustes chicos y Papelera**
+- **T055** Foto de perfil nítida y sin achatar: el cuadro del recortador siempre
+  cuadrado (con ventana baja o zoom se aplastaba: la vista previa salía chata y
+  borrosa); salida de 1024 px, achicada por pasos, WebP calidad 0,92 (hasta
+  900 KB); vista previa de hasta 400 px.
+- **T056** Decimales con coma en el celular (peso, talla, MET, porcentaje): se
+  muestran con coma y, si se escribe un punto, pasa a coma. Se guardan igual.
+- **T057** Mayúscula inicial al confirmar en Motivo, Antecedentes, Conclusión e
+  Interrupción de la prueba (solo la primera letra; se ve antes del cartel). No
+  en nombres ni en Médico solicitante. No cambia los estudios ya guardados.
+- **T058** Papelera, base de datos: `supabase/papelera.sql` (columnas de estado,
+  registro de borrados y restauraciones, funciones `anular_estudio` y
+  `restaurar_estudio`, control que impide hacerlo por otra vía). Mauro lo revisó
+  y lo corrió en Supabase ("Success. No rows returned").
+- **T059** Papelera, pantalla (después de correr el SQL): ítem "Papelera" en la
+  barra lateral (N°, paciente, DNI, quién lo borró y cuándo, botón "Restaurar");
+  botón "Borrar" en la ficha, discreto y en rojo, con cartel "¿Seguro?"; el
+  listado, los números y la búsqueda sin los que están en la Papelera; la ficha
+  no abre un estudio que esté en la Papelera.
 
 **Tanda 2 — imprimir y PDF**
 - **T033** "Imprimir" y "Descargar PDF" desde la ficha, con un único PDF armado

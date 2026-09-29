@@ -87,6 +87,21 @@ function hayNumeroMalEscrito(contenedor) {
 
 // --- 2 y 3) Confirmar y guardar ---------------------------------------------------------
 
+// Los campos marcados en la planilla con "mayusculaInicial" (textos libres como la
+// conclusión; no los nombres): solo la primera letra pasa a mayúscula, el resto
+// del texto queda tal cual
+function ponerMayusculaInicial() {
+  PLANILLA_ERGOMETRICO.secciones.flatMap((s) => s.campos || []).filter((c) => c.mayusculaInicial).forEach((campo) => {
+    const control = document.getElementById(`campo-${campo.columna}`);
+    if (!control) return;
+    const texto = control.value;
+    const primera = texto.search(/\S/);
+    if (primera < 0) return;
+    const nuevo = texto.slice(0, primera) + texto.charAt(primera).toLocaleUpperCase('es') + texto.slice(primera + 1);
+    if (nuevo !== texto) escribirValor(control, nuevo);
+  });
+}
+
 async function confirmarEstudio() {
   if (ocupado || hayDictadoAMedias()) return;
   if (hayFotosPreparando()) {
@@ -95,7 +110,9 @@ async function confirmarEstudio() {
   }
   ocupado = true;
   try {
-    // Se guarda exactamente lo que se revisó y se confirmó
+    // Primera letra en mayúscula en los textos libres (se ve en pantalla antes del
+    // cartel: se guarda exactamente lo que se revisó y se confirmó)
+    ponerMayusculaInicial();
     const datos = datosParaGuardar();
     if (faltanDatosMinimos(datos.estudio) || hayNumeroMalEscrito(contenedorCarga)) return;
     const confirma = await preguntar({
