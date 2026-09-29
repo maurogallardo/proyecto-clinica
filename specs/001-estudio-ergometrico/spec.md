@@ -187,8 +187,10 @@ imprimir/exportar con el formato de la planilla original.
   angosta: sigue viendo el dashboard, sin nada tapado ni oculto.
 - La ficha queda abierta más tiempo que lo que dura el enlace de las fotos: al
   tocar una foto, se ve igual.
-- Se conecta o desconecta un mouse (por ejemplo, a una tablet): la app acompaña
-  el cambio.
+- Un celular o una tablet con mouse, teclado, lápiz o "Vincular con Windows":
+  sigue mostrando la carga. Si se conecta o desconecta un mouse con la app
+  abierta, la vista no cambia sola (una carga a medias no se oculta ni se
+  pierde); se vuelve a decidir al abrir la app o al iniciar sesión (T060).
 - Un estudio con una conclusión muy larga o con más de cuatro etapas: la hoja 1
   del PDF igual tiene que entrar en una sola A4.
 - Un estudio sin fotos: el PDF tiene solo la hoja 1.
@@ -255,15 +257,26 @@ imprimir/exportar con el formato de la planilla original.
     medio se pintan; con un solo día tocado, filtra solo ese día. Usa la fecha de
     carga.
 - **RF-018:** El sistema debe mostrar la vista según el **tipo de aparato**, con
-  una sola app y un solo link: si el aparato tiene **mouse o trackpad**
-  (computadora) = dashboard, **siempre**, sin importar el tamaño de la ventana ni
-  el zoom del navegador; si **solo tiene pantalla táctil** (celular o tablet,
-  aunque esté acostado) = vista de carga, siempre (el celular es solo para
-  cargar). El teclado no cuenta. Si el navegador no informa qué tiene el aparato,
-  decide por el ancho (1024 px). Si se conecta o desconecta un mouse, la app
-  acompaña el cambio. El dashboard tiene que poder usarse con zoom de hasta 200%
-  en una pantalla de 1280 px (unos 640 px de ancho), sin ocultar información. No
-  hay versión del dashboard para celular.
+  una sola app y un solo link (decisión 29, T060):
+  1. **Celular o tablet = vista de carga, siempre** (el celular es solo para
+     cargar; una tablet cuenta como celular), aunque tenga conectado un mouse, un
+     teclado, un lápiz o "Vincular con Windows". Es celular o tablet si el propio
+     navegador dice que es móvil (o su identificación dice Android, iPhone, iPad
+     o iPod, o es un iPad que se presenta como Mac), o si el puntero principal es
+     el dedo, sin "hover" (así se cubren el modo "sitio de escritorio" y las
+     tablets solo táctiles).
+  2. Si no, con **mouse o trackpad** (computadora, también una notebook con
+     pantalla táctil) = **dashboard, siempre**, sin importar el tamaño de la
+     ventana ni el zoom del navegador.
+  3. Si el navegador no informa nada del puntero, decide por el ancho (1024 px).
+
+  La vista se decide **una sola vez**, al abrir la app o al iniciar sesión, y no
+  cambia sola después (si aparece o desaparece un puntero en medio de una carga,
+  la planilla no se oculta ni se pierde). No hay botón manual para cambiarla. Los
+  celulares con S Pen quedan cubiertos por esta regla, pero no se probaron en un
+  aparato real. El dashboard tiene que poder usarse con zoom de hasta 200% en una
+  pantalla de 1280 px (unos 640 px de ancho), sin ocultar información. No hay
+  versión del dashboard para celular.
 - **RF-019:** El sistema debe restringir el acceso a los datos e imágenes según
   la autorización de cada usuario. (Si distintos usuarios de un mismo servicio
   comparten estudios se define al escalar; en la demo hay un solo usuario.)
@@ -455,7 +468,9 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     ancho cambia y el dashboard desaparecía). Con mouse o trackpad = dashboard,
     siempre; solo táctil = carga, siempre, aunque esté acostado. El teclado no
     cuenta. Si el navegador no informa, decide por el ancho (1024 px). El
-    dashboard aguanta zoom de hasta 200% en una pantalla de 1280 px.
+    dashboard aguanta zoom de hasta 200% en una pantalla de 1280 px. *(Ajustada
+    por la decisión 29: primero se mira si es celular o tablet, y la vista ya no
+    cambia sola.)*
 23. **Fechas del dashboard:** la tabla, los números y los filtros usan la fecha y
     hora de **carga**; la fecha del estudio se ve en la ficha. "Esta semana" = de
     lunes a hoy; "Este mes" = desde el día 1.
@@ -475,6 +490,16 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     cada borrado y restauración. Puede borrar y restaurar cualquier usuario
     logueado, sobre los estudios que puede ver según la regla de acceso actual
     (hoy, los que cargó él). La pantalla se hace cuando el SQL ya esté corrido.
+29. **Vista según el aparato, a prueba de accesorios (T060, reemplaza en parte la
+    decisión 22):** el celular de Mauro (Samsung, sin S Pen) empezó a mostrar el
+    dashboard: algún accesorio o función del celular (un mouse o teclado
+    Bluetooth, "Vincular con Windows", un lápiz) hacía que informara un puntero
+    preciso, y la regla era solo "puntero preciso = compu". Ahora primero se mira
+    si es celular o tablet (lo dice el navegador, o el puntero principal es el
+    dedo): si lo es, carga siempre. Recién si no, puntero preciso = dashboard; y
+    sin información, por el ancho. La vista se decide al abrir la app o al
+    iniciar sesión y no cambia sola. Sin botón manual ni opción en el menú. Los
+    celulares con S Pen quedan cubiertos, pero no se probaron en un aparato real.
 
 ---
 

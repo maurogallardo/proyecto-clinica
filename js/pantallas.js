@@ -3,7 +3,7 @@
 // (Misma idea que mostrarPantalla de LoMar.)
 
 // La pantalla a la que se llega después del login la decide js/vista.js según
-// el tamaño de la pantalla: la carga del estudio (T013) o el dashboard (T030).
+// el tipo de aparato: la carga del estudio (T013) o el dashboard (T030).
 
 function mostrarPantalla(id) {
   document.querySelectorAll('.pantalla').forEach((pantalla) => {

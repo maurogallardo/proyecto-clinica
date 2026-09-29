@@ -139,8 +139,9 @@ de todas las pantallas sigue `guia-visual.md`.
     navegador el dashboard desaparecía), sino por el **tipo de aparato**: con
     mouse o trackpad = dashboard, siempre; solo táctil = carga, siempre, aunque
     esté acostado. El teclado no cuenta. Si el navegador no informa, decide por
-    el ancho (1024 px). Sigue escuchando si se conecta o desconecta un mouse. El
-    dashboard aguanta ventana angosta y zoom de hasta 200% en 1280 px.
+    el ancho (1024 px). ~~Sigue escuchando si se conecta o desconecta un mouse.~~
+    (ya no: ver T060). El dashboard aguanta ventana angosta y zoom de hasta 200%
+    en 1280 px.
 - **T043** Manejo del permiso de micrófono, con atención especial a iPhone:
   pedirlo y mostrar un mensaje claro si está denegado. *(cubre RF-020)*
 - ✅ **T044** Manejo de error de transcripción: si el dictado no se entiende o falla,
@@ -236,6 +237,17 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
   Papelera; la ficha no abre un estudio que esté en la Papelera. Probada contra
   el Supabase real con los estudios de prueba N° 18, 19 y 20 (quedaron
   restaurados). Falta que Mauro la pruebe.
+- **T060** Vista según el aparato, a prueba de accesorios (`js/vista.js`, cubre
+  RF-018, decisión 29): el celular de Mauro (Samsung, sin S Pen) mostraba el
+  dashboard porque algo del celular informaba un puntero preciso. Regla nueva:
+  primero, si el navegador dice que es móvil (o Android, iPhone, iPad, iPod, o
+  iPad que se presenta como Mac) o el puntero principal es el dedo sin "hover" =
+  carga; si no, con puntero preciso = dashboard; sin información, por el ancho
+  (1024 px). Se decide al abrir la app o al iniciar sesión y ya no cambia sola
+  (se sacó el cambio en vivo). Sin botón manual. Celulares con S Pen: cubiertos
+  por la regla, no probados en un aparato real. Probada emulando celulares,
+  tablets, iPad, compus con zoom y notebooks táctiles. Falta que Mauro la pruebe
+  en su celular.
 
 **Tanda 2 — imprimir y PDF**
 - **T033** "Imprimir" y "Descargar PDF" desde la ficha, con un único PDF armado

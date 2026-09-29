@@ -72,12 +72,26 @@ Son tres piezas, como veníamos diciendo: el celular, la base, y la pantalla.
 
 El celular y la pantalla son **la misma aplicación** publicada en Vercel, con un
 solo link, que decide qué mostrar según el **tipo de aparato** (no por el tamaño
-de la ventana, que cambia con el zoom del navegador): si tiene **mouse o
-trackpad** = dashboard, siempre; si **solo es táctil** (celular o tablet, aunque
-esté acostado) = carga, siempre. El teclado no cuenta. La app se lo pregunta al
-navegador (consulta de "tipo de puntero": ¿hay algún puntero preciso?) y sigue
-escuchando por si se conecta o desconecta un mouse. Si el navegador no informa,
-decide por el ancho (1024 px) como red de seguridad. Como una compu puede tener
+de la ventana, que cambia con el zoom del navegador). Lo decide `js/vista.js`
+(T060), en este orden:
+
+1. **Celular o tablet = carga, siempre.** Lo es si el navegador dice que es móvil
+   (`navigator.userAgentData.mobile`, o la identificación dice Android, iPhone,
+   iPad, iPod o Mobile, o es un iPad que se presenta como Mac: `MacIntel` con
+   pantalla táctil), o si el puntero principal es el dedo y sin "hover"
+   (`(pointer: coarse) and (hover: none)`).
+2. Si no, **con algún puntero preciso** (`any-pointer: fine`: mouse o trackpad,
+   también en una notebook táctil) = dashboard, siempre.
+3. Si el navegador no informa nada del puntero, por el ancho (1024 px), como red
+   de seguridad.
+
+El paso 1 va primero porque un accesorio del celular (mouse o teclado Bluetooth,
+"Vincular con Windows", un lápiz) puede hacer que informe un puntero preciso: con
+la regla vieja ("puntero preciso = compu"), el celular de Mauro mostraba el
+dashboard. Los celulares con S Pen quedan cubiertos por el paso 1, pero no se
+probaron en un aparato real. La vista se decide **una sola vez**, al abrir la app
+o al iniciar sesión: ya no escucha cambios, así una carga a medias nunca se oculta
+ni se pierde. Sin botón manual para cambiarla. Como una compu puede tener
 la ventana angosta o mucho zoom, el dashboard se acomoda (hasta 200% de zoom en
 una pantalla de 1280 px): la barra lateral pasa arriba y la tabla se desplaza de
 costado, sin ocultar información. Las dos le hablan a Supabase por internet, de
