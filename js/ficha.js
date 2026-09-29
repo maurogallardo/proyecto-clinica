@@ -24,6 +24,7 @@ const Ficha = (() => {
   };
   let idActual = null;
   let estudioActual = null;   // como vino del servidor (lo usa la edición)
+  let fotosActuales = [];     // las fotos del electro, en el orden de la ficha (las usa el PDF)
   let editando = false;
   let alVolver = () => {};
   let alMandarALaPapelera = () => {};
@@ -222,8 +223,66 @@ const Ficha = (() => {
     secciones.push(seccionPie);
     el.cuerpo.replaceChildren(...secciones);
     estudioActual = estudio;
-    el.acciones.replaceChildren(botonEditar(), botonBorrar(estudio));
+    fotosActuales = fotos.map(({ ruta_archivo }) => ({ ruta_archivo }));
+    ponerBotonesDeLaFicha();
     mostrarSolo('ficha');
+  }
+
+  // Encabezado de la ficha: "Imprimir", "Descargar PDF", "Editar" (neutros) y
+  // "Borrar" (en rojo). En modo edición van otros ("Cancelar" y "Guardar cambios").
+  function ponerBotonesDeLaFicha() {
+    el.acciones.replaceChildren(
+      boton('Imprimir', 'panel-boton panel-boton--fantasma', 'ficha-imprimir', () => hacerPdf('imprimir')),
+      boton('Descargar PDF', 'panel-boton panel-boton--fantasma', 'ficha-descargar', () => hacerPdf('descargar')),
+      botonEditar(),
+      botonBorrar(estudioActual),
+    );
+  }
+
+  // --- Imprimir y Descargar PDF (T033, js/pdf/) -------------------------------------------
+  // Un único PDF armado en la computadora (no se guarda en ningún lado). Mientras se
+  // arma, los botones quedan deshabilitados: un doble clic no hace nada dos veces.
+
+  let armandoPdf = false;
+  async function hacerPdf(accion) {
+    if (armandoPdf || !estudioActual || editando) return;
+    armandoPdf = true;
+    const id = idActual;
+    const estudio = estudioActual;
+    const fotos = fotosActuales;
+    const tocado = document.getElementById(accion === 'imprimir' ? 'ficha-imprimir' : 'ficha-descargar');
+    // La pestaña de imprimir se abre YA (en el clic), para que el navegador no la bloquee
+    const ventana = accion === 'imprimir' ? Pdf.abrirPestanaDeEspera() : null;
+    const botones = [...el.acciones.querySelectorAll('button')];
+    const textoOriginal = tocado.textContent;
+    botones.forEach((b) => { b.disabled = true; });
+    tocado.textContent = 'Armando el PDF…';
+    try {
+      if (accion === 'imprimir' && !ventana) throw new ErrorPdf('ventana');
+      const { blob, nombre } = await Pdf.armar(estudio, fotos, { paraImprimir: accion === 'imprimir' });
+      if (idActual !== id || editando) {   // mientras tanto se salió de la ficha o se cerró sesión
+        Pdf.cerrarPestana(ventana);
+        return;
+      }
+      if (accion === 'imprimir') {
+        Pdf.mostrarEnPestana(ventana, blob);
+        mostrarAviso('El PDF se abrió en otra pestaña. Si no aparece la ventana de impresión, tocá el botón de imprimir de esa pestaña.', 'info', 7000);
+      } else {
+        Pdf.descargar(blob, nombre);
+        mostrarAviso('PDF descargado.', 'exito', 4000);
+      }
+    } catch (error) {
+      Pdf.cerrarPestana(ventana);
+      console.error('No se pudo armar el PDF');   // sin datos del paciente en la consola
+      if (idActual === id) mostrarAviso(Pdf.mensajeDeError(error), 'error', 7000);
+    } finally {
+      armandoPdf = false;
+      if (tocado.isConnected) {
+        botones.forEach((b) => { b.disabled = false; });
+        tocado.textContent = textoOriginal;
+        if (document.activeElement === document.body || !document.activeElement) tocado.focus();
+      }
+    }
   }
 
   // --- Editar (T061, js/edicion.js) ---------------------------------------------------------
@@ -263,7 +322,7 @@ const Ficha = (() => {
     editando = false;
     if (!estudioActual) return;
     el.titulo.textContent = `Estudio ergométrico · N° ${estudioActual.numero ?? '—'}`;
-    el.acciones.replaceChildren(botonEditar(), botonBorrar(estudioActual));
+    ponerBotonesDeLaFicha();
     el.cuerpo.hidden = false;
     document.getElementById('ficha-editar').focus();
   }
@@ -387,6 +446,7 @@ const Ficha = (() => {
   async function abrir(id) {
     idActual = id;
     estudioActual = null;
+    fotosActuales = [];
     editando = false;
     Edicion.cerrar();
     el.titulo.textContent = 'Estudio ergométrico';
@@ -505,6 +565,7 @@ const Ficha = (() => {
     cerrarLightbox();
     idActual = null;
     estudioActual = null;
+    fotosActuales = [];
     editando = false;
     Edicion.cerrar();              // tampoco la planilla de edición
     el.cuerpo.replaceChildren();   // los datos del paciente no quedan en la pantalla

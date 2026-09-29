@@ -370,7 +370,8 @@
           <div class="tarjeta-panel ficha__cabecera">
             <button type="button" class="panel-boton panel-boton--fantasma" id="ficha-volver">← Volver</button>
             <h2 class="ficha__titulo" id="ficha-titulo">Estudio ergométrico</h2>
-            <!-- Lugar para "Imprimir", "Descargar PDF" (Tanda 2) y "Editar" (Tanda 3) -->
+            <!-- "Imprimir", "Descargar PDF", "Editar" y "Borrar" (js/ficha.js); al editar,
+                 "Cancelar" y "Guardar cambios" -->
             <div class="ficha__acciones" id="ficha-acciones"></div>
             <img class="ficha__logo solo-tema-claro" src="assets/logos/logo-completo.svg" alt="Sanatorio de la Cañada">
             <img class="ficha__logo solo-tema-oscuro" src="assets/logos/logo-completo-claro.svg" alt="Sanatorio de la Cañada">
@@ -563,6 +564,12 @@
   <script src="js/recortador.js"></script>
   <script src="js/papelera.js"></script>
   <script src="js/edicion.js"></script>
+  <!-- PDF (T033): jsPDF y las fuentes se cargan recién al tocar "Imprimir" o
+       "Descargar PDF" (js/pdf/herramientas.js), con versión fija e integrity -->
+  <script src="js/pdf/herramientas.js"></script>
+  <script src="js/pdf/hojas-fotos.js"></script>
+  <script src="js/planillas/ergometrico-hoja.js"></script>
+  <script src="js/pdf/armado.js"></script>
   <script src="js/ficha.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/login.js"></script>

@@ -244,8 +244,11 @@ no por detrás (como en LoMar).
 - **Hoja 1:** la planilla en **A4 vertical, una sola página** (RF-022). Copia
   `specs/001-estudio-ergometrico/assets/planilla-delacanada.jpg` (encabezado,
   marca de agua, campos, tabla, pie).
-- **Hojas siguientes:** las fotos del electro, solo si el estudio tiene.
+- **Hojas siguientes:** las fotos del electro, solo si el estudio tiene, por
+  hileras (ver RF-022 y `FOTOS_PDF` en `js/pdf/hojas-fotos.js`).
 - Un único PDF para imprimir y para descargar: salen idénticos.
+- Fuentes del PDF: Arimo (como Arial) y Tinos (como Times), incrustadas. La marca
+  de agua va al 10 % de opacidad.
 - Siempre en claro, sin los estilos de la app (sin vidrio, sin sombras).
 
 ---

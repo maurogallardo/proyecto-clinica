@@ -606,9 +606,11 @@
   box-shadow: var(--panel-fijo-sombra);
 }
 
-/* Lugar para "Imprimir", "Descargar PDF" (Tanda 2) y "Editar" (Tanda 3) */
+/* "Imprimir", "Descargar PDF", "Editar" y "Borrar" (al editar: "Cancelar" y
+   "Guardar cambios"). Con ventana angosta o mucho zoom, bajan de renglón. */
 .ficha__acciones {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }

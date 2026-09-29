@@ -292,11 +292,36 @@ imprimir/exportar con el formato de la planilla original.
   **hoja 1** es la planilla completa, en **A4 vertical** y en **una sola página**,
   igual que la planilla original en papel del Servicio de Cardiología; las
   **hojas siguientes** son las fotos del electro, solo si el estudio tiene. En la
-  hoja 1 el **DNI** va a la derecha de "Paciente" (la planilla en papel no lo
-  tiene). El archivo se llama
+  hoja 1 el **DNI** va en la **línea de FECHA, del lado derecho** (la planilla en
+  papel no lo tiene, y la línea de PACIENTE ya tiene SEXO). El archivo se llama
   `Ergometrico-<número>-<nombre del paciente>-<AAAA-MM-DD>.pdf`, con el nombre
   tal cual está cargado, sin acentos y con guiones entre palabras (ej.:
   `Ergometrico-12-Carlos-Mendez-2026-09-26.pdf`), y no se guarda en el servidor.
+  - *Hoja 1:* los campos llevan su renglón de puntos, como el papel, y el dato se
+    escribe encima. Lo que no se cargó queda en blanco: nunca se inventa ni se
+    completa nada. Formatos como en la ficha: fecha dd/mm/aaaa, decimales con coma,
+    tiempo de la tabla con apóstrofe (3’). La tabla muestra las etapas del estudio
+    en orden, con filas en blanco hasta llegar a 4. Con más etapas, las filas se
+    hacen más bajas, y la letra no cambia.
+  - *Textos largos:* se escriben en varios renglones. Si no entran, se achica la
+    letra de **ese** campo hasta un mínimo legible (8 pt). Si igual no entran,
+    siguen, completos, en una hoja extra ("Continuación de Conclusión", con el N°
+    y el nombre del paciente arriba). Nunca se corta, se oculta ni se resume texto
+    médico. Todo carácter se ve tal cual (acentos, ñ, ¿ ¡ º ° ≥ ≤ → ±). Si alguno
+    no se puede poner, el PDF no se arma y se avisa.
+  - *Fotos, por hileras y en el orden de carga:*
+    1. una hilera pone fotos una al lado de la otra, todas con la misma altura,
+       llenando el ancho útil (186 mm, con 4 mm entre fotos);
+    2. se agregan fotos mientras la altura sea de al menos 80 mm;
+    3. una foto sola se agranda hasta 120 mm de alto y se centra;
+    4. las hileras se apilan, y si una no entra pasa a otra hoja.
+
+    Nunca se recortan ni se deforman. Arriba de cada hoja: "Estudio N° X ·
+    paciente · Fotos del electro". Si una foto no se puede bajar, no sale ningún
+    PDF.
+  - *Imprimir:* abre ese mismo PDF en otra pestaña, listo para imprimir (al 100 %,
+    sin "ajustar a la página"). Si el navegador no muestra solo la ventana de
+    impresión, se usa el botón de imprimir de esa pestaña.
 - **RF-023:** Los **datos mínimos** para poder guardar un estudio son el **DNI** y
   el **nombre del paciente**. La planilla no necesita estar completa para
   guardarse.
@@ -480,7 +505,8 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     profesional; solo la propia; 1024 px, ver decisión 26). Sin foto: círculo con la inicial del
     correo, con el correo debajo (la base no guarda el nombre).
 20. **Imprimir y PDF:** un único PDF armado en la computadora (no se guarda en el
-    servidor): hoja 1 la planilla (con el DNI a la derecha de "Paciente"), hojas
+    servidor): hoja 1 la planilla (con el DNI en la línea de FECHA, del lado
+    derecho; ver decisión 31), hojas
     siguientes las fotos del electro. Nombre:
     `Ergometrico-<número>-<nombre del paciente tal cual, sin acentos, con
     guiones>-<AAAA-MM-DD>.pdf`.
@@ -536,6 +562,18 @@ Medibles y sin hablar de tecnología. Con esto sabemos si la demo salió bien.
     - El historial **no se mira con la clave de servicio**: para revisarlo hay una
       consulta de solo lectura (`supabase/ver_historial.sql`) que muestra solo
       cantidades, horas y el correo de quien editó, nunca datos del paciente.
+31. **Imprimir y PDF (RF-022, T033):**
+    - botones "Imprimir", "Descargar PDF", "Editar" (neutros) y "Borrar" (rojo),
+      en ese orden;
+    - un único PDF armado en la computadora, con jsPDF 4.2.1 con versión fija e
+      integrity, cargado recién al primer clic;
+    - fuentes libres incrustadas (Arimo y Tinos) para no perder ningún carácter;
+    - DNI en la línea de FECHA;
+    - letra mínima 8 pt y hoja de continuación para lo que no entra;
+    - fotos por hileras (80 mm mínimo, 120 mm máximo para una sola, 4 mm entre
+      fotos, 12 mm de margen), números fáciles de ajustar;
+    - marca de agua al 10 %;
+    - "Imprimir" abre el PDF en otra pestaña con la orden de imprimir adentro.
 
 ---
 

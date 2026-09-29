@@ -363,6 +363,7 @@ const Dashboard = (() => {
     Recortador.cancelar();
     Ficha.cerrar();
     Papelera.reiniciar();
+    Pdf.cerrarTodo();   // las pestañas de imprimir que abrió la app, afuera
     mostrarVista('estudios');
     mostrarSolo('cargando');
     $('perfil-estado').textContent = 'Se ve en la barra lateral y en el menú del celular.';

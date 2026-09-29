@@ -445,9 +445,67 @@ solo como referencia.
   con el nombre **tal cual está cargado** (sin reordenar ni adivinar el
   apellido), sin acentos y con guiones entre palabras (ej.: "Carlos Méndez" →
   `Ergometrico-12-Carlos-Mendez-2026-09-26.pdf`).
-- **DNI:** la planilla en papel no lo tiene; en el PDF va a la derecha de
-  "Paciente", sin romper el diseño (pregunta pendiente para el médico: si lo
-  quiere en la planilla impresa).
+- **DNI:** la planilla en papel no lo tiene; en el PDF va **en la línea de FECHA,
+  del lado derecho** que queda libre (la de PACIENTE ya tiene SEXO). Pregunta
+  pendiente para el médico: si lo quiere en la planilla impresa.
+
+**Cómo quedó hecho (T033):**
+
+- **Piezas** (para sumar otro estudio, se escribe solo su hoja 1):
+  - `js/planillas/ergometrico-hoja.js`: la hoja 1 del ergométrico (diseño, campos
+    y ajuste);
+  - `js/pdf/hojas-fotos.js`: las hojas de fotos, iguales para cualquier estudio;
+  - `js/pdf/herramientas.js`: carga de la librería, las fuentes y los logos, y
+    ayudas de texto;
+  - `js/pdf/armado.js`: el armado general, el nombre del archivo, descargar e
+    imprimir. Los botones están en `js/ficha.js`.
+- **Librería:** jsPDF 4.2.1 desde jsdelivr, con versión fija, `integrity` (SRI) y
+  `crossorigin`. Se carga **recién al tocar el primer botón**: no en el celular ni
+  al abrir la app.
+- **Fuentes incrustadas:** Arimo (misma medida que Arial) y Tinos (misma medida
+  que Times), libres (Apache 2.0), desde jsdelivr (`@expo-google-fonts`) con
+  versión fija e `integrity`. Las fuentes estándar de PDF no tienen, por ejemplo,
+  ≥ ≤ →. Antes de armar se controla que cada carácter esté en la fuente; si falta
+  uno (por ejemplo, un emoji), no se arma y se avisa cuál (nada se reemplaza en
+  silencio). Detalle: µ (micro) y μ (mu) son el mismo dibujo en la fuente; se ven
+  igual, pero al copiar el texto del PDF sale μ.
+- **Logos:** `assets/logos/logo-completo-impresion.png` (encabezado) y
+  `isologo-impresion.png` (marca de agua), pasados de SVG a PNG en alta resolución.
+- **Hoja 1:**
+  - A4 vertical, todo a **10 mm o más** del borde (márgenes de 11 mm a los
+    costados);
+  - letra de 10,5 pt;
+  - la marca de agua es el isologo grande al **10 % de opacidad**, en el mismo
+    lugar que en el papel (más tenue que el verde del papel, para no molestar la
+    lectura);
+  - el PDF pide imprimirse al 100 % (`PrintScaling: None`).
+- **Si un texto no entra**, en este orden:
+  1. las filas de la tabla se hacen más bajas (hasta 7 mm);
+  2. los renglones se juntan un poco;
+  3. se achica la letra de **ese** campo, de a medio punto, hasta **8 pt**
+     (mínimo legible impreso);
+  4. lo que igual no entra sigue, completo, en una hoja "Continuación de <campo>"
+     (con "Estudio N° X · paciente" arriba y "(sigue en la hoja N)" en la hoja 1).
+
+  Con muchas etapas, primero se decide cuántas entran sin tocar ningún texto (por
+  lo menos 4); las demás siguen en "Continuación de Reposo y esfuerzo".
+- **Hojas de fotos:** la regla por hileras (spec, RF-022). Los números están en
+  un solo objeto, `FOTOS_PDF`, en `js/pdf/hojas-fotos.js`: `alturaMinimaMm: 80`,
+  `alturaMaximaMm: 120`, `separacionMm: 4`, `margenMm: 12`. Cada foto se gira como
+  se sacó (`imageOrientation: 'from-image'`), se achica a 2000 px de lado largo y
+  pasa a JPEG 0,9. Si una foto no se puede bajar, no sale ningún PDF.
+- **Imprimir:** la pestaña se abre en el mismo clic (así el navegador no la
+  bloquea) y, cuando el PDF está listo, se carga ahí. El PDF de imprimir es el
+  mismo, con la orden estándar "imprimir al abrir" adentro. Probado: Chrome abre
+  solo la ventana de impresión. En Firefox (pdf.js también reconoce esa orden) y
+  en Edge no se pudo confirmar en una prueba automática. Por eso el aviso dice
+  "Si no aparece la ventana de impresión, tocá el botón de imprimir de esa
+  pestaña". Al cerrar sesión, esa pestaña se cierra.
+- **Privacidad:** el PDF vive en memoria mientras se usa. No se guarda en Supabase
+  ni en el navegador (ni localStorage, sessionStorage o caché), y no aparece nada
+  del paciente en la consola.
+- **Peso:** sin fotos, unos 270 KB (por las fuentes y los logos). Con 4 fotos
+  reales, cerca de 1 MB.
 
 ---
 

@@ -251,16 +251,50 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
 
 **Tanda 2 — imprimir y PDF**
 - **T033** "Imprimir" y "Descargar PDF" desde la ficha, con un único PDF armado
-  en la computadora (no se guarda en Supabase): hoja 1 la planilla completa en A4
-  igual a `planilla-delacanada.jpg`; hojas siguientes, las fotos del electro (si
-  tiene). El DNI va a la derecha de "Paciente". Nombre:
+  en la computadora (no se guarda en Supabase ni en el navegador): hoja 1 la
+  planilla completa en A4 igual a `planilla-delacanada.jpg`; hojas siguientes, las
+  fotos del electro (si tiene). Nombre:
   `Ergometrico-<número>-<nombre del paciente>-<AAAA-MM-DD>.pdf`, con el nombre
   tal cual está cargado, sin acentos y con guiones entre palabras (ej.:
-  `Ergometrico-12-Carlos-Mendez-2026-09-26.pdf`). Librería desde jsdelivr con
-  versión fija e `integrity`.
-  - *Conclusión:* es un campo de texto largo que va en la hoja 1 (no hay segunda
-    hoja de conclusiones). Hay que resolver cómo se ve si es muy larga, o si hay
-    más de cuatro etapas, para que la planilla entre en una sola A4 (RF-022).
+  `Ergometrico-12-Carlos-Mendez-2026-09-26.pdf`). Cubre RF-022. Sus partes:
+  - **Botones** (`js/ficha.js`):
+    - "Imprimir", "Descargar PDF" y "Editar", neutros, y "Borrar" en rojo; en modo
+      edición no están;
+    - mientras se arma: deshabilitados y "Armando el PDF…", y un doble clic no hace
+      nada dos veces;
+    - entran con zoom de 130 % y 200 %.
+  - **Recursos** (`js/pdf/herramientas.js`):
+    - jsPDF 4.2.1 y las fuentes Arimo y Tinos, desde jsdelivr con versión fija,
+      integrity y crossorigin, cargadas recién al primer clic;
+    - logos en PNG (`assets/logos/*-impresion.png`);
+    - control de caracteres: si falta uno, no se arma y se avisa.
+  - **Hoja 1** (`js/planillas/ergometrico-hoja.js`):
+    - el diseño del papel, con el DNI en la línea de FECHA;
+    - renglones de puntos, formatos de la ficha y nada inventado;
+    - tabla con filas en blanco hasta 4;
+    - ajuste: filas más bajas → renglones más juntos → letra del campo hasta 8 pt
+      → hoja de continuación. Con muchas etapas, las que no entran siguen en la
+      continuación sin tocar los textos;
+    - marca de agua al 10 % y márgenes de 10 mm o más.
+  - **Hojas de fotos** (`js/pdf/hojas-fotos.js`):
+    - regla por hileras con `FOTOS_PDF` (80 / 120 / 4 / 12 mm);
+    - fotos giradas como se sacaron, JPEG 0,9 y hasta 2000 px;
+    - si una foto falla, no sale nada.
+  - **Armado** (`js/pdf/armado.js`):
+    - nombre del archivo y descarga;
+    - "Imprimir" abre la pestaña en el clic y le carga el PDF con la orden de
+      imprimir; si no aparece la ventana de impresión, se usa el botón de esa
+      pestaña;
+    - al cerrar sesión se cierran esas pestañas;
+    - errores en criollo.
+  - **Probado:**
+    - en la compu, con Supabase simulado: 44 comprobaciones de los casos (PDF
+      convertidos a imagen y comparados con el papel, texto sacado del PDF) y 21
+      de los botones en Chrome, Edge y Firefox;
+    - contra el Supabase real, solo lectura, con los N° 22, 23, 24 y 26: nada
+      cambió, y en Chrome la ventana de impresión se abrió sola.
+  - **Falta** que Mauro imprima los PDF de ejemplo en la Epson L3110 y lo pruebe
+    en Firefox.
 
 **Tanda 3 — editar**
 - **T032** Editar un estudio ya guardado, desde la ficha: se corrigen los datos y
@@ -314,7 +348,12 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
 ## Preguntas para el médico
 
 - ¿Quiere el **DNI** en la planilla impresa? (La planilla en papel no lo tiene;
-  por ahora el PDF lo muestra a la derecha de "Paciente".)
+  por ahora el PDF lo muestra en la línea de FECHA, del lado derecho.)
+- **Fotos del electro impresas:** ¿cuántas fotos por hoja le parecen bien, y
+  desde qué tamaño se leen? (Hoy: una hilera no baja de 80 mm de alto y una foto
+  sola llega a 120 mm; se ajusta fácil en `FOTOS_PDF`.)
+- ¿Quiere algo más en la hoja impresa? Por ejemplo: firma, nombre y matrícula del
+  profesional, o el N° de estudio.
 
 ## Estudios de prueba a limpiar más adelante
 
