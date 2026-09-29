@@ -170,6 +170,31 @@
   background: var(--panel-hover);
 }
 
+/* "Borrar" de la ficha (T059): discreto, contorno rojo sin relleno */
+.panel-boton--borrar {
+  gap: 6px;
+  padding: 7px 12px;
+  min-height: 36px;
+  color: var(--borrar-texto);
+  background: transparent;
+  border-color: var(--borrar-borde);
+}
+
+.panel-boton--borrar:hover {
+  filter: none;
+  background: var(--borrar-hover);
+}
+
+.panel-boton--borrar:focus-visible {
+  box-shadow: var(--borrar-anillo-foco);
+}
+
+.panel-boton__icono {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
 /* --- Contenido --- */
 .vista {
   max-width: 1400px;
@@ -433,6 +458,41 @@
 
 .tabla-panel--ficha th {
   position: static;
+}
+
+/* Papelera (T059): las filas no se abren; solo el botón "Restaurar" */
+.papelera__ayuda {
+  margin: -6px 0 16px;
+  font-size: 14px;
+  color: var(--texto-secundario);
+}
+
+.tabla-panel--papelera tbody tr {
+  cursor: default;
+}
+
+.tabla-panel--papelera tbody tr:hover {
+  background: none;
+}
+
+.tabla-panel__col-accion { width: 130px; }
+
+.celda-correo {
+  white-space: nowrap;
+}
+
+.celda-accion {
+  text-align: right;
+}
+
+.papelera__restaurar {
+  min-height: 34px;
+  padding: 6px 14px;
+}
+
+/* Títulos que reciben el foco al volver (después de borrar o restaurar) */
+.encabezado-seccion__titulo:focus {
+  outline: none;
 }
 
 /* --- Estados: cargando, error, vacío --- */

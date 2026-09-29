@@ -210,6 +210,11 @@
   --recortador-afuera: rgba(4, 7, 7, 0.55);
   --recortador-borde: rgba(255, 255, 255, 0.95);
   --recortador-area-fondo: #DCE7E5;
+  /* Tanda 1c: botón "Borrar" de la ficha (discreto: contorno rojo, sin relleno) */
+  --borrar-texto: #B32F2F;
+  --borrar-borde: rgba(217, 63, 63, 0.45);
+  --borrar-hover: rgba(217, 63, 63, 0.10);
+  --borrar-anillo-foco: 0 0 0 3px rgba(217, 63, 63, 0.35);
 }
 
 /* --- Modo oscuro: la receta de LoMar con otra noche --- */
@@ -292,4 +297,8 @@
   --recortador-velo: rgba(0, 0, 0, 0.7);
   --recortador-afuera: rgba(0, 0, 0, 0.6);
   --recortador-area-fondo: #0A1E1B;
+  --borrar-texto: #FF9D93;
+  --borrar-borde: rgba(255, 138, 126, 0.50);
+  --borrar-hover: rgba(255, 138, 126, 0.14);
+  --borrar-anillo-foco: 0 0 0 3px rgba(255, 138, 126, 0.45);
 }

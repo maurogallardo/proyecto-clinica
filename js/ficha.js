@@ -14,6 +14,8 @@ const Ficha = (() => {
     error: document.getElementById('ficha-error'),
     errorTexto: document.getElementById('ficha-error-texto'),
     cuerpo: document.getElementById('ficha-cuerpo'),
+    acciones: document.getElementById('ficha-acciones'),
+    reintentar: document.getElementById('ficha-reintentar'),
     lightbox: document.getElementById('lightbox'),
     lightboxTitulo: document.getElementById('lightbox-titulo'),
     lightboxImagen: document.getElementById('lightbox-imagen'),
@@ -22,6 +24,7 @@ const Ficha = (() => {
   };
   let idActual = null;
   let alVolver = () => {};
+  let alMandarALaPapelera = () => {};
 
   // --- Cómo se muestra cada valor ---------------------------------------------------
 
@@ -215,7 +218,53 @@ const Ficha = (() => {
     seccionPie.classList.add('ficha__seccion--pie');
     secciones.push(seccionPie);
     el.cuerpo.replaceChildren(...secciones);
+    el.acciones.replaceChildren(botonBorrar(estudio));
     mostrarSolo('ficha');
+  }
+
+  // --- Borrar = mandar a la Papelera (T059) ----------------------------------------------
+  // Discreto y en rojo. Pregunta antes; mientras trabaja queda deshabilitado (un
+  // doble clic no hace nada dos veces). No se borra nada de verdad.
+
+  function botonBorrar(estudio) {
+    const boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = 'panel-boton panel-boton--borrar';
+    boton.id = 'ficha-borrar';
+    boton.innerHTML = '<svg class="panel-boton__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6" /><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" /></svg>';
+    boton.append('Borrar');
+    boton.addEventListener('click', () => borrar(estudio, boton));
+    return boton;
+  }
+
+  async function borrar(estudio, boton) {
+    if (boton.dataset.ocupado) return;
+    boton.dataset.ocupado = '1';   // (no se deshabilita todavía: al cerrar el cartel el foco vuelve acá)
+    const paciente = tieneValor(estudio.nombre_paciente) ? ` (${String(estudio.nombre_paciente).trim()})` : '';
+    const si = await preguntar({
+      titulo: '¿Mandar a la Papelera?',
+      texto: `El estudio N° ${estudio.numero}${paciente} deja de verse en la lista y en los números. No se borra: se puede restaurar desde la Papelera.`,
+      textoConfirmar: 'Mandar a la Papelera',
+      peligro: true,
+    });
+    if (!si || idActual !== estudio.id) {
+      delete boton.dataset.ocupado;
+      return;
+    }
+    boton.disabled = true;
+    boton.lastChild.textContent = 'Borrando…';
+    const { numero, problema } = await Papelera.anular(estudio.id);
+    const sigueEnLaFicha = idActual === estudio.id;   // (mientras tanto se pudo volver a la lista)
+    if (problema) {
+      if (!sigueEnLaFicha) return;
+      boton.disabled = false;
+      boton.lastChild.textContent = 'Borrar';
+      delete boton.dataset.ocupado;
+      boton.focus();
+      mostrarAviso(problema, 'error', 5000);
+      return;
+    }
+    alMandarALaPapelera(numero, sigueEnLaFicha);
   }
 
   function mostrarSolo(parte) {
@@ -230,6 +279,7 @@ const Ficha = (() => {
     idActual = id;
     el.titulo.textContent = 'Estudio ergométrico';
     el.cuerpo.replaceChildren();
+    el.acciones.replaceChildren();
     mostrarSolo('cargando');
     window.scrollTo(0, 0);
     try {
@@ -245,7 +295,13 @@ const Ficha = (() => {
       if (idActual !== id) return;   // mientras tanto se volvió o se abrió otro
       if (error) throw error;
       if (!data) {
-        mostrarError('No se encontró el estudio (puede que no sea tuyo o que ya no exista).');
+        mostrarError('No se encontró el estudio (puede que no sea tuyo o que ya no exista).', false);
+        return;
+      }
+      // Uno que está en la Papelera no se abre: primero hay que restaurarlo
+      if (data.en_papelera) {
+        el.titulo.textContent = `Estudio ergométrico · N° ${data.numero ?? '—'}`;
+        mostrarError('Este estudio está en la Papelera. Para verlo, restauralo desde la Papelera.', false);
         return;
       }
       // Etapas en orden de tiempo (las que no tienen tiempo, al final)
@@ -264,8 +320,10 @@ const Ficha = (() => {
     }
   }
 
-  function mostrarError(texto) {
+  // "Reintentar" solo cuando tiene sentido (no si el estudio no está o está en la Papelera)
+  function mostrarError(texto, conReintentar = true) {
     el.errorTexto.textContent = texto;
+    el.reintentar.hidden = !conReintentar;
     mostrarSolo('error');
   }
 
@@ -335,6 +393,7 @@ const Ficha = (() => {
     cerrarLightbox();
     idActual = null;
     el.cuerpo.replaceChildren();   // los datos del paciente no quedan en la pantalla
+    el.acciones.replaceChildren();
   }
 
   document.getElementById('ficha-volver').addEventListener('click', () => alVolver());
@@ -345,6 +404,7 @@ const Ficha = (() => {
     abrir,
     cerrar,
     alVolverALaLista: (funcion) => { alVolver = funcion; },
+    alMandarALaPapelera: (funcion) => { alMandarALaPapelera = funcion; },
     fechaHora,
   };
 })();

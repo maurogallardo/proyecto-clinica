@@ -227,11 +227,15 @@ actuales. Se hace en tres tandas; al final de cada una, Mauro prueba.
   registro de borrados y restauraciones, funciones `anular_estudio` y
   `restaurar_estudio`, control que impide hacerlo por otra vía). Mauro lo revisó
   y lo corrió en Supabase ("Success. No rows returned").
-- **T059** Papelera, pantalla (después de correr el SQL): ítem "Papelera" en la
-  barra lateral (N°, paciente, DNI, quién lo borró y cuándo, botón "Restaurar");
-  botón "Borrar" en la ficha, discreto y en rojo, con cartel "¿Seguro?"; el
-  listado, los números y la búsqueda sin los que están en la Papelera; la ficha
-  no abre un estudio que esté en la Papelera.
+- **T059** Papelera, pantalla (`js/papelera.js`): ítem "Papelera" en la barra
+  lateral, debajo de Configuración (N°, paciente, DNI, quién lo borró y cuándo,
+  botón "Restaurar"; vacía: "La papelera está vacía."); botón "Borrar" en la
+  ficha, discreto y en rojo, con cartel "¿Mandar a la Papelera?" y aviso "Estudio
+  N° X enviado a la Papelera"; "Restaurar" avisa "Estudio N° X restaurado"; doble
+  clic sin efecto; el listado, los números y la búsqueda sin los que están en la
+  Papelera; la ficha no abre un estudio que esté en la Papelera. Probada contra
+  el Supabase real con los estudios de prueba N° 18, 19 y 20 (quedaron
+  restaurados). Falta que Mauro la pruebe.
 
 **Tanda 2 — imprimir y PDF**
 - **T033** "Imprimir" y "Descargar PDF" desde la ficha, con un único PDF armado

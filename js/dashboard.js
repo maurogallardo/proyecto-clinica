@@ -6,13 +6,20 @@
 //
 // Fechas: la tabla, los números y los filtros usan la fecha y hora de CARGA
 // (creado_en). "Esta semana" = de lunes a hoy; "Este mes" = desde el día 1.
+//
+// Los estudios que están en la Papelera (T059, js/papelera.js) no se piden: no
+// aparecen en la tabla, ni en los números, ni en la búsqueda.
 
 const PANEL = { tiempoMaximoMs: 20000, largoConclusion: 90 };
 
 const Dashboard = (() => {
   const $ = (id) => document.getElementById(id);
   const el = {
-    vistas: { estudios: $('vista-estudios'), ficha: $('vista-ficha'), configuracion: $('vista-configuracion') },
+    vistas: {
+      estudios: $('vista-estudios'), ficha: $('vista-ficha'),
+      configuracion: $('vista-configuracion'), papelera: $('vista-papelera'),
+    },
+    tituloEstudios: document.querySelector('#vista-estudios .encabezado-seccion__titulo'),
     navegacion: [...document.querySelectorAll('.navegacion__item')],
     contador: $('panel-contador'),
     actualizar: $('panel-actualizar'),
@@ -206,6 +213,7 @@ const Dashboard = (() => {
       const reloj = setTimeout(() => cortar.abort(), PANEL.tiempoMaximoMs);
       const { data, error } = await clienteSupabase.from('estudios')
         .select('id, numero, creado_en, nombre_paciente, documento, medico_solicitante, conclusion, imagenes(count)')
+        .eq('en_papelera', false)
         .order('creado_en', { ascending: false })
         .abortSignal(cortar.signal);
       clearTimeout(reloj);
@@ -228,11 +236,11 @@ const Dashboard = (() => {
     }
   }
 
-  // --- Secciones: Estudios (lista o ficha) y Configuración ----------------------------------
+  // --- Secciones: Estudios (lista o ficha), Configuración y Papelera --------------------------
 
   function mostrarVista(nombre) {
     Object.entries(el.vistas).forEach(([clave, vista]) => { vista.hidden = clave !== nombre; });
-    const seccion = nombre === 'configuracion' ? 'configuracion' : 'estudios';
+    const seccion = nombre === 'ficha' ? 'estudios' : nombre;
     el.navegacion.forEach((b) => {
       const activa = b.dataset.seccion === seccion;
       b.classList.toggle('esta-activa', activa);
@@ -257,13 +265,29 @@ const Dashboard = (() => {
   });
 
   el.navegacion.forEach((boton) => boton.addEventListener('click', () => {
-    if (boton.dataset.seccion === 'configuracion') {
+    const seccion = boton.dataset.seccion;
+    if (seccion === 'configuracion' || seccion === 'papelera') {
       Ficha.cerrar();
-      mostrarVista('configuracion');
+      mostrarVista(seccion);
+      if (seccion === 'papelera') Papelera.cargar();   // cada vez, así está al día
     } else {
       irALaLista();
     }
   }));
+
+  // Borrar desde la ficha: vuelve a la lista (ya sin ese estudio) y avisa
+  el.tituloEstudios.tabIndex = -1;   // para poder dejarle el foco
+  Ficha.alMandarALaPapelera((numero, sigueEnLaFicha) => {
+    if (!yaCargo) return;   // mientras tanto se cerró la sesión
+    if (sigueEnLaFicha) {
+      irALaLista();
+      el.tituloEstudios.focus();
+    }
+    cargar();
+    mostrarAviso(`Estudio N° ${numero} enviado a la Papelera`, 'exito', 4000);
+  });
+  // Restaurar desde la Papelera: la lista de estudios lo vuelve a tener
+  Papelera.alRestaurarUno(() => { if (yaCargo) cargar(); });
   el.filas.addEventListener('click', (evento) => {
     const fila = evento.target.closest('tr[data-estudio-id]');
     if (fila) abrirEstudio(fila.dataset.estudioId);
@@ -332,6 +356,7 @@ const Dashboard = (() => {
     calendario.cerrar();
     Recortador.cancelar();
     Ficha.cerrar();
+    Papelera.reiniciar();
     mostrarVista('estudios');
     mostrarSolo('cargando');
     $('perfil-estado').textContent = 'Se ve en la barra lateral y en el menú del celular.';

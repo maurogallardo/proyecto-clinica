@@ -316,11 +316,20 @@ número no se reutiliza.
   que toque las columnas de la Papelera si no viene de esas funciones.
 - **No cuenta como edición:** mandar a la Papelera o restaurar no cambia la
   "Última edición" (`modificado_por` / `modificado_en`).
-- **Pantalla (cuando el SQL esté corrido):** ítem "Papelera" en la barra lateral,
-  con la lista de estudios borrados (N°, paciente, DNI, quién lo borró y cuándo)
-  y un botón "Restaurar". En la ficha, un botón "Borrar" discreto, en rojo, con un
-  cartel "¿Seguro?" que avisa que va a la Papelera y se puede restaurar. El
-  listado, los números y la búsqueda piden solo los que no están en la Papelera.
+- **Pantalla (T059, `js/papelera.js`; el SQL ya está corrido):** ítem "Papelera"
+  en la barra lateral, debajo de Configuración, con la lista de estudios borrados
+  (N°, paciente, DNI, quién lo borró —su correo— y cuándo) y un botón "Restaurar"
+  por fila; las filas no se abren. Se vuelve a pedir cada vez que se entra. Vacía:
+  "La papelera está vacía." En la ficha, un botón "Borrar" discreto, en rojo, en
+  `#ficha-acciones`, con el cartel "¿Mandar a la Papelera?" ("Volver" / "Mandar a
+  la Papelera", en rojo); después vuelve a la lista, recargada, con el aviso
+  "Estudio N° X enviado a la Papelera". "Restaurar" avisa "Estudio N° X
+  restaurado". Mientras trabajan, los botones quedan deshabilitados (un doble clic
+  no hace nada dos veces). El listado, los números y la búsqueda piden solo
+  `en_papelera = false`; la ficha de uno que está en la Papelera no se abre (dice
+  que hay que restaurarlo). Errores en criollo y nada de datos de pacientes en la
+  consola. El cartel de toda la app ahora mantiene el foco adentro (Tab da vueltas
+  entre sus botones).
 - **Para la Tanda 3 (Editar):** la función de edición tiene que rechazar un
   estudio que esté en la Papelera.
 

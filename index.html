@@ -272,6 +272,14 @@
             </svg>
             <span>Configuración</span>
           </button>
+          <button type="button" class="navegacion__item" data-seccion="papelera">
+            <svg class="navegacion__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h16M10 11v6M14 11v6" />
+              <path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" />
+            </svg>
+            <span>Papelera</span>
+          </button>
         </nav>
 
         <button type="button" class="panel-boton panel-boton--fantasma lateral__salir" id="panel-cerrar-sesion">Cerrar sesión</button>
@@ -415,6 +423,52 @@
             </section>
           </div>
         </section>
+
+        <!-- Papelera (T059, js/papelera.js): los estudios borrados desde la ficha.
+             No se abren ni se editan desde acá: solo se restauran. -->
+        <section class="vista" id="vista-papelera" hidden>
+          <div class="encabezado-seccion">
+            <div>
+              <span class="encabezado-seccion__antetitulo">Servicio de Cardiología</span>
+              <h1 class="encabezado-seccion__titulo">Papelera</h1>
+            </div>
+            <div class="encabezado-seccion__derecha">
+              <span class="contador" id="papelera-contador" hidden></span>
+              <button type="button" class="panel-boton panel-boton--fantasma" id="papelera-actualizar" hidden>Actualizar</button>
+            </div>
+          </div>
+          <p class="papelera__ayuda">Los estudios borrados quedan acá, con quién los borró y cuándo. No se ven en la lista ni en los números. Para verlos, restauralos.</p>
+
+          <div class="estado-panel" id="papelera-cargando">
+            <span class="ruedita" aria-hidden="true"></span>
+            <p class="estado-panel__texto">Cargando la papelera…</p>
+          </div>
+          <div class="estado-panel estado-panel--error" id="papelera-error" hidden>
+            <p class="estado-panel__texto" id="papelera-error-texto">No se pudo cargar la papelera.</p>
+            <button type="button" class="panel-boton" id="papelera-reintentar">Reintentar</button>
+          </div>
+          <div class="estado-panel" id="papelera-vacio" hidden>
+            <p class="estado-panel__texto">La papelera está vacía.</p>
+          </div>
+
+          <div class="tarjeta-panel tarjeta-tabla" id="papelera-tabla" hidden>
+            <div class="tabla-desplazable">
+              <table class="tabla-panel tabla-panel--papelera">
+                <thead>
+                  <tr>
+                    <th scope="col" class="tabla-panel__col-numero">N°</th>
+                    <th scope="col">Paciente</th>
+                    <th scope="col" class="tabla-panel__col-dni">DNI</th>
+                    <th scope="col">Borrado por</th>
+                    <th scope="col" class="tabla-panel__col-fecha">Fecha y hora</th>
+                    <th scope="col" class="tabla-panel__col-accion"><span class="solo-lectores">Acción</span></th>
+                  </tr>
+                </thead>
+                <tbody id="papelera-filas"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -500,6 +554,7 @@
   <script src="js/perfil.js"></script>
   <script src="js/calendario.js"></script>
   <script src="js/recortador.js"></script>
+  <script src="js/papelera.js"></script>
   <script src="js/ficha.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/login.js"></script>

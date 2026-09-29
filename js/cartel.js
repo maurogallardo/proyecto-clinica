@@ -60,7 +60,17 @@ function preguntar({
     const alConfirmar = () => cerrar(true);
     const alTercero = () => cerrar('tercero');
     const alTocarAfuera = (evento) => { if (cancelable && evento.target === velo) cerrar(false); };
-    const alTecla = (evento) => { if (cancelable && evento.key === 'Escape') cerrar(false); };
+    const alTecla = (evento) => {
+      if (cancelable && evento.key === 'Escape') cerrar(false);
+      // Con Tab el foco da vueltas entre los botones del cartel (no se va a lo de atrás)
+      if (evento.key === 'Tab') {
+        const botones = [botonTercero, botonVolver, botonConfirmar].filter((b) => !b.hidden);
+        const actual = botones.indexOf(document.activeElement);
+        const paso = evento.shiftKey ? -1 : 1;
+        evento.preventDefault();
+        botones[(actual + paso + botones.length) % botones.length].focus();
+      }
+    };
 
     botonVolver.addEventListener('click', alVolver);
     botonConfirmar.addEventListener('click', alConfirmar);
