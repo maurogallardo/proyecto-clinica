@@ -361,7 +361,9 @@ imprimir/exportar con el formato de la planilla original.
   - Cada edición guarda en un **historial** cómo estaba el estudio antes (con sus
     etapas), quién (con su correo) y cuándo (hora del servidor). El historial no se
     ve ni se puede cambiar desde la app. En la ficha se ve solo "Última edición:
-    día y hora".
+    día y hora". La pantalla **no menciona el historial** en ningún lado:
+    carteles, avisos y textos de ayuda no hablan de él. El cartel de guardar dice
+    solo "Se van a guardar los cambios del estudio N° X."
   - **Edición cruzada:** si otra persona u otra pestaña lo cambió mientras tanto,
     no se guarda y avisa en criollo. Se puede elegir cargar la versión nueva o
     seguir editando, para no perder lo escrito sin aviso.

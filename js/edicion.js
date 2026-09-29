@@ -73,7 +73,7 @@ const Edicion = (() => {
     const esta = vuelta;
     const si = await preguntar({
       titulo: '¿Guardar los cambios?',
-      texto: `Se van a guardar los cambios del estudio N° ${estudio.numero}. Queda registrado cómo estaba antes.`,
+      texto: `Se van a guardar los cambios del estudio N° ${estudio.numero}.`,
       textoConfirmar: 'Guardar cambios',
     });
     if (!si || esta !== vuelta) return null;
