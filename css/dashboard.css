@@ -635,6 +635,31 @@
   height: auto;
 }
 
+/* Encabezado de la ficha más compacto, para que "Volver", el título, los botones y
+   el logo entren en una sola línea hasta 150 % de zoom (en una pantalla de 1920 px).
+   Solo acá: los botones del resto del panel (.panel-boton) no cambian. Con más
+   zoom, el logo baja de renglón. En ventanas de hasta 600 px queda como estaba. */
+@media (min-width: 601px) {
+  .ficha__cabecera .panel-boton {
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .ficha__acciones {
+    gap: 6px;
+  }
+
+  .ficha__titulo {
+    font-size: 15px;
+  }
+
+  /* Si el logo baja de renglón, queda a la derecha (como en la línea completa) */
+  .ficha__logo {
+    margin-left: auto;
+  }
+}
+
 .ficha__cuerpo {
   display: flex;
   flex-direction: column;

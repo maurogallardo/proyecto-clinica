@@ -218,9 +218,15 @@ no por detrás (como en LoMar).
     marcado con un borde. Mismos tokens en claro y oscuro. Se usa con teclado
     (flechas para moverse, Enter para elegir, Esc para cerrar).
   - **Ficha:** cabecera **fija arriba** al bajar (opaca, con una sombra suave para
-    separarla del contenido) con "← Volver", título y logo, y lugar para los
-    botones "Imprimir", "Descargar PDF" y "Editar"; los datos agrupados como la
-    planilla (los vacíos con "—"); fotos del electro en miniatura.
+    separarla del contenido) con "← Volver", título, los botones "Imprimir",
+    "Descargar PDF", "Editar" y "Borrar" (al editar: "Cancelar" y "Guardar
+    cambios") y el logo. Es más compacta que el resto del panel: botones de 34 px
+    de alto con letra de 13 px, 6 px entre botones y título de 15 px, para que todo
+    entre en **una sola línea hasta 150 % de zoom en una pantalla de 1920 px**. Con
+    más zoom (o en una notebook de 1366 px desde 125 %), el logo baja de renglón y
+    queda a la derecha. En ventanas de hasta 600 px queda como antes. Los datos van
+    agrupados como la planilla (los vacíos con "—"), y las fotos del electro en
+    miniatura.
   - **Vista ampliada de fotos:** como la de LoMar, por encima de todo, con ✕
     para cerrar.
   - **Configuración:** modo de color (mismo selector que el celular), correo con

@@ -364,6 +364,9 @@ decida.
 - **N° 25 "PRUEBA EDICION T061"**: lo creó la prueba real de Editar (T061) para
   comprobar que la carga desde el celular sigue andando sin los permisos
   directos. Quedó en la Papelera.
+- **N° 24** (antes "PREUBA PAPELERA"): estudio de prueba de la Papelera y de
+  Editar. Ahora tiene cargado otro nombre (ya no dice "PRUEBA"): no hay que
+  confundirlo con un paciente real. Las pruebas ya no lo usan.
 
 ## Fase 5 — Pruebas y cierre de la demo
 
