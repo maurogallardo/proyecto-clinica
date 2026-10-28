@@ -3,7 +3,7 @@
 > Documento fundacional (Spec-Driven Development / Spec Kit).
 > Ubicación sugerida en el repo: `.specify/memory/constitution.md`
 >
-> **Versión:** 1.3.0
+> **Versión:** 1.4.0
 > **Ratificada:** 2026-09-21
 > **Última modificación:** 2026-10-28
 
@@ -84,6 +84,24 @@ costo real y quién lo paga.
 Cada planilla guardada deja registro de quién la cargó y cuándo. En salud, y
 para la confianza del cliente, tiene que poder saberse el origen de cada
 estudio.
+
+### 8. Mauro decide
+
+Principio 8 — Mauro decide. Ninguna decisión se toma sin consultarla antes con
+Mauro, ni por la IA que asiste (Claude, Claude Code) ni por nadie más. Esto
+incluye alcance, orden de trabajo, nombres y textos de pantalla, estructura de
+la base y forma de probar. Una propuesta de la IA se presenta como propuesta,
+con su razón, y solo se aplica cuando Mauro la aprueba. Lo que no está definido
+se marca [A DEFINIR] y se pregunta, de a una pregunta y con palabras simples. No
+se asume. Cualquier cambio a la constitución se hace primero, antes de tocar la
+especificación, el plan, las tareas o el código.
+
+Este principio rige siempre, sin importar su lugar en la lista. Se refiere a
+cómo se construye el proyecto (qué se hace, en qué orden, con qué herramientas y
+cómo se prueba): ahí, ninguna otra regla de la lista, ni siquiera la simplicidad
+o el bajo costo, alcanza como excusa para decidir sin consultarlo. No cambia cómo
+funciona la app para el profesional: eso lo siguen definiendo los otros
+principios.
 
 ---
 
@@ -228,4 +246,4 @@ estudio.
 - Cuando este documento cambie, se revisa que la especificación y el plan sigan
   siendo coherentes con él.
 
-**Versión:** 1.3.0 | **Ratificada:** 2026-09-21 | **Última modificación:** 2026-10-28
+**Versión:** 1.4.0 | **Ratificada:** 2026-09-21 | **Última modificación:** 2026-10-28
