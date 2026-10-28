@@ -9,14 +9,11 @@
 //      fotos", o el de error con "Reintentar".
 // Una vez guardado, el estudio no se edita desde el celular (se corrige desde el
 // dashboard, T032): la planilla vuelve a empezar.
+//
+// Los datos mínimos, la función de la base y los textos de pantalla salen de la
+// planilla activa (PLANILLA y textoDePlanilla, js/planillas/activa.js).
 
 const TIEMPO_MAXIMO_GUARDADO_MS = 30000;
-
-// Datos mínimos para guardar (RF-023)
-const DATOS_MINIMOS = [
-  { columna: 'documento', falta: 'el DNI' },
-  { columna: 'nombre_paciente', falta: 'el nombre' },
-];
 
 const MENSAJES_GUARDADO = {
   conexion: 'Sin conexión. La planilla sigue en pantalla: probá de nuevo cuando tengas señal.',
@@ -55,16 +52,16 @@ function hayDictadoAMedias() {
   return true;
 }
 
-// DNI y nombre: si falta alguno, avisa cuál y va a ese campo (también lo usa la
-// edición del dashboard, con su planilla)
+// Los datos mínimos de la planilla (en el ergométrico, DNI y nombre): si falta
+// alguno, avisa cuál y va a ese campo (también lo usa la edición del dashboard)
 function faltanDatosMinimos(estudio, contenedor = contenedorCarga) {
-  const faltan = DATOS_MINIMOS.filter(({ columna }) => {
+  const faltan = PLANILLA.datosMinimos.filter(({ columna, soloCifras }) => {
     const valor = estudio[columna];
-    return valor === null || (columna === 'documento' && String(valor).replace(/\D/g, '') === '');
+    return valor === null || (soloCifras && String(valor).replace(/\D/g, '') === '');
   });
   if (faltan.length === 0) return false;
   const lista = faltan.map((d) => d.falta).join(' y ');
-  mostrarAviso(`Para guardar, falta ${lista} del paciente.`, 'error', 5000);
+  mostrarAviso(textoDePlanilla('faltanDatos', { lista }), 'error', 5000);
   irAlCampo(controlDeCampo(contenedor, faltan[0].columna));
   return true;
 }
@@ -90,7 +87,7 @@ function hayNumeroMalEscrito(contenedor) {
 
 // Primera letra en mayúscula en los textos libres (js/formulario.js)
 function ponerMayusculaInicial() {
-  ponerMayusculaInicialEn(contenedorCarga, PLANILLA_ERGOMETRICO);
+  ponerMayusculaInicialEn(contenedorCarga, PLANILLA);
 }
 
 async function confirmarEstudio() {
@@ -107,8 +104,8 @@ async function confirmarEstudio() {
     const datos = datosParaGuardar();
     if (faltanDatosMinimos(datos.estudio) || hayNumeroMalEscrito(contenedorCarga)) return;
     const confirma = await preguntar({
-      titulo: '¿Confirmar estudio?',
-      texto: `Se va a guardar el estudio de ${datos.estudio.nombre_paciente}.`,
+      titulo: textoDePlanilla('confirmarTitulo'),
+      texto: textoDePlanilla('confirmarTexto', datos.estudio),
       textoConfirmar: 'Confirmar y guardar',
     });
     if (confirma) await guardarEstudio(datos);
@@ -142,7 +139,7 @@ async function guardarEstudio(datos) {
     const cortar = new AbortController();
     const reloj = setTimeout(() => cortar.abort(), TIEMPO_MAXIMO_GUARDADO_MS);
     const { data, error } = await clienteSupabase
-      .rpc('guardar_estudio', { p_id: idEstudioEnCurso, p_estudio: datos.estudio, p_etapas: datos.etapas })
+      .rpc(PLANILLA.base.guardar, { p_id: idEstudioEnCurso, p_estudio: datos.estudio, p_etapas: datos.etapas })
       .abortSignal(cortar.signal);
     clearTimeout(reloj);
     if (error) throw error;
@@ -152,7 +149,7 @@ async function guardarEstudio(datos) {
     tipoDeError = !navigator.onLine || /fetch|network|abort|sin conexión/i.test(mensaje) ? 'conexion' : 'general';
     console.error('No se pudo guardar el estudio');   // sin datos del paciente en el registro
   } finally {
-    ponerBoton('Confirmar estudio', false);
+    ponerBoton(textoDePlanilla('botonConfirmar'), false);
   }
 
   if (vuelta !== vueltaDeCarga) return;   // se cerró la sesión mientras guardaba
@@ -173,7 +170,7 @@ async function subirLasFotos(guardado) {
     const vuelta = vueltaDeCarga;
     ponerBoton('Subiendo fotos…', true);
     await subirFotos(guardado.id);
-    ponerBoton('Confirmar estudio', false);
+    ponerBoton(textoDePlanilla('botonConfirmar'), false);
     if (vuelta !== vueltaDeCarga) return;   // se cerró la sesión mientras subía
   }
   const faltan = fotosSinGuardar().length;
@@ -187,13 +184,13 @@ async function subirLasFotos(guardado) {
 async function fotosPendientes(guardado, faltan) {
   const cuales = faltan === 1 ? 'no se pudo subir 1 foto' : `no se pudieron subir ${faltan} fotos`;
   const eleccion = await preguntar({
-    titulo: `Estudio guardado — N° ${guardado.numero}, pero ${cuales}`,
+    titulo: textoDePlanilla('guardadoSinFotos', { numero: guardado.numero, cuales }),
     texto: navigator.onLine
       ? 'Las fotos que faltan siguen en el celular.'
       : 'Sin conexión. Las fotos que faltan siguen en el celular: probá de nuevo cuando tengas señal.',
     icono: 'error',
     textoConfirmar: 'Reintentar fotos',
-    textoVolver: 'Cargar nuevo estudio',
+    textoVolver: textoDePlanilla('cargarOtro'),
     textoTercero: 'Cerrar sesión',
     columna: true,
     cancelable: false,
@@ -207,7 +204,7 @@ async function fotosPendientes(guardado, faltan) {
   // "Cargar nuevo estudio" o "Cerrar sesión": primero, que decida si pierde las fotos
   const pierde = await preguntar({
     titulo: '¿Seguir sin esas fotos?',
-    texto: `El estudio N° ${guardado.numero} ya quedó guardado, pero sin ${faltan === 1 ? '1 foto' : `${faltan} fotos`}. Si seguís, se borran del celular.`,
+    texto: textoDePlanilla('seguirSinFotos', { numero: guardado.numero, cuantas: faltan === 1 ? '1 foto' : `${faltan} fotos` }),
     textoConfirmar: 'Seguir sin las fotos',
     textoVolver: 'Volver',
     peligro: true,
@@ -238,10 +235,10 @@ async function estudioGuardado(numero) {
   empezarDeNuevo();
 
   const cargarOtro = await preguntar({
-    titulo: `Estudio guardado — N° ${numero}`,
+    titulo: textoDePlanilla('guardado', { numero }),
     texto: 'Los datos se guardaron correctamente.',
     icono: 'exito',
-    textoConfirmar: 'Cargar nuevo estudio',
+    textoConfirmar: textoDePlanilla('cargarOtro'),
     textoVolver: 'Cerrar sesión',
     columna: true,
     cancelable: false,    // así nadie cierra sesión sin querer tocando afuera
@@ -252,7 +249,7 @@ async function estudioGuardado(numero) {
 
 async function errorAlGuardar(tipo, datos) {
   const reintentar = await preguntar({
-    titulo: 'No se pudo guardar el estudio',
+    titulo: textoDePlanilla('errorAlGuardar'),
     texto: MENSAJES_GUARDADO[tipo] || MENSAJES_GUARDADO.general,
     icono: 'error',
     textoConfirmar: 'Reintentar',
@@ -266,4 +263,6 @@ function olvidarEstudioEnCurso() {
   vueltaDeCarga++;
 }
 
+// El botón dice lo de la planilla activa (en el ergométrico, "Confirmar estudio")
+botonConfirmar().textContent = textoDePlanilla('botonConfirmar');
 botonConfirmar().addEventListener('click', confirmarEstudio);

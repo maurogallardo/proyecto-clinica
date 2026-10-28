@@ -104,4 +104,48 @@ const PLANILLA_ERGOMETRICO = {
       { tiempo: 9, carga: 150 },
     ],
   },
+
+  // --- Lo que el resto de la app lee de la planilla (Fase 0 del Formulario N° 5) ---
+
+  // Funciones de la base. Parámetros: p_id, p_estudio, p_etapas (las del N° 5 se van
+  // a llamar igual, para que la app no necesite ramas)
+  base: {
+    guardar: 'guardar_estudio',
+  },
+
+  // Fotos: cada planilla tiene su tabla de fotos y su espacio de almacenamiento
+  //   tabla / columna: la tabla con una fila por foto, y la columna que la une a la planilla
+  //   deposito: el espacio de almacenamiento (privado) de los archivos
+  //   ruta: dónde va cada archivo ({id}: el de la planilla guardada; {foto}: el de la foto)
+  //   tipo: lo que se anota en cada fila (en la demo no se pregunta)
+  fotos: {
+    tabla: 'imagenes',
+    columna: 'estudio_id',
+    deposito: 'imagenes-estudios',
+    ruta: '{id}/{foto}.webp',
+    tipo: 'electro',
+  },
+
+  // Datos mínimos para guardar (RF-023). soloCifras: cuenta como vacío si no tiene
+  // ningún número (un DNI escrito solo con puntos o espacios)
+  datosMinimos: [
+    { columna: 'documento', falta: 'el DNI', soloCifras: true },
+    { columna: 'nombre_paciente', falta: 'el nombre' },
+  ],
+
+  // Textos de pantalla (los huecos entre llaves los completa textoDePlanilla)
+  textos: {
+    botonConfirmar: 'Confirmar estudio',
+    confirmarTitulo: '¿Confirmar estudio?',
+    confirmarTexto: 'Se va a guardar el estudio de {nombre_paciente}.',
+    faltanDatos: 'Para guardar, falta {lista} del paciente.',
+    guardado: 'Estudio guardado — N° {numero}',
+    guardadoSinFotos: 'Estudio guardado — N° {numero}, pero {cuales}',
+    seguirSinFotos: 'El estudio N° {numero} ya quedó guardado, pero sin {cuantas}. Si seguís, se borran del celular.',
+    cargarOtro: 'Cargar nuevo estudio',
+    errorAlGuardar: 'No se pudo guardar el estudio',
+    fotosDeMas: 'Máximo {maximo} fotos por estudio: {cuantas}',
+    fotosAlMaximo: 'Ya hay {maximo} fotos: es el máximo por estudio.',
+    fotosNombre: 'Fotos del estudio',   // lo que lee un lector de pantalla en la tira de miniaturas
+  },
 };

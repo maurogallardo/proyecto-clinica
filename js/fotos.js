@@ -6,6 +6,8 @@
 //     carpeta del estudio (T027) y se guarda su fila en `imagenes` (T028).
 //   - Ver las fotos de un estudio guardado es en el dashboard (Fase 4), con
 //     enlaces firmados que caducan: enlaceFirmado() queda lista (T029).
+//   - La tabla de fotos, el espacio de almacenamiento, la ruta de cada archivo y los
+//     textos salen de la planilla activa (PLANILLA.fotos y textoDePlanilla).
 
 const FOTOS = {
   maximo: 10,                            // por estudio
@@ -14,8 +16,8 @@ const FOTOS = {
   calidad: 0.85,
   calidadMinima: 0.6,
   pesoMaximo: 4.5 * 1024 * 1024,         // con margen: el depósito acepta hasta 5 MB
-  tipo: 'electro',                       // en la demo no se pregunta el tipo
-  deposito: 'imagenes-estudios',
+  tipo: PLANILLA.fotos.tipo,             // en la demo no se pregunta el tipo
+  deposito: PLANILLA.fotos.deposito,     // el espacio de almacenamiento de la planilla
   tiempoMaximoSubidaMs: 60000,
   enlaceSegundos: 10 * 60,               // los enlaces firmados caducan a los 10 minutos
 };
@@ -194,7 +196,7 @@ function avisoDeFotos({ agregadas, noImagenes, sobrantes, lectura, formato }) {
   if (lectura) problemas.push(plural(lectura, '1 no se pudo abrir: probá elegirla de nuevo.', '# no se pudieron abrir: probá elegirlas de nuevo.'));
   if (formato) problemas.push(plural(formato, '1 no se pudo preparar (el formato no es compatible).', '# no se pudieron preparar (el formato no es compatible).'));
   if (noImagenes) problemas.push(plural(noImagenes, 'Solo se pueden adjuntar fotos: 1 archivo no se agregó.', 'Solo se pueden adjuntar fotos: # archivos no se agregaron.'));
-  if (sobrantes) problemas.push(`Máximo ${FOTOS.maximo} fotos por estudio: ${plural(sobrantes, '1 no se agregó.', '# no se agregaron.')}`);
+  if (sobrantes) problemas.push(textoDePlanilla('fotosDeMas', { maximo: FOTOS.maximo, cuantas: plural(sobrantes, '1 no se agregó.', '# no se agregaron.') }));
   if (problemas.length === 0) return;
   const inicio = agregadas > 0 ? `${plural(agregadas, 'Se agregó 1 foto.', 'Se agregaron # fotos.')} ` : '';
   mostrarAviso(inicio + problemas.join(' '), 'error', 7000);
@@ -217,7 +219,7 @@ async function agregarFotos(archivos) {
   const nuevas = imagenes.slice(0, Math.max(0, FOTOS.maximo - fotos.length));
   const resumen = { agregadas: 0, noImagenes: lista.length - imagenes.length, sobrantes: imagenes.length - nuevas.length, lectura: 0, formato: 0 };
   if (nuevas.length === 0 && resumen.noImagenes === 0) {
-    mostrarAviso(`Ya hay ${FOTOS.maximo} fotos: es el máximo por estudio.`, 'error', 5000);
+    mostrarAviso(textoDePlanilla('fotosAlMaximo', { maximo: FOTOS.maximo }), 'error', 5000);
     return nada;
   }
 
@@ -324,8 +326,10 @@ function conTiempoMaximo(promesa, ms) {
   ]).finally(() => clearTimeout(reloj));
 }
 
+// Dónde va el archivo, según la planilla (en el ergométrico: <estudio>/<foto>.webp,
+// la carpeta del estudio, que es lo que piden las reglas del depósito)
 function rutaDeFoto(estudioId, foto) {
-  return `${estudioId}/${foto.id}.webp`;
+  return PLANILLA.fotos.ruta.replace('{id}', estudioId).replace('{foto}', foto.id);
 }
 
 // Sube las que faltan, de a una. Devuelve cuántas no se pudieron subir.
@@ -342,8 +346,8 @@ async function subirFotos(estudioId) {
         if (error && !yaEstaba) throw error;
         foto.subida = true;
       }
-      const { error } = await conTiempoMaximo(clienteSupabase.from('imagenes')
-        .insert({ id: foto.id, estudio_id: estudioId, ruta_archivo: ruta, tipo: FOTOS.tipo }), FOTOS.tiempoMaximoSubidaMs);
+      const { error } = await conTiempoMaximo(clienteSupabase.from(PLANILLA.fotos.tabla)
+        .insert({ id: foto.id, [PLANILLA.fotos.columna]: estudioId, ruta_archivo: ruta, tipo: FOTOS.tipo }), FOTOS.tiempoMaximoSubidaMs);
       if (error && error.code !== '23505') throw error;   // 23505: la fila ya estaba
       foto.guardada = true;
     } catch {
@@ -367,10 +371,13 @@ async function enlaceFirmado(ruta, segundos = FOTOS.enlaceSegundos) {
 // --- Clip y cámara ---------------------------------------------------------------------------
 
 function prepararFotos() {
+  // El nombre de la tira de miniaturas, para el lector de pantalla (en el
+  // ergométrico, "Fotos del estudio")
+  document.getElementById('miniaturas').setAttribute('aria-label', textoDePlanilla('fotosNombre'));
   const abrirSelector = (idInput) => () => {
     if (fotosBloqueadas) return;
     if (fotos.length >= FOTOS.maximo) {
-      mostrarAviso(`Ya hay ${FOTOS.maximo} fotos: es el máximo por estudio.`, 'error', 5000);
+      mostrarAviso(textoDePlanilla('fotosAlMaximo', { maximo: FOTOS.maximo }), 'error', 5000);
       return;
     }
     document.getElementById(idInput).click();

@@ -18,3 +18,13 @@ if (!Object.hasOwn(PLANILLAS, PLANILLA_ACTIVA)) {
 }
 
 const PLANILLA = PLANILLAS[PLANILLA_ACTIVA];
+
+// Un texto de pantalla de la planilla activa, con sus datos puestos. Los textos
+// están en la planilla (PLANILLA.textos) con huecos entre llaves:
+//   'Estudio guardado — N° {numero}'  +  { numero: 3 }  ->  'Estudio guardado — N° 3'
+function textoDePlanilla(clave, datos = {}) {
+  if (!Object.hasOwn(PLANILLA.textos, clave)) {
+    throw new Error(`La planilla '${PLANILLA.id}' no tiene el texto '${clave}'`);
+  }
+  return PLANILLA.textos[clave].replace(/\{(\w+)\}/g, (_, nombre) => String(datos[nombre] ?? ''));
+}
