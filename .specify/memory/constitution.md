@@ -3,9 +3,9 @@
 > Documento fundacional (Spec-Driven Development / Spec Kit).
 > Ubicación sugerida en el repo: `.specify/memory/constitution.md`
 >
-> **Versión:** 1.2.0
+> **Versión:** 1.3.0
 > **Ratificada:** 2026-09-21
-> **Última modificación:** 2026-09-21
+> **Última modificación:** 2026-10-28
 
 ---
 
@@ -13,9 +13,12 @@
 
 Digitalizar las planillas de una clínica para que un profesional pueda
 completarlas dictando por voz, revisarlas, corregirlas y confirmarlas antes
-de guardarlas. El primer caso es la planilla de **Estudio Ergométrico** del
-Servicio de Cardiología. El sistema está pensado para crecer, más adelante,
-a otras planillas y otros roles.
+de guardarlas. El primer caso construido fue la planilla de **Estudio
+Ergométrico** del Servicio de Cardiología. La demo ahora gira alrededor del
+**Formulario N° 5** (hoja de indicaciones médicas y controles de enfermería de
+pacientes internados). El Estudio Ergométrico queda guardado en el proyecto,
+escondido detrás de un interruptor de configuración, sin borrarse. El sistema
+está pensado para crecer, más adelante, a otras planillas y otros roles.
 
 Esta constitución define las reglas que **no se negocian**. Todo lo que
 armemos después (especificación, plan, tareas y código) tiene que respetarla.
@@ -152,9 +155,11 @@ estudio.
 - La arquitectura debe permitir sumar **nuevas planillas** y **nuevos roles**
   sin rehacer lo existente: planillas como configuración, roles como reglas de
   acceso.
-- La demo se enfoca en **un** flujo (un profesional cargando el estudio
-  ergométrico). La escala a multi-rol y multi-clínica es un objetivo posterior,
-  pero ninguna decisión de hoy debe cerrarle la puerta.
+- La demo se enfoca en **un** flujo: cargar y consultar el Formulario N° 5. En
+  la clínica esa hoja la llenan varios roles (médicos y enfermería); en la demo
+  se usa la regla de visibilidad actual (cada usuario ve lo que cargó). La escala
+  a multi-rol y multi-clínica es un objetivo posterior, pero ninguna decisión de
+  hoy debe cerrarle la puerta.
 
 ## Estándares de Código
 
@@ -200,8 +205,10 @@ estudio.
 - **No** usamos infraestructura de pago mensual alto.
 - **No** empaquetamos la app como aplicación nativa (Capacitor / Play Store /
   App Store) en la demo: la PWA alcanza. Queda como opción para después.
-- **No** construimos multi-rol, multi-clínica ni múltiples planillas en la demo:
-  se diseña para permitirlo, no se implementa todavía.
+- **No** construimos multi-rol ni multi-clínica en la demo, y la app muestra una
+  sola planilla por vez (hoy el Formulario N° 5; el Estudio Ergométrico queda
+  detrás de un interruptor de configuración, que el usuario no ve): se diseña
+  para permitir más, no se implementa todavía.
 - **No** agregamos funciones "porque estaría bueno". Cada función responde a una
   necesidad real de la planilla o del flujo del profesional.
 - **No** guardamos nada sin confirmación humana.
@@ -221,4 +228,4 @@ estudio.
 - Cuando este documento cambie, se revisa que la especificación y el plan sigan
   siendo coherentes con él.
 
-**Versión:** 1.2.0 | **Ratificada:** 2026-09-21 | **Última modificación:** 2026-09-21
+**Versión:** 1.3.0 | **Ratificada:** 2026-09-21 | **Última modificación:** 2026-10-28
