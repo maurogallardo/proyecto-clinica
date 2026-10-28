@@ -9,3 +9,8 @@
 
 const SUPABASE_URL = 'https://lbqcjzvemqgzgwibueay.supabase.co';
 const SUPABASE_CLAVE_PUBLICA = 'sb_publishable_tKsWvPdzKKeP8JpeAmAeWg_joURqZb5';
+
+// Interruptor de la planilla que muestra la app (T002 del Formulario N° 5).
+// 'ergometrico' = Estudio Ergométrico. Es una línea de configuración: el usuario no
+// la ve ni la puede cambiar. La planilla elegida la arma js/planillas/activa.js.
+const PLANILLA_ACTIVA = 'ergometrico';

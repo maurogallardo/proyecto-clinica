@@ -4,19 +4,13 @@
 // - Solo para usuarios logueados.
 // - El audio NO se guarda: pasa directo a OpenAI y se descarta.
 // - Ni el audio ni el texto se registran en los logs (son datos de salud).
+// - La app puede avisar qué planilla es (dato "planilla"), para usar sus palabras de
+//   ayuda. Si no avisa, se usan las del ergométrico; si avisa una planilla sin
+//   lista, no se manda ninguna (ver palabras_de_ayuda.ts).
 import { MODELO_TRANSCRIPCION } from '../_compartido/modelos.ts';
 import { esUsuarioLogueado, responder, respuestaPrevia } from '../_compartido/http.ts';
 import { pedirAOpenAI } from '../_compartido/openai.ts';
-
-// Palabras de ayuda para la transcripción (como en LoMar), adaptadas al ergométrico:
-// términos generales de cardiología, para que el transcriptor los escriba bien
-const PALABRAS_DE_AYUDA =
-  'Estudio ergométrico del Servicio de Cardiología del Sanatorio de la Cañada, Río Tercero. ' +
-  'Términos: ergometría, ergométrico, MET, T.A., tensión arterial, F.C., frecuencia cardíaca, ' +
-  'FCIA, QRS, PQ, QT, ritmo sinusal, eje, postesfuerzo, cicloergómetro, cinta, protocolo de Bruce, ' +
-  'electrocardiograma, disnea, angor, precordial, isquemia, asintomático, taquicardia, bradicardia, ' +
-  'extrasístoles, supradesnivel, infradesnivel, segmento ST, bloqueo de rama, hipertensión, ' +
-  'dislipemia, tabaquismo.';
+import { palabrasDeAyuda } from './palabras_de_ayuda.ts';
 
 // Formatos que graba la app (T015; el iPhone usa audio/mp4) y su extensión
 const FORMATOS: Record<string, string> = {
@@ -38,8 +32,11 @@ Deno.serve(async (pedido) => {
   if (!(await esUsuarioLogueado(pedido))) return responder(pedido, { error: 'sin-sesion' }, 401);
 
   let audio: FormDataEntryValue | null = null;
+  let planilla: FormDataEntryValue | null = null;
   try {
-    audio = (await pedido.formData()).get('audio');
+    const formulario = await pedido.formData();
+    audio = formulario.get('audio');
+    planilla = formulario.get('planilla');   // opcional (si no viene, las del ergométrico)
   } catch {
     return responder(pedido, { error: 'pedido-invalido' }, 400);
   }
@@ -54,7 +51,9 @@ Deno.serve(async (pedido) => {
   envio.append('file', new File([audio], `dictado.${extension}`, { type: tipo }));
   envio.append('model', MODELO_TRANSCRIPCION);
   envio.append('language', 'es');
-  envio.append('prompt', PALABRAS_DE_AYUDA);
+  // Las palabras de ayuda de esa planilla (si le corresponde alguna; ver palabras_de_ayuda.ts)
+  const palabras = palabrasDeAyuda(planilla);
+  if (palabras) envio.append('prompt', palabras);
   envio.append('response_format', 'json');
 
   try {

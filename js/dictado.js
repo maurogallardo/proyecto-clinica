@@ -60,6 +60,9 @@ async function llamarFuncion(nombre, cuerpo) {
 async function transcribirAudio(audio) {
   const formulario = new FormData();
   formulario.append('audio', audio, 'dictado');
+  // Qué planilla es, para que la transcripción use sus palabras de ayuda (si la
+  // función del servidor es la vieja, lo ignora y usa las del ergométrico)
+  formulario.append('planilla', PLANILLA.id);
   const { texto } = await llamarFuncion('transcribir', formulario);
   return (texto || '').trim();
 }
@@ -72,9 +75,9 @@ async function completarPlanillaConTexto(texto) {
   const antes = leerPlanilla(contenedor);
 
   const planillaNueva = await llamarFuncion('estructurar', {
-    planilla: PLANILLA_ERGOMETRICO.id,
+    planilla: PLANILLA.id,
     texto,
-    campos: camposDePlanilla(PLANILLA_ERGOMETRICO),
+    campos: camposDePlanilla(PLANILLA),
     actual: antes,
   });
   return aplicarDictado(foto, antes, planillaNueva);

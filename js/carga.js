@@ -1,11 +1,11 @@
-// Pantalla de carga del Estudio Ergométrico (T013): el formulario de la planilla
-// y el menú del encabezado (modo de color y "Cerrar sesión").
+// Pantalla de carga (T013): el formulario de la planilla activa (PLANILLA, ver
+// js/planillas/activa.js) y el menú del encabezado (modo de color y "Cerrar sesión").
 
 const contenedorCarga = document.getElementById('carga-formulario');
 
 // Formulario vacío (con las filas de etapas que trae impresas el papel)
 function reiniciarCarga() {
-  dibujarPlanilla(PLANILLA_ERGOMETRICO, contenedorCarga);
+  dibujarPlanilla(PLANILLA, contenedorCarga);
 }
 
 // Lo cargado hasta ahora (lo usarán la revisión y el guardado: T022 y T024)
