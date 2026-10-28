@@ -1,5 +1,5 @@
-// Pantalla de carga (T013): el formulario de la planilla activa (PLANILLA, ver
-// js/planillas/activa.js) y el menú del encabezado (modo de color y "Cerrar sesión").
+// Pantalla de carga (T013): el título y el formulario de la planilla activa (PLANILLA,
+// ver js/planillas/activa.js) y el menú del encabezado (modo de color y "Cerrar sesión").
 
 const contenedorCarga = document.getElementById('carga-formulario');
 
@@ -35,5 +35,6 @@ function abrirMenu(abrir) {
   document.getElementById('menu-boton').setAttribute('aria-expanded', String(abrir));
 }
 
+document.getElementById('carga-titulo').textContent = PLANILLA.titulo;   // en el ergométrico, "Estudio ergométrico"
 reiniciarCarga();
 prepararMenu();

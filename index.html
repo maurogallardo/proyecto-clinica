@@ -83,11 +83,11 @@
     </div>
   </section>
 
-  <!-- Carga del Estudio Ergométrico (T013). El formulario lo dibuja js/carga.js
-       a partir de la planilla (js/planillas/ergometrico.js). -->
+  <!-- Carga (T013). El título y el formulario los pone js/carga.js a partir de la
+       planilla activa (js/planillas/activa.js; hoy, la del Estudio Ergométrico). -->
   <section id="carga" class="pantalla" hidden>
     <header class="encabezado">
-      <h1 class="encabezado__titulo">Estudio ergométrico</h1>
+      <h1 class="encabezado__titulo" id="carga-titulo"></h1>
       <div class="encabezado__derecha">
         <img class="encabezado__isologo solo-tema-claro" src="assets/logos/isologo.svg" alt="Sanatorio de la Cañada">
         <img class="encabezado__isologo solo-tema-oscuro" src="assets/logos/isologo-claro.svg" alt="Sanatorio de la Cañada">
@@ -262,7 +262,7 @@
               <path d="M16 5h2a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2" />
               <path d="M9 11h6M9 15h4" />
             </svg>
-            <span>Estudios</span>
+            <span></span>
           </button>
           <button type="button" class="navegacion__item" data-seccion="configuracion">
             <svg class="navegacion__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -286,12 +286,13 @@
       </aside>
 
       <div class="panel__contenido">
-        <!-- Estudios: la lista -->
+        <!-- Estudios: la lista. Los textos (los vacíos), las columnas y en qué se busca
+             los pone js/dashboard.js a partir de la planilla activa. -->
         <main class="vista" id="vista-estudios">
           <div class="encabezado-seccion">
             <div>
-              <span class="encabezado-seccion__antetitulo">Servicio de Cardiología</span>
-              <h1 class="encabezado-seccion__titulo">Estudios ergométricos</h1>
+              <span class="encabezado-seccion__antetitulo"></span>
+              <h1 class="encabezado-seccion__titulo"></h1>
             </div>
             <div class="encabezado-seccion__derecha">
               <span class="contador" id="panel-contador" hidden></span>
@@ -311,7 +312,7 @@
           <div class="filtros" id="panel-filtros" hidden>
             <div class="filtros__campo filtros__campo--buscar">
               <label class="filtros__etiqueta" for="filtro-texto">Buscar</label>
-              <input class="filtros__control" type="search" id="filtro-texto" placeholder="Buscar por nombre o DNI" autocomplete="off">
+              <input class="filtros__control" type="search" id="filtro-texto" autocomplete="off">
             </div>
             <!-- Un solo calendario de rango (T052): día de inicio y día de fin (js/calendario.js) -->
             <div class="filtros__campo filtros__campo--fechas">
@@ -334,29 +335,21 @@
 
           <div class="estado-panel" id="panel-cargando">
             <span class="ruedita" aria-hidden="true"></span>
-            <p class="estado-panel__texto">Cargando estudios…</p>
+            <p class="estado-panel__texto"></p>
           </div>
           <div class="estado-panel estado-panel--error" id="panel-error" hidden>
-            <p class="estado-panel__texto" id="panel-error-texto">No se pudieron cargar los estudios.</p>
+            <p class="estado-panel__texto" id="panel-error-texto"></p>
             <button type="button" class="panel-boton" id="panel-reintentar">Reintentar</button>
           </div>
           <div class="estado-panel" id="panel-vacio" hidden>
-            <p class="estado-panel__texto" id="panel-vacio-texto">Todavía no hay estudios cargados.</p>
+            <p class="estado-panel__texto" id="panel-vacio-texto"></p>
           </div>
 
           <div class="tarjeta-panel tarjeta-tabla" id="panel-tabla" hidden>
             <div class="tabla-desplazable">
               <table class="tabla-panel">
                 <thead>
-                  <tr>
-                    <th scope="col" class="tabla-panel__col-numero">N°</th>
-                    <th scope="col" class="tabla-panel__col-fecha">Fecha y hora</th>
-                    <th scope="col">Paciente</th>
-                    <th scope="col" class="tabla-panel__col-dni">DNI</th>
-                    <th scope="col">Médico solicitante</th>
-                    <th scope="col">Conclusión</th>
-                    <th scope="col" class="tabla-panel__col-fotos">Fotos</th>
-                  </tr>
+                  <tr id="panel-encabezado"></tr>
                 </thead>
                 <tbody id="panel-filas"></tbody>
               </table>
@@ -364,12 +357,13 @@
           </div>
         </main>
 
-        <!-- Ficha de un estudio (se alterna con la lista) -->
+        <!-- Ficha de un estudio (se alterna con la lista). Los textos (los vacíos) los
+             pone js/ficha.js a partir de la planilla activa. -->
         <section class="vista ficha" id="vista-ficha" hidden>
           <!-- Encabezado fijo arriba al bajar (T050): se puede volver desde cualquier punto -->
           <div class="tarjeta-panel ficha__cabecera">
             <button type="button" class="panel-boton panel-boton--fantasma" id="ficha-volver">← Volver</button>
-            <h2 class="ficha__titulo" id="ficha-titulo">Estudio ergométrico</h2>
+            <h2 class="ficha__titulo" id="ficha-titulo"></h2>
             <!-- "Imprimir", "Descargar PDF", "Editar" y "Borrar" (js/ficha.js); al editar,
                  "Cancelar" y "Guardar cambios" -->
             <div class="ficha__acciones" id="ficha-acciones"></div>
@@ -378,10 +372,10 @@
           </div>
           <div class="estado-panel" id="ficha-cargando">
             <span class="ruedita" aria-hidden="true"></span>
-            <p class="estado-panel__texto">Cargando estudio…</p>
+            <p class="estado-panel__texto"></p>
           </div>
           <div class="estado-panel estado-panel--error" id="ficha-error" hidden>
-            <p class="estado-panel__texto" id="ficha-error-texto">No se pudo cargar el estudio.</p>
+            <p class="estado-panel__texto" id="ficha-error-texto"></p>
             <div class="estado-panel__acciones">
               <button type="button" class="panel-boton" id="ficha-reintentar">Reintentar</button>
               <button type="button" class="panel-boton panel-boton--fantasma" id="ficha-volver-lista">Volver a la lista</button>
@@ -401,7 +395,7 @@
         <section class="vista" id="vista-configuracion" hidden>
           <div class="encabezado-seccion">
             <div>
-              <span class="encabezado-seccion__antetitulo">Servicio de Cardiología</span>
+              <span class="encabezado-seccion__antetitulo"></span>
               <h1 class="encabezado-seccion__titulo">Configuración</h1>
             </div>
           </div>
@@ -433,11 +427,12 @@
         </section>
 
         <!-- Papelera (T059, js/papelera.js): los estudios borrados desde la ficha.
-             No se abren ni se editan desde acá: solo se restauran. -->
+             No se abren ni se editan desde acá: solo se restauran. Los textos (los
+             vacíos) y las columnas los pone js/papelera.js a partir de la planilla activa. -->
         <section class="vista" id="vista-papelera" hidden>
           <div class="encabezado-seccion">
             <div>
-              <span class="encabezado-seccion__antetitulo">Servicio de Cardiología</span>
+              <span class="encabezado-seccion__antetitulo"></span>
               <h1 class="encabezado-seccion__titulo">Papelera</h1>
             </div>
             <div class="encabezado-seccion__derecha">
@@ -445,7 +440,7 @@
               <button type="button" class="panel-boton panel-boton--fantasma" id="papelera-actualizar" hidden>Actualizar</button>
             </div>
           </div>
-          <p class="papelera__ayuda">Los estudios borrados quedan acá, con quién los borró y cuándo. No se ven en la lista ni en los números. Para verlos, restauralos.</p>
+          <p class="papelera__ayuda"></p>
 
           <div class="estado-panel" id="papelera-cargando">
             <span class="ruedita" aria-hidden="true"></span>
@@ -463,14 +458,7 @@
             <div class="tabla-desplazable">
               <table class="tabla-panel tabla-panel--papelera">
                 <thead>
-                  <tr>
-                    <th scope="col" class="tabla-panel__col-numero">N°</th>
-                    <th scope="col">Paciente</th>
-                    <th scope="col" class="tabla-panel__col-dni">DNI</th>
-                    <th scope="col">Borrado por</th>
-                    <th scope="col" class="tabla-panel__col-fecha">Fecha y hora</th>
-                    <th scope="col" class="tabla-panel__col-accion"><span class="solo-lectores">Acción</span></th>
-                  </tr>
+                  <tr id="papelera-encabezado"></tr>
                 </thead>
                 <tbody id="papelera-filas"></tbody>
               </table>

@@ -1,10 +1,21 @@
 // Papelera (T059): los estudios "borrados" desde la ficha. Nunca se borran de
 // verdad: quedan en la base (con sus etapas y sus fotos), con quién los mandó a
-// la Papelera y cuándo, y se pueden restaurar. Se usa SOLO con las funciones de la
-// base anular_estudio y restaurar_estudio (supabase/papelera.sql): la app no
-// puede hacerlo de otra forma. Desde acá no se abren ni se editan.
+// la Papelera y cuándo, y se pueden restaurar. Se usa SOLO con las funciones de
+// anular y restaurar de la base (en el ergométrico, anular_estudio y
+// restaurar_estudio de supabase/papelera.sql): la app no puede hacerlo de otra
+// forma. Desde acá no se abren ni se editan.
+//
+// La tabla de la base, esas dos funciones, las columnas de la planilla y los textos
+// salen de la planilla activa (PLANILLA y textoDePlanilla, js/planillas/activa.js).
 
 const PAPELERA = { tiempoMaximoMs: 20000 };
+
+// Las columnas de la Papelera, iguales en todas las planillas: van después de las
+// de la planilla (y al final, el botón "Restaurar")
+const COLUMNAS_DE_LA_PAPELERA = [
+  { columna: 'en_papelera_por_correo', titulo: 'Borrado por', estilo: 'correo' },
+  { columna: 'en_papelera_desde', titulo: 'Fecha y hora', forma: 'fechaHora', ancho: 'fecha', estilo: 'fecha' },
+];
 
 const Papelera = (() => {
   const $ = (id) => document.getElementById(id);
@@ -17,8 +28,13 @@ const Papelera = (() => {
     errorTexto: $('papelera-error-texto'),
     vacio: $('papelera-vacio'),
     tabla: $('papelera-tabla'),
+    encabezado: $('papelera-encabezado'),
     filas: $('papelera-filas'),
   };
+  const columnas = [...PLANILLA.papelera.columnas, ...COLUMNAS_DE_LA_PAPELERA];
+  // Lo que se le pide a la base: el id (para restaurar) y las columnas de la tabla
+  // (en_papelera_desde también ordena la lista)
+  const columnasPedidas = ['id', ...PLANILLA.papelera.columnas.map((c) => c.columna), 'en_papelera_desde', 'en_papelera_por_correo'].join(', ');
   let lista = [];
   let pedido = 0;   // cada carga tiene su número: una respuesta vieja no pisa a una nueva
   let vueltaDeSesion = 0;   // cambia al cerrar sesión
@@ -31,7 +47,7 @@ const Papelera = (() => {
   function mensajeDeError(error, queSeHacia) {
     const mensaje = String((error && error.message) || '');
     if (esSinConexion(error)) return 'Sin conexión o el servidor tardó demasiado. Revisá internet y probá de nuevo.';
-    if (/No se encontró el estudio/i.test(mensaje)) return 'No se encontró el estudio (puede que no sea tuyo o que ya no exista).';
+    if (/No se encontró el estudio/i.test(mensaje)) return textoDePlanilla('noEncontrado');
     if (/iniciar sesión|jwt/i.test(mensaje)) return 'Tu sesión se cerró. Volvé a iniciar sesión y probá de nuevo.';
     return `No se pudo ${queSeHacia}. Probá de nuevo.`;
   }
@@ -53,8 +69,8 @@ const Papelera = (() => {
   }
 
   // Mandar a la Papelera (lo usa la ficha). Si ya estaba (otra pestaña), da lo mismo.
-  const anular = (id) => llamar('anular_estudio', id, 'mandar el estudio a la Papelera');
-  const restaurar = (id) => llamar('restaurar_estudio', id, 'restaurar el estudio');
+  const anular = (id) => llamar(PLANILLA.base.anular, id, textoDePlanilla('queSeHaciaAnular'));
+  const restaurar = (id) => llamar(PLANILLA.base.restaurar, id, textoDePlanilla('queSeHaciaRestaurar'));
 
   // --- La lista ---------------------------------------------------------------------------
 
@@ -77,21 +93,39 @@ const Papelera = (() => {
     return td;
   }
 
+  // Encabezados de la tabla: los de las columnas y, al final, el del botón
+  function dibujarEncabezado() {
+    const ths = columnas.map((c) => {
+      const th = document.createElement('th');
+      th.scope = 'col';
+      if (c.ancho) th.className = `tabla-panel__col-${c.ancho}`;
+      th.textContent = c.titulo;
+      return th;
+    });
+    const accion = document.createElement('th');
+    accion.scope = 'col';
+    accion.className = 'tabla-panel__col-accion';
+    const nombre = document.createElement('span');
+    nombre.className = 'solo-lectores';
+    nombre.textContent = 'Acción';
+    accion.appendChild(nombre);
+    el.encabezado.replaceChildren(...ths, accion);
+  }
+
   function filaDe(estudio) {
     const tr = document.createElement('tr');
     tr.dataset.estudioId = estudio.id;
-    tr.appendChild(celda(estudio.numero, 'celda-numero'));
-    tr.appendChild(celda(estudio.nombre_paciente, 'celda-paciente'));
-    tr.appendChild(celda(estudio.documento, 'celda-dni'));
-    tr.appendChild(celda(estudio.en_papelera_por_correo, 'celda-correo'));
-    tr.appendChild(celda(Ficha.fechaHora(estudio.en_papelera_desde), 'celda-fecha'));
+    columnas.forEach((c) => {
+      const valor = c.forma === 'fechaHora' ? Ficha.fechaHora(estudio[c.columna]) : estudio[c.columna];
+      tr.appendChild(celda(valor, c.estilo ? `celda-${c.estilo}` : undefined));
+    });
     const accion = document.createElement('td');
     accion.className = 'celda-accion';
     const boton = document.createElement('button');
     boton.type = 'button';
     boton.className = 'panel-boton panel-boton--fantasma papelera__restaurar';
     boton.textContent = 'Restaurar';
-    boton.setAttribute('aria-label', `Restaurar el estudio N° ${estudio.numero}`);
+    boton.setAttribute('aria-label', textoDePlanilla('restaurarEtiqueta', { numero: estudio.numero }));
     accion.appendChild(boton);
     tr.appendChild(accion);
     return tr;
@@ -99,7 +133,9 @@ const Papelera = (() => {
 
   function dibujar() {
     el.filas.replaceChildren();
-    el.contador.textContent = lista.length === 1 ? '1 estudio' : `${Number(lista.length).toLocaleString('es-AR')} estudios`;
+    el.contador.textContent = lista.length === 1
+      ? textoDePlanilla('contadorUno')
+      : textoDePlanilla('contadorVarios', { cantidad: Number(lista.length).toLocaleString('es-AR') });
     el.contador.hidden = false;
     el.actualizar.hidden = false;
     if (lista.length === 0) {
@@ -122,8 +158,8 @@ const Papelera = (() => {
       if (!navigator.onLine) throw new Error('sin conexión');
       const cortar = new AbortController();
       const reloj = setTimeout(() => cortar.abort(), PAPELERA.tiempoMaximoMs);
-      const { data, error } = await clienteSupabase.from('estudios')
-        .select('id, numero, nombre_paciente, documento, en_papelera_desde, en_papelera_por_correo')
+      const { data, error } = await clienteSupabase.from(PLANILLA.base.tabla)
+        .select(columnasPedidas)
         .eq('en_papelera', true)
         .order('en_papelera_desde', { ascending: false })
         .abortSignal(cortar.signal);
@@ -160,7 +196,7 @@ const Papelera = (() => {
       mostrarAviso(problema, 'error', 5000);
       return;
     }
-    mostrarAviso(`Estudio N° ${numero} restaurado`, 'exito');
+    mostrarAviso(textoDePlanilla('restaurado', { numero }), 'exito');
     alRestaurar();
     if (vuelta !== pedido) return;   // mientras tanto se volvió a cargar la lista: ya viene sin él
     // Se saca la fila y el foco pasa al "Restaurar" siguiente (o al título si no queda ninguno)
@@ -172,6 +208,8 @@ const Papelera = (() => {
   });
 
   el.titulo.tabIndex = -1;   // para poder dejarle el foco
+  document.querySelector('.papelera__ayuda').textContent = textoDePlanilla('papeleraAyuda');
+  dibujarEncabezado();
   el.actualizar.addEventListener('click', cargar);
   $('papelera-reintentar').addEventListener('click', cargar);
 

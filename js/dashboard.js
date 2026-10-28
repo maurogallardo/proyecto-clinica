@@ -9,6 +9,9 @@
 //
 // Los estudios que están en la Papelera (T059, js/papelera.js) no se piden: no
 // aparecen en la tabla, ni en los números, ni en la búsqueda.
+//
+// Las columnas de la tabla, en qué se busca, la tabla de la base y los textos
+// salen de la planilla activa (PLANILLA y textoDePlanilla, js/planillas/activa.js).
 
 const PANEL = { tiempoMaximoMs: 20000, largoConclusion: 90 };
 
@@ -32,8 +35,16 @@ const Dashboard = (() => {
     vacio: $('panel-vacio'),
     vacioTexto: $('panel-vacio-texto'),
     tabla: $('panel-tabla'),
+    encabezado: $('panel-encabezado'),
     filas: $('panel-filas'),
   };
+  // Lo que se le pide a la base: el id, el número y la fecha de carga (los usan los
+  // números, los filtros y la ficha), las columnas de la lista y cuántas fotos tiene
+  const columnasDeLaLista = PLANILLA.lista.columnas;
+  const pedidoDeLaLista = [
+    ...new Set(['id', 'numero', 'creado_en', ...columnasDeLaLista.filter((c) => c.columna).map((c) => c.columna)]),
+    ...(columnasDeLaLista.some((c) => c.forma === 'fotos') ? [`${PLANILLA.fotos.tabla}(count)`] : []),
+  ].join(', ');
   let estudios = [];
   let yaCargo = false;
   let pedido = 0;   // cada carga tiene su número: una respuesta vieja no pisa a una nueva
@@ -109,13 +120,16 @@ const Dashboard = (() => {
 
   const hayFiltros = (f) => Boolean(f.texto || f.desde || f.hasta);
 
+  // Busca en los campos que dice la planilla (en el ergométrico, nombre y DNI). Los
+  // de "soloCifras" (el DNI) se buscan solo si se escribieron números (con o sin puntos)
   function cumple(estudio, f) {
     if (f.texto) {
-      const nombre = normalizar(estudio.nombre_paciente);
-      const dni = String(estudio.documento ?? '');
       const cifrasBuscadas = f.texto.replace(/\D/g, '');
-      const porDni = cifrasBuscadas !== '' && cifrasBuscadas.length === f.texto.replace(/[\s.]/g, '').length && dni.includes(cifrasBuscadas);
-      if (!nombre.includes(f.texto) && !porDni) return false;
+      const sonCifras = cifrasBuscadas !== '' && cifrasBuscadas.length === f.texto.replace(/[\s.]/g, '').length;
+      const coincide = PLANILLA.lista.buscar.some(({ columna, soloCifras }) => (soloCifras
+        ? sonCifras && String(estudio[columna] ?? '').includes(cifrasBuscadas)
+        : normalizar(estudio[columna]).includes(f.texto)));
+      if (!coincide) return false;
     }
     if (f.desde || f.hasta) {
       const fecha = new Date(estudio.creado_en);
@@ -152,33 +166,57 @@ const Dashboard = (() => {
     return limpio.length > PANEL.largoConclusion ? `${limpio.slice(0, PANEL.largoConclusion - 1).trimEnd()}…` : limpio;
   }
 
+  // Encabezados de la tabla, con las columnas de la planilla
+  function dibujarEncabezado() {
+    el.encabezado.replaceChildren(...columnasDeLaLista.map((c) => {
+      const th = document.createElement('th');
+      th.scope = 'col';
+      if (c.ancho) th.className = `tabla-panel__col-${c.ancho}`;
+      th.textContent = c.titulo;
+      return th;
+    }));
+  }
+
+  // Una celda, según la forma de la columna
+  function celdaDe(estudio, c) {
+    const clase = c.estilo ? `celda-${c.estilo}` : undefined;
+    if (c.forma === 'fotos') {
+      const cuenta = estudio[PLANILLA.fotos.tabla];
+      const cantidad = cuenta && cuenta[0] ? cuenta[0].count : 0;
+      const fotos = celda(String(cantidad), clase);
+      if (!cantidad) fotos.classList.add('vacio');
+      return fotos;
+    }
+    if (c.forma === 'resumen') {
+      const td = celda(resumir(estudio[c.columna]), clase);
+      if (tieneValor(estudio[c.columna])) td.title = String(estudio[c.columna]).trim();
+      return td;
+    }
+    if (c.forma === 'fechaHora') return celda(Ficha.fechaHora(estudio[c.columna]), clase);
+    return celda(estudio[c.columna], clase);
+  }
+
   function filaDe(estudio) {
     const tr = document.createElement('tr');
     tr.dataset.estudioId = estudio.id;
     tr.tabIndex = 0;   // también se abre con el teclado
-    tr.appendChild(celda(estudio.numero, 'celda-numero'));
-    tr.appendChild(celda(Ficha.fechaHora(estudio.creado_en), 'celda-fecha'));
-    tr.appendChild(celda(estudio.nombre_paciente, 'celda-paciente'));
-    tr.appendChild(celda(estudio.documento, 'celda-dni'));
-    tr.appendChild(celda(estudio.medico_solicitante));
-    const conclusion = celda(resumir(estudio.conclusion), 'celda-conclusion');
-    if (tieneValor(estudio.conclusion)) conclusion.title = String(estudio.conclusion).trim();
-    tr.appendChild(conclusion);
-    const cantidad = estudio.imagenes && estudio.imagenes[0] ? estudio.imagenes[0].count : 0;
-    const fotos = celda(String(cantidad), 'celda-fotos');
-    if (!cantidad) fotos.classList.add('vacio');
-    tr.appendChild(fotos);
+    columnasDeLaLista.forEach((c) => tr.appendChild(celdaDe(estudio, c)));
     return tr;
   }
 
+  // El número de estudios con su palabra ("1 estudio", "12 estudios")
+  const contarEstudios = (cantidad) => (cantidad === 1
+    ? textoDePlanilla('contadorUno')
+    : textoDePlanilla('contadorVarios', { cantidad: formatearEntero(cantidad) }));
+
   function dibujarTabla(lista, conFiltros) {
     el.filas.replaceChildren();
-    el.contador.textContent = lista.length === 1 ? '1 estudio' : `${formatearEntero(lista.length)} estudios`;
+    el.contador.textContent = contarEstudios(lista.length);
     el.contador.hidden = false;
     el.actualizar.hidden = false;
     if (lista.length === 0) {
       // No es lo mismo no tener estudios que no encontrar con los filtros
-      el.vacioTexto.textContent = conFiltros ? 'Ningún estudio coincide con los filtros.' : 'Todavía no hay estudios cargados.';
+      el.vacioTexto.textContent = textoDePlanilla(conFiltros ? 'listaSinCoincidencias' : 'listaVacia');
       mostrarSolo('vacio');
       return;
     }
@@ -211,8 +249,8 @@ const Dashboard = (() => {
       if (!navigator.onLine) throw new Error('sin conexión');
       const cortar = new AbortController();
       const reloj = setTimeout(() => cortar.abort(), PANEL.tiempoMaximoMs);
-      const { data, error } = await clienteSupabase.from('estudios')
-        .select('id, numero, creado_en, nombre_paciente, documento, medico_solicitante, conclusion, imagenes(count)')
+      const { data, error } = await clienteSupabase.from(PLANILLA.base.tabla)
+        .select(pedidoDeLaLista)
         .eq('en_papelera', false)
         .order('creado_en', { ascending: false })
         .abortSignal(cortar.signal);
@@ -231,7 +269,7 @@ const Dashboard = (() => {
       const sinConexion = !navigator.onLine || /fetch|network|abort|sin conexión/i.test(String(error && error.message));
       mostrarError(sinConexion
         ? 'Sin conexión o el servidor tardó demasiado. Revisá internet y probá de nuevo.'
-        : 'No se pudieron cargar los estudios. Probá de nuevo.');
+        : textoDePlanilla('errorLista'));
       console.error('No se pudieron cargar los estudios');
     }
   }
@@ -286,7 +324,7 @@ const Dashboard = (() => {
       el.tituloEstudios.focus();
     }
     cargar();
-    mostrarAviso(`Estudio N° ${numero} enviado a la Papelera`, 'exito', 4000);
+    mostrarAviso(textoDePlanilla('enviadoAPapelera', { numero }), 'exito', 4000);
   });
   // Editar (T061): después de guardar, la lista muestra los datos nuevos
   Ficha.alGuardarCambios(() => { if (yaCargo) cargar(); });
@@ -368,6 +406,14 @@ const Dashboard = (() => {
     mostrarSolo('cargando');
     $('perfil-estado').textContent = 'Se ve en la barra lateral y en el menú del celular.';
   }
+
+  // Los textos fijos del dashboard, los de la planilla activa
+  document.querySelectorAll('#dashboard .encabezado-seccion__antetitulo').forEach((a) => { a.textContent = textoDePlanilla('antetitulo'); });
+  document.querySelector('.navegacion__item[data-seccion="estudios"] span').textContent = textoDePlanilla('seccionLista');
+  el.tituloEstudios.textContent = textoDePlanilla('tituloLista');
+  el.texto.placeholder = textoDePlanilla('buscarAyuda');
+  el.cargando.querySelector('.estado-panel__texto').textContent = textoDePlanilla('cargandoLista');
+  dibujarEncabezado();
 
   return { cargar, reiniciar, calcularNumeros };
 })();

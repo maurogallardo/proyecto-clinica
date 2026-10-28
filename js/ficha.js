@@ -1,8 +1,10 @@
 // Ficha de un estudio en el dashboard (T031): copia de la ficha del panel de LoMar.
-// Se arma desde la planilla (js/planillas/ergometrico.js), así ningún campo queda
-// afuera: en un contexto médico ver qué falta importa tanto como ver lo cargado.
-// Los vacíos se muestran con "—". Las fotos del electro se ven en miniatura, con
-// enlaces firmados que caducan (T029), y se agrandan al tocarlas.
+// Se arma desde la planilla activa (PLANILLA, js/planillas/activa.js), así ningún
+// campo queda afuera: en un contexto médico ver qué falta importa tanto como ver lo
+// cargado. Los vacíos se muestran con "—". Las fotos (en el ergométrico, las del
+// electro) se ven en miniatura, con enlaces firmados que caducan (T029), y se
+// agrandan al tocarlas. Lo que se le pide a la base y los textos también salen de
+// la planilla (textoDePlanilla).
 
 const FICHA = { tiempoMaximoMs: 20000 };
 
@@ -24,7 +26,7 @@ const Ficha = (() => {
   };
   let idActual = null;
   let estudioActual = null;   // como vino del servidor (lo usa la edición)
-  let fotosActuales = [];     // las fotos del electro, en el orden de la ficha (las usa el PDF)
+  let fotosActuales = [];     // las fotos, en el orden de la ficha (las usa el PDF)
   let editando = false;
   let alVolver = () => {};
   let alMandarALaPapelera = () => {};
@@ -109,10 +111,10 @@ const Ficha = (() => {
     return bloques;
   }
 
-  // Tabla "Reposo y esfuerzo", con las columnas de la planilla
+  // Tabla de etapas ("Reposo y esfuerzo" en el ergométrico), con las columnas de la planilla
   function nodoEtapas(etapas) {
-    if (etapas.length === 0) return nodoNota('Sin etapas cargadas.');
-    const columnas = PLANILLA_ERGOMETRICO.etapas.campos;
+    if (etapas.length === 0) return nodoNota(textoDePlanilla('sinEtapas'));
+    const columnas = PLANILLA.etapas.campos;
     const envoltorio = document.createElement('div');
     envoltorio.className = 'tabla-desplazable';
     const tabla = document.createElement('table');
@@ -143,7 +145,7 @@ const Ficha = (() => {
     return envoltorio;
   }
 
-  // Fotos del electro: miniaturas que abren la vista ampliada
+  // Fotos: miniaturas que abren la vista ampliada
   function nodoFotos(fotos) {
     if (fotos.length === 0) return nodoNota('Sin fotos adjuntas.');
     const grilla = document.createElement('div');
@@ -205,16 +207,19 @@ const Ficha = (() => {
     return `${dos(fecha.getDate())}/${dos(fecha.getMonth() + 1)}/${fecha.getFullYear()} ${dos(fecha.getHours())}:${dos(fecha.getMinutes())}`;
   }
 
+  // Títulos de la ficha: "Estudio ergométrico · N° 21" (y "Editando · …" al editar)
+  const tituloConNumero = (clave, estudio) => textoDePlanilla(clave, { numero: estudio.numero ?? '—' });
+
   function render(estudio, fotos) {
-    el.titulo.textContent = `Estudio ergométrico · N° ${estudio.numero ?? '—'}`;
-    const secciones = PLANILLA_ERGOMETRICO.secciones.map((seccion) => (seccion.tipo === 'etapas'
-      ? nodoSeccion(seccion.titulo, nodoEtapas(estudio.etapas))
+    el.titulo.textContent = tituloConNumero('tituloFicha', estudio);
+    const secciones = PLANILLA.secciones.map((seccion) => (seccion.tipo === 'etapas'
+      ? nodoSeccion(seccion.titulo, nodoEtapas(estudio[PLANILLA.etapas.tabla]))
       : nodoSeccion(seccion.titulo, ...nodoCampos(seccion.campos, estudio))));
-    secciones.push(nodoSeccion('Fotos del electro', nodoFotos(fotos)));
+    secciones.push(nodoSeccion(PLANILLA.fotos.seccion, nodoFotos(fotos)));
     const pie = document.createElement('div');
     pie.className = 'ficha__grilla';
     pie.append(
-      nodoCampo({ etiqueta: 'N° de estudio' }, estudio.numero),
+      nodoCampo({ etiqueta: textoDePlanilla('pieNumero') }, estudio.numero),
       nodoCampo({ etiqueta: 'Cargado' }, fechaHora(estudio.creado_en)),
       nodoCampo({ etiqueta: 'Última edición' }, fechaHora(estudio.modificado_en)),
     );
@@ -307,7 +312,7 @@ const Ficha = (() => {
     cerrarLightbox();
     el.cuerpo.hidden = true;
     Edicion.abrir(estudioActual);
-    el.titulo.textContent = `Editando · Estudio ergométrico · N° ${estudioActual.numero ?? '—'}`;
+    el.titulo.textContent = tituloConNumero('tituloEditando', estudioActual);
     el.acciones.replaceChildren(
       boton('Cancelar', 'panel-boton panel-boton--fantasma', 'ficha-cancelar', cancelar),
       boton('Guardar cambios', 'panel-boton', 'ficha-guardar', guardar),
@@ -321,7 +326,7 @@ const Ficha = (() => {
     Edicion.cerrar();
     editando = false;
     if (!estudioActual) return;
-    el.titulo.textContent = `Estudio ergométrico · N° ${estudioActual.numero ?? '—'}`;
+    el.titulo.textContent = tituloConNumero('tituloFicha', estudioActual);
     ponerBotonesDeLaFicha();
     el.cuerpo.hidden = false;
     document.getElementById('ficha-editar').focus();
@@ -408,10 +413,11 @@ const Ficha = (() => {
   async function borrar(estudio, boton) {
     if (boton.dataset.ocupado) return;
     boton.dataset.ocupado = '1';   // (no se deshabilita todavía: al cerrar el cartel el foco vuelve acá)
-    const paciente = tieneValor(estudio.nombre_paciente) ? ` (${String(estudio.nombre_paciente).trim()})` : '';
+    const nombre = estudio[PLANILLA.columnaPaciente];
+    const paciente = tieneValor(nombre) ? ` (${String(nombre).trim()})` : '';
     const si = await preguntar({
       titulo: '¿Mandar a la Papelera?',
-      texto: `El estudio N° ${estudio.numero}${paciente} deja de verse en la lista y en los números. No se borra: se puede restaurar desde la Papelera.`,
+      texto: textoDePlanilla('borrarTexto', { numero: estudio.numero, paciente }),
       textoConfirmar: 'Mandar a la Papelera',
       peligro: true,
     });
@@ -449,7 +455,7 @@ const Ficha = (() => {
     fotosActuales = [];
     editando = false;
     Edicion.cerrar();
-    el.titulo.textContent = 'Estudio ergométrico';
+    el.titulo.textContent = PLANILLA.titulo;
     el.cuerpo.replaceChildren();
     el.acciones.replaceChildren();
     mostrarSolo('cargando');
@@ -458,8 +464,8 @@ const Ficha = (() => {
       if (!navigator.onLine) throw new Error('sin conexión');
       const cortar = new AbortController();
       const reloj = setTimeout(() => cortar.abort(), FICHA.tiempoMaximoMs);
-      const { data, error } = await clienteSupabase.from('estudios')
-        .select('*, etapas(*), imagenes(id, ruta_archivo, creado_en)')
+      const { data, error } = await clienteSupabase.from(PLANILLA.base.tabla)
+        .select(`*, ${PLANILLA.etapas.tabla}(*), ${PLANILLA.fotos.tabla}(id, ruta_archivo, creado_en)`)
         .eq('id', id)
         .abortSignal(cortar.signal)
         .maybeSingle();
@@ -467,18 +473,20 @@ const Ficha = (() => {
       if (idActual !== id) return;   // mientras tanto se volvió o se abrió otro
       if (error) throw error;
       if (!data) {
-        mostrarError('No se encontró el estudio (puede que no sea tuyo o que ya no exista).', false);
+        mostrarError(textoDePlanilla('noEncontrado'), false);
         return;
       }
       // Uno que está en la Papelera no se abre: primero hay que restaurarlo
       if (data.en_papelera) {
-        el.titulo.textContent = `Estudio ergométrico · N° ${data.numero ?? '—'}`;
-        mostrarError('Este estudio está en la Papelera. Para verlo, restauralo desde la Papelera.', false);
+        el.titulo.textContent = tituloConNumero('tituloFicha', data);
+        mostrarError(textoDePlanilla('fichaEnPapelera'), false);
         return;
       }
-      // Etapas en orden de tiempo (las que no tienen tiempo, al final)
-      data.etapas.sort((a, b) => (a.tiempo ?? Infinity) - (b.tiempo ?? Infinity));
-      const imagenes = [...data.imagenes].sort((a, b) => String(a.creado_en).localeCompare(String(b.creado_en)));
+      // Etapas en el orden de la planilla (en el ergométrico, de tiempo; las que no
+      // lo tienen, al final)
+      const orden = PLANILLA.etapas.ordenarPor;
+      data[PLANILLA.etapas.tabla].sort((a, b) => (a[orden] ?? Infinity) - (b[orden] ?? Infinity));
+      const imagenes = [...data[PLANILLA.fotos.tabla]].sort((a, b) => String(a.creado_en).localeCompare(String(b.creado_en)));
       const enlaces = imagenes.length
         ? await Enlaces.vigentes(FOTOS.deposito, imagenes.map((i) => i.ruta_archivo), FOTOS.enlaceSegundos)
         : [];
@@ -487,7 +495,7 @@ const Ficha = (() => {
     } catch (error) {
       if (idActual !== id) return;
       const sinConexion = !navigator.onLine || /fetch|network|abort|sin conexión/i.test(String(error && error.message));
-      mostrarError(sinConexion ? 'Sin conexión. Revisá internet y probá de nuevo.' : 'No se pudo cargar el estudio. Probá de nuevo.');
+      mostrarError(sinConexion ? 'Sin conexión. Revisá internet y probá de nuevo.' : textoDePlanilla('errorFicha'));
       console.error('No se pudo cargar la ficha');
     }
   }
@@ -578,6 +586,7 @@ const Ficha = (() => {
   });
   document.getElementById('ficha-volver-lista').addEventListener('click', () => alVolver());
   document.getElementById('ficha-reintentar').addEventListener('click', () => { if (idActual) abrir(idActual); });
+  el.cargando.querySelector('.estado-panel__texto').textContent = textoDePlanilla('cargandoFicha');
 
   return {
     abrir,

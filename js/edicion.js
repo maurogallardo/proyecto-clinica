@@ -1,12 +1,13 @@
 // Editar un estudio desde el dashboard (T061). La ficha pasa a la MISMA planilla del
-// celular (js/formulario.js + js/planillas/ergometrico.js) con los datos del
+// celular (js/formulario.js + la planilla activa, PLANILLA) con los datos del
 // estudio, solo con teclado: sin micrófono, sin grabación y sin fotos. Se pueden
 // cambiar los datos y las etapas (cambiar, agregar y quitar); el número no.
 // Valen los mismos criterios que en la carga: decimales con coma en pantalla,
-// mayúscula inicial en los textos libres, DNI y nombre obligatorios, y números
-// bien escritos.
+// mayúscula inicial en los textos libres, datos mínimos (en el ergométrico, DNI y
+// nombre) y números bien escritos. Los textos salen de la planilla (textoDePlanilla).
 //
-// Se guarda SOLO con la función de la base editar_estudio (supabase/edicion.sql):
+// Se guarda SOLO con la función de editar de la base (PLANILLA.base.editar; en el
+// ergométrico, editar_estudio de supabase/edicion.sql):
 // todo o nada, y antes guarda en el historial cómo estaba. Para detectar que otra
 // persona u otra pestaña lo cambió mientras tanto, se le devuelve el modificado_en
 // que tenía la ficha al abrir, TAL CUAL vino del servidor (texto: si se pasara por
@@ -33,9 +34,9 @@ const Edicion = (() => {
     vuelta++;
     estudio = datosDelEstudio;
     el.zona.hidden = false;
-    dibujarPlanilla(PLANILLA_ERGOMETRICO, el.formulario, {
+    dibujarPlanilla(PLANILLA, el.formulario, {
       prefijo: EDICION.prefijo,
-      valores: { estudio: datosDelEstudio, etapas: datosDelEstudio.etapas || [] },
+      valores: { estudio: datosDelEstudio, etapas: datosDelEstudio[PLANILLA.etapas.tabla] || [] },
     });
     inicial = JSON.stringify(datos());
   }
@@ -45,12 +46,13 @@ const Edicion = (() => {
   // El primer campo, para dejarle el cursor al entrar
   const primerCampo = () => el.formulario.querySelector('[data-columna]');
 
-  // Errores en criollo, sin detalles técnicos (y sin datos del paciente)
+  // Errores en criollo, sin detalles técnicos (y sin datos del paciente). Se
+  // reconocen por el mensaje que devuelve la función de la base
   function mensajeDeError(error) {
     const mensaje = String((error && error.message) || '');
     if (esSinConexion(error)) return 'Sin conexión o el servidor tardó demasiado. Los cambios siguen en pantalla: probá de nuevo.';
-    if (/No se encontró el estudio/i.test(mensaje)) return 'No se encontró el estudio (puede que no sea tuyo o que ya no exista).';
-    if (/Papelera/i.test(mensaje)) return 'Este estudio está en la Papelera: no se puede editar.';
+    if (/No se encontró el estudio/i.test(mensaje)) return textoDePlanilla('noEncontrado');
+    if (/Papelera/i.test(mensaje)) return textoDePlanilla('edicionEnPapelera');
     if (/iniciar sesión|jwt/i.test(mensaje)) return 'Tu sesión se cerró. Volvé a iniciar sesión y probá de nuevo.';
     return 'No se pudieron guardar los cambios. Probá de nuevo.';
   }
@@ -67,13 +69,13 @@ const Edicion = (() => {
       mostrarAviso('No hay cambios para guardar');
       return 'sin-cambios';
     }
-    ponerMayusculaInicialEn(el.formulario, PLANILLA_ERGOMETRICO);   // se ve antes del cartel
+    ponerMayusculaInicialEn(el.formulario, PLANILLA);   // se ve antes del cartel
     const nuevos = datos();
     if (faltanDatosMinimos(nuevos.estudio, el.formulario) || hayNumeroMalEscrito(el.formulario)) return null;
     const esta = vuelta;
     const si = await preguntar({
       titulo: '¿Guardar los cambios?',
-      texto: `Se van a guardar los cambios del estudio N° ${estudio.numero}.`,
+      texto: textoDePlanilla('guardarCambiosTexto', { numero: estudio.numero }),
       textoConfirmar: 'Guardar cambios',
     });
     if (!si || esta !== vuelta) return null;
@@ -85,7 +87,7 @@ const Edicion = (() => {
       if (!navigator.onLine) throw new Error('sin conexión');
       const cortar = new AbortController();
       const reloj = setTimeout(() => cortar.abort(), EDICION.tiempoMaximoMs);
-      const { data, error } = await clienteSupabase.rpc('editar_estudio', {
+      const { data, error } = await clienteSupabase.rpc(PLANILLA.base.editar, {
         p_id: estudio.id,
         p_estudio: nuevos.estudio,
         p_etapas: nuevos.etapas,
@@ -109,7 +111,7 @@ const Edicion = (() => {
       mostrarAviso('No hay cambios para guardar');
       return 'sin-cambios';
     }
-    mostrarAviso(`Cambios guardados en el estudio N° ${respuesta.numero}`, 'exito', 4000);
+    mostrarAviso(textoDePlanilla('cambiosGuardados', { numero: respuesta.numero }), 'exito', 4000);
     return 'guardado';
   }
 
@@ -120,7 +122,7 @@ const Edicion = (() => {
     const esta = vuelta;
     const recargar = await preguntar({
       titulo: 'No se guardó tu cambio',
-      texto: 'Este estudio lo modificó otra persona o se editó en otra pestaña mientras lo editabas. No se guardó tu cambio. Si cargás la versión nueva, se pierde lo que escribiste acá.',
+      texto: textoDePlanilla('edicionCruzada'),
       icono: 'error',
       textoConfirmar: 'Cargar la versión nueva',
       textoVolver: 'Seguir editando',

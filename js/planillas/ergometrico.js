@@ -86,6 +86,8 @@ const PLANILLA_ERGOMETRICO = {
 
   // Tabla "Reposo y esfuerzo": una tarjeta por etapa (tabla etapas de la base)
   etapas: {
+    tabla: 'etapas',        // la tabla de la base
+    ordenarPor: 'tiempo',   // en la ficha van en orden de tiempo (las sin tiempo, al final)
     campos: [
       { columna: 'tiempo', etiqueta: 'Tiempo', tipo: 'entero', destacado: true },
       { columna: 'carga', etiqueta: 'Carga', tipo: 'entero', destacado: true },
@@ -107,10 +109,15 @@ const PLANILLA_ERGOMETRICO = {
 
   // --- Lo que el resto de la app lee de la planilla (Fase 0 del Formulario N° 5) ---
 
-  // Funciones de la base. Parámetros: p_id, p_estudio, p_etapas (las del N° 5 se van
-  // a llamar igual, para que la app no necesite ramas)
+  // La tabla de la base y sus funciones. Parámetros: p_id, p_estudio, p_etapas y, al
+  // editar, p_modificado_en (los del N° 5 se van a llamar igual, para que la app no
+  // necesite ramas)
   base: {
+    tabla: 'estudios',
     guardar: 'guardar_estudio',
+    editar: 'editar_estudio',
+    anular: 'anular_estudio',         // mandar a la Papelera (solo p_id)
+    restaurar: 'restaurar_estudio',   // sacar de la Papelera (solo p_id)
   },
 
   // Fotos: cada planilla tiene su tabla de fotos y su espacio de almacenamiento
@@ -118,13 +125,18 @@ const PLANILLA_ERGOMETRICO = {
   //   deposito: el espacio de almacenamiento (privado) de los archivos
   //   ruta: dónde va cada archivo ({id}: el de la planilla guardada; {foto}: el de la foto)
   //   tipo: lo que se anota en cada fila (en la demo no se pregunta)
+  //   seccion: el nombre de la sección de fotos en la ficha
   fotos: {
     tabla: 'imagenes',
     columna: 'estudio_id',
     deposito: 'imagenes-estudios',
     ruta: '{id}/{foto}.webp',
     tipo: 'electro',
+    seccion: 'Fotos del electro',
   },
+
+  // La columna con el nombre del paciente (la usa el cartel de "Borrar")
+  columnaPaciente: 'nombre_paciente',
 
   // Datos mínimos para guardar (RF-023). soloCifras: cuenta como vacío si no tiene
   // ningún número (un DNI escrito solo con puntos o espacios)
@@ -133,8 +145,75 @@ const PLANILLA_ERGOMETRICO = {
     { columna: 'nombre_paciente', falta: 'el nombre' },
   ],
 
+  // Lista del dashboard: las columnas, en orden, y en qué se busca
+  //   columna: de dónde sale el valor (supabase/schema.sql)
+  //   forma: 'fechaHora' (26/09/2026 14:05), 'resumen' (texto largo cortado; entero
+  //          al pasar el mouse) o 'fotos' (cuántas fotos tiene); si no, el valor tal cual
+  //   ancho / estilo: el ancho de la columna y el aspecto de la celda (css/dashboard.css)
+  //   buscar -> soloCifras: se busca por números (el DNI, aunque se escriba con puntos)
+  lista: {
+    columnas: [
+      { columna: 'numero', titulo: 'N°', ancho: 'numero', estilo: 'numero' },
+      { columna: 'creado_en', titulo: 'Fecha y hora', forma: 'fechaHora', ancho: 'fecha', estilo: 'fecha' },
+      { columna: 'nombre_paciente', titulo: 'Paciente', estilo: 'paciente' },
+      { columna: 'documento', titulo: 'DNI', ancho: 'dni', estilo: 'dni' },
+      { columna: 'medico_solicitante', titulo: 'Médico solicitante' },
+      { columna: 'conclusion', titulo: 'Conclusión', forma: 'resumen', estilo: 'conclusion' },
+      { titulo: 'Fotos', forma: 'fotos', ancho: 'fotos', estilo: 'fotos' },
+    ],
+    buscar: [
+      { columna: 'nombre_paciente' },
+      { columna: 'documento', soloCifras: true },
+    ],
+  },
+
+  // Papelera del dashboard: las columnas de la planilla (como en la lista). Después
+  // van las de la Papelera, que son iguales en todas: "Borrado por", "Fecha y hora"
+  // y el botón "Restaurar" (js/papelera.js)
+  papelera: {
+    columnas: [
+      { columna: 'numero', titulo: 'N°', ancho: 'numero', estilo: 'numero' },
+      { columna: 'nombre_paciente', titulo: 'Paciente', estilo: 'paciente' },
+      { columna: 'documento', titulo: 'DNI', ancho: 'dni', estilo: 'dni' },
+    ],
+  },
+
   // Textos de pantalla (los huecos entre llaves los completa textoDePlanilla)
   textos: {
+    // Dashboard: la lista
+    antetitulo: 'Servicio de Cardiología',   // arriba del título de cada sección del dashboard
+    seccionLista: 'Estudios',                // el botón de la barra lateral
+    tituloLista: 'Estudios ergométricos',
+    buscarAyuda: 'Buscar por nombre o DNI',
+    cargandoLista: 'Cargando estudios…',
+    errorLista: 'No se pudieron cargar los estudios. Probá de nuevo.',
+    listaVacia: 'Todavía no hay estudios cargados.',
+    listaSinCoincidencias: 'Ningún estudio coincide con los filtros.',
+    contadorUno: '1 estudio',
+    contadorVarios: '{cantidad} estudios',
+    enviadoAPapelera: 'Estudio N° {numero} enviado a la Papelera',
+    // Dashboard: la ficha (el título sin número es el de la planilla, PLANILLA.titulo)
+    tituloFicha: 'Estudio ergométrico · N° {numero}',
+    tituloEditando: 'Editando · Estudio ergométrico · N° {numero}',
+    cargandoFicha: 'Cargando estudio…',
+    errorFicha: 'No se pudo cargar el estudio. Probá de nuevo.',
+    noEncontrado: 'No se encontró el estudio (puede que no sea tuyo o que ya no exista).',
+    fichaEnPapelera: 'Este estudio está en la Papelera. Para verlo, restauralo desde la Papelera.',
+    sinEtapas: 'Sin etapas cargadas.',
+    pieNumero: 'N° de estudio',
+    borrarTexto: 'El estudio N° {numero}{paciente} deja de verse en la lista y en los números. No se borra: se puede restaurar desde la Papelera.',
+    // Dashboard: editar
+    guardarCambiosTexto: 'Se van a guardar los cambios del estudio N° {numero}.',
+    cambiosGuardados: 'Cambios guardados en el estudio N° {numero}',
+    edicionEnPapelera: 'Este estudio está en la Papelera: no se puede editar.',
+    edicionCruzada: 'Este estudio lo modificó otra persona o se editó en otra pestaña mientras lo editabas. No se guardó tu cambio. Si cargás la versión nueva, se pierde lo que escribiste acá.',
+    // Dashboard: la Papelera (los errores dicen "No se pudo {lo que se hacía}. Probá de nuevo.")
+    papeleraAyuda: 'Los estudios borrados quedan acá, con quién los borró y cuándo. No se ven en la lista ni en los números. Para verlos, restauralos.',
+    queSeHaciaAnular: 'mandar el estudio a la Papelera',
+    queSeHaciaRestaurar: 'restaurar el estudio',
+    restaurarEtiqueta: 'Restaurar el estudio N° {numero}',   // lo que lee un lector de pantalla en cada botón
+    restaurado: 'Estudio N° {numero} restaurado',
+    // Carga (celular)
     botonConfirmar: 'Confirmar estudio',
     confirmarTitulo: '¿Confirmar estudio?',
     confirmarTexto: 'Se va a guardar el estudio de {nombre_paciente}.',
