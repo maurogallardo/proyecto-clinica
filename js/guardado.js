@@ -1,6 +1,7 @@
 // Guardado del estudio (T023 y T024, con las fotos de T027 y T028).
-//   1) Revisa: datos mínimos (DNI y nombre), números bien escritos, que no haya
-//      un dictado a medias ni fotos preparándose.
+//   1) Revisa: datos mínimos (en el ergométrico, DNI y nombre), números bien
+//      escritos, campos de valores fijos (en el N° 5, Trámite adm.: SÍ o NO), que
+//      no haya un dictado a medias ni fotos preparándose.
 //   2) Cartel "¿Confirmar estudio?".
 //   3) Guarda estudio + etapas de una sola vez (función guardar_estudio de la base:
 //      todo o nada). Después, cada foto: el archivo al depósito y su fila en
@@ -83,6 +84,37 @@ function hayNumeroMalEscrito(contenedor) {
   return true;
 }
 
+// Campos de valores fijos: la planilla los declara con "opciones" (en el N° 5,
+// Trámite adm.: "SÍ" o "NO"). El ergométrico no tiene ninguno. También los usa la
+// edición del dashboard.
+const camposConOpciones = (planilla) => planilla.secciones.flatMap((s) => s.campos || []).filter((c) => c.opciones);
+const comparable = (texto) => String(texto).trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+// "si", "Sí" o "no" pasan a la forma de la planilla ("SÍ", "NO"); se ve en
+// pantalla antes del cartel de confirmar. Lo vacío queda vacío (se guarda como null).
+function ponerOpcionesEnSuFormaEn(contenedor, planilla) {
+  camposConOpciones(planilla).forEach((campo) => {
+    const control = controlDeCampo(contenedor, campo.columna);
+    if (!control || control.value.trim() === '') return;
+    const opcion = campo.opciones.find((o) => comparable(o) === comparable(control.value));
+    if (opcion && opcion !== control.value) escribirValor(control, opcion);
+  });
+}
+
+// Un valor que no es ninguna de las opciones no se puede guardar (la base lo
+// rechazaría): se avisa cuál y se va a ese campo
+function hayOpcionNoPermitida(contenedor, planilla) {
+  const campo = camposConOpciones(planilla).find((c) => {
+    const control = controlDeCampo(contenedor, c.columna);
+    const valor = control ? control.value.trim() : '';
+    return valor !== '' && !c.opciones.includes(valor);
+  });
+  if (!campo) return false;
+  mostrarAviso(`"${campo.etiqueta}" tiene que ser ${campo.opciones.join(' o ')}.`, 'error', 5000);
+  irAlCampo(controlDeCampo(contenedor, campo.columna));
+  return true;
+}
+
 // --- 2 y 3) Confirmar y guardar ---------------------------------------------------------
 
 // Primera letra en mayúscula en los textos libres (js/formulario.js)
@@ -101,8 +133,10 @@ async function confirmarEstudio() {
     // Primera letra en mayúscula en los textos libres (se ve en pantalla antes del
     // cartel: se guarda exactamente lo que se revisó y se confirmó)
     ponerMayusculaInicial();
+    ponerOpcionesEnSuFormaEn(contenedorCarga, PLANILLA);
     const datos = datosParaGuardar();
-    if (faltanDatosMinimos(datos.estudio) || hayNumeroMalEscrito(contenedorCarga)) return;
+    if (faltanDatosMinimos(datos.estudio) || hayNumeroMalEscrito(contenedorCarga)
+        || hayOpcionNoPermitida(contenedorCarga, PLANILLA)) return;
     const confirma = await preguntar({
       titulo: textoDePlanilla('confirmarTitulo'),
       texto: textoDePlanilla('confirmarTexto', datos.estudio),

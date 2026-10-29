@@ -9,6 +9,7 @@
 // Las planillas que tiene la app (sumar una = sumar una línea acá)
 const PLANILLAS = {
   ergometrico: PLANILLA_ERGOMETRICO,
+  formulario5: PLANILLA_FORMULARIO5,
 };
 
 // Si el interruptor dice una planilla que no existe, se avisa claro (no se elige

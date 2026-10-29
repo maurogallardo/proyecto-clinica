@@ -464,8 +464,10 @@ const Ficha = (() => {
       if (!navigator.onLine) throw new Error('sin conexión');
       const cortar = new AbortController();
       const reloj = setTimeout(() => cortar.abort(), FICHA.tiempoMaximoMs);
+      // Las etapas, solo si la planilla tiene esa tabla (el N° 5 no tiene)
+      const tablaEtapas = PLANILLA.etapas.tabla;
       const { data, error } = await clienteSupabase.from(PLANILLA.base.tabla)
-        .select(`*, ${PLANILLA.etapas.tabla}(*), ${PLANILLA.fotos.tabla}(id, ruta_archivo, creado_en)`)
+        .select(`*, ${tablaEtapas ? `${tablaEtapas}(*), ` : ''}${PLANILLA.fotos.tabla}(id, ruta_archivo, creado_en)`)
         .eq('id', id)
         .abortSignal(cortar.signal)
         .maybeSingle();
@@ -485,7 +487,7 @@ const Ficha = (() => {
       // Etapas en el orden de la planilla (en el ergométrico, de tiempo; las que no
       // lo tienen, al final)
       const orden = PLANILLA.etapas.ordenarPor;
-      data[PLANILLA.etapas.tabla].sort((a, b) => (a[orden] ?? Infinity) - (b[orden] ?? Infinity));
+      if (tablaEtapas) data[tablaEtapas].sort((a, b) => (a[orden] ?? Infinity) - (b[orden] ?? Infinity));
       const imagenes = [...data[PLANILLA.fotos.tabla]].sort((a, b) => String(a.creado_en).localeCompare(String(b.creado_en)));
       const enlaces = imagenes.length
         ? await Enlaces.vigentes(FOTOS.deposito, imagenes.map((i) => i.ruta_archivo), FOTOS.enlaceSegundos)

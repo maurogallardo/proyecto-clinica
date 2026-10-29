@@ -4,7 +4,8 @@
 // cambiar los datos y las etapas (cambiar, agregar y quitar); el número no.
 // Valen los mismos criterios que en la carga: decimales con coma en pantalla,
 // mayúscula inicial en los textos libres, datos mínimos (en el ergométrico, DNI y
-// nombre) y números bien escritos. Los textos salen de la planilla (textoDePlanilla).
+// nombre), números bien escritos y campos de valores fijos (en el N° 5, Trámite
+// adm.). Los textos salen de la planilla (textoDePlanilla).
 //
 // Se guarda SOLO con la función de editar de la base (PLANILLA.base.editar; en el
 // ergométrico, editar_estudio de supabase/edicion.sql):
@@ -36,7 +37,8 @@ const Edicion = (() => {
     el.zona.hidden = false;
     dibujarPlanilla(PLANILLA, el.formulario, {
       prefijo: EDICION.prefijo,
-      valores: { estudio: datosDelEstudio, etapas: datosDelEstudio[PLANILLA.etapas.tabla] || [] },
+      // (una planilla sin tabla de etapas, como el N° 5, no tiene ninguna)
+      valores: { estudio: datosDelEstudio, etapas: (PLANILLA.etapas.tabla && datosDelEstudio[PLANILLA.etapas.tabla]) || [] },
     });
     inicial = JSON.stringify(datos());
   }
@@ -70,8 +72,10 @@ const Edicion = (() => {
       return 'sin-cambios';
     }
     ponerMayusculaInicialEn(el.formulario, PLANILLA);   // se ve antes del cartel
+    ponerOpcionesEnSuFormaEn(el.formulario, PLANILLA);  // en el N° 5, Trámite adm. (js/guardado.js)
     const nuevos = datos();
-    if (faltanDatosMinimos(nuevos.estudio, el.formulario) || hayNumeroMalEscrito(el.formulario)) return null;
+    if (faltanDatosMinimos(nuevos.estudio, el.formulario) || hayNumeroMalEscrito(el.formulario)
+        || hayOpcionNoPermitida(el.formulario, PLANILLA)) return null;
     const esta = vuelta;
     const si = await preguntar({
       titulo: '¿Guardar los cambios?',
