@@ -1,4 +1,5 @@
-// Herramientas del PDF (T033), las mismas para cualquier estudio.
+// Herramientas del PDF (T033), las mismas para cualquier planilla (hoja A4 vertical
+// u horizontal).
 //
 // - Cargan jsPDF, las fuentes y los logos SOLO cuando se toca "Imprimir" o
 //   "Descargar PDF" (no en el celular ni al abrir la app). jsPDF y las fuentes
@@ -117,9 +118,11 @@ const HerramientasPdf = (() => {
     return cargando;
   }
 
-  // Un documento A4 vertical, en milímetros, con las fuentes incrustadas
-  function nuevoDocumento(recursos) {
-    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+  // Un documento A4, en milímetros, con las fuentes incrustadas. Vertical u
+  // horizontal según la planilla (en el ergométrico, vertical)
+  function nuevoDocumento(recursos, orientacion = 'vertical') {
+    if (orientacion !== 'vertical' && orientacion !== 'horizontal') throw new Error(`Orientación de hoja desconocida: '${orientacion}'`);
+    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: orientacion === 'horizontal' ? 'landscape' : 'portrait', compress: true });
     recursos.fuentes.forEach((f) => {
       doc.addFileToVFS(f.archivo, f.base64);
       doc.addFont(f.archivo, f.familia, f.estilo);
@@ -226,12 +229,14 @@ const HerramientasPdf = (() => {
     return String(valor).trim();
   }
 
-  // Una línea chica arriba de las hojas que no son la 1: "Estudio N° X · Paciente"
+  // Una línea chica arriba de las hojas que no son la 1: "Estudio N° X · Paciente".
+  // Ocupa el ancho de la hoja en la que está (210 mm vertical, 297 horizontal; jsPDF
+  // lo da con decimales de más, por eso se redondea)
   function encabezadoChico(doc, texto, margen) {
     doc.setFont('Arimo', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(70, 70, 70);
-    const renglones = partirEnRenglones(doc, texto, 210 - 2 * margen);
+    const renglones = partirEnRenglones(doc, texto, Math.round(doc.internal.pageSize.getWidth()) - 2 * margen);
     renglones.forEach((r, i) => doc.text(r, margen, margen + 3 + i * 4));
     doc.setTextColor(0, 0, 0);
     return margen + 3 + (renglones.length - 1) * 4;   // dónde quedó la última línea

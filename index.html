@@ -119,9 +119,10 @@
          Así ningún campo pasa por detrás del encabezado. -->
     <div class="carga__desplazable">
       <main class="carga" id="carga-formulario"></main>
-      <!-- Confirmar estudio (T024): al final de la planilla, se mueve con ella (como LoMar) -->
+      <!-- Confirmar estudio (T024): al final de la planilla, se mueve con ella (como LoMar).
+           El texto lo pone js/guardado.js a partir de la planilla activa. -->
       <div class="carga__final">
-        <button type="button" class="boton-principal boton-confirmar" id="boton-confirmar-estudio">Confirmar estudio</button>
+        <button type="button" class="boton-principal boton-confirmar" id="boton-confirmar-estudio"></button>
       </div>
     </div>
 
@@ -227,8 +228,9 @@
     </div>
 
     <!-- Miniaturas de las fotos (T025): flotan arriba de la barra, cada una con su ✕
-         (como los adjuntos de LoMar). Hasta confirmar, viven solo en el celular. -->
-    <div class="miniaturas" id="miniaturas" aria-label="Fotos del estudio" hidden></div>
+         (como los adjuntos de LoMar). Hasta confirmar, viven solo en el celular. Su
+         nombre para los lectores de pantalla lo pone js/fotos.js desde la planilla activa. -->
+    <div class="miniaturas" id="miniaturas" hidden></div>
 
     <!-- Selectores del celular: galería (varias fotos) y cámara (foto en el momento) -->
     <input type="file" id="input-fotos" accept="image/*" multiple hidden>

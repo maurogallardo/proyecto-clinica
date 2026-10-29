@@ -3,9 +3,13 @@
 // ficha (estudio, etapas y fotos, en el mismo orden) y NO se guarda en ningún
 // lado: ni en Supabase, ni en el navegador. Vive en memoria mientras se usa.
 //
-//   hoja 1            -> la planilla del estudio (js/planillas/ergometrico-hoja.js)
+//   hoja 1            -> la hoja de la planilla activa (en el ergométrico,
+//                        js/planillas/ergometrico-hoja.js)
 //   continuación      -> solo si un texto largo no entró en la hoja 1
 //   hojas de fotos    -> solo si tiene fotos (js/pdf/hojas-fotos.js)
+//
+// La orientación, el nombre del archivo y el encabezado salen de la planilla activa
+// (PLANILLA.pdf y textoDePlanilla, js/planillas/activa.js).
 //
 // "Descargar PDF" lo guarda en Descargas. "Imprimir" lo abre en otra pestaña (la
 // pestaña se abre en el mismo momento del clic, para que el navegador no la
@@ -15,7 +19,7 @@
 
 const PDF_ARMADO = { tiempoMaximoMs: 120000, duracionEnlaceMs: 120000 };
 
-// La hoja 1 de cada tipo de estudio (para sumar otro estudio, se agrega acá)
+// La hoja 1 de cada planilla, por su id (para sumar otra, se agrega acá)
 const HOJAS_PDF = {
   ergometrico: () => HOJA_ERGOMETRICO,
 };
@@ -32,15 +36,26 @@ const Pdf = (() => {
       .replace(/^-+|-+$/g, '');
   }
 
-  // Ergometrico-<número>-<nombre del paciente>-<AAAA-MM-DD>.pdf (la fecha del estudio)
+  // <comienzo>-<número>-<nombre del paciente>-<AAAA-MM-DD>.pdf, según la planilla (en
+  // el ergométrico: Ergometrico-…, con la fecha del estudio)
   function nombreDeArchivo(estudio) {
-    const partes = ['Ergometrico', String(estudio.numero ?? 'sin-numero'), limpiarParaArchivo(estudio.nombre_paciente) || 'sin-nombre'];
-    const fecha = /^(\d{4}-\d{2}-\d{2})/.exec(String(estudio.fecha_estudio ?? ''));
+    const { archivo, columnaFecha } = PLANILLA.pdf;
+    const partes = [archivo, String(estudio.numero ?? 'sin-numero'), limpiarParaArchivo(estudio[PLANILLA.columnaPaciente]) || 'sin-nombre'];
+    const fecha = /^(\d{4}-\d{2}-\d{2})/.exec(String(estudio[columnaFecha] ?? ''));
     partes.push(fecha ? fecha[1] : 'sin-fecha');
     return `${partes.join('-')}.pdf`;
   }
 
-  const encabezadoDe = (estudio) => `Estudio N° ${estudio.numero ?? '—'} · ${String(estudio.nombre_paciente ?? '').trim()}`;
+  const encabezadoDe = (estudio) => textoDePlanilla('pdfEncabezado', {
+    numero: estudio.numero ?? '—',
+    paciente: String(estudio[PLANILLA.columnaPaciente] ?? '').trim(),
+  });
+
+  // La hoja 1 de la planilla activa (si todavía no tiene, el PDF no se arma)
+  function hojaDeLaPlanilla() {
+    if (!Object.hasOwn(HOJAS_PDF, PLANILLA.id)) throw new Error(`La planilla '${PLANILLA.id}' no tiene hoja de PDF`);
+    return HOJAS_PDF[PLANILLA.id]();
+  }
 
   function conTiempoMaximo(promesa, ms) {
     let reloj;
@@ -50,17 +65,18 @@ const Pdf = (() => {
 
   // El PDF, como archivo en memoria (Blob)
   //   estudio: la fila del estudio con sus etapas (como en la ficha)
-  //   fotos:   las fotos del electro en el orden de la ficha ({ ruta_archivo })
-  async function armar(estudio, fotos, { paraImprimir = false, tipo = 'ergometrico' } = {}) {
+  //   fotos:   las fotos en el orden de la ficha ({ ruta_archivo })
+  async function armar(estudio, fotos, { paraImprimir = false } = {}) {
     return conTiempoMaximo((async () => {
+      const hojaPdf = hojaDeLaPlanilla();
       const recursos = await HerramientasPdf.preparar();
       // Primero TODAS las fotos: si alguna no se puede bajar, no se arma nada
       const listas = fotos.length ? await FotosPdf.preparar(fotos) : [];
-      const doc = HerramientasPdf.nuevoDocumento(recursos);
+      const doc = HerramientasPdf.nuevoDocumento(recursos, PLANILLA.pdf.orientacion);
       const encabezado = encabezadoDe(estudio);
       doc.setDocumentProperties({ title: nombreDeArchivo(estudio).replace(/\.pdf$/, ''), creator: 'Sanatorio de la Cañada' });
       doc.viewerPreferences({ PrintScaling: 'None' });   // al 100 %, sin "ajustar a la página"
-      const hoja = HOJAS_PDF[tipo]().dibujar(doc, estudio, recursos, encabezado);
+      const hoja = hojaPdf.dibujar(doc, estudio, recursos, encabezado);
       const hojasDeFotos = listas.length ? FotosPdf.dibujar(doc, listas, encabezado) : 0;
       if (paraImprimir) doc.autoPrint();
       const blob = doc.output('blob');

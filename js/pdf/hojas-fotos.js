@@ -1,6 +1,7 @@
-// Hojas de fotos del PDF (T033), iguales para cualquier estudio: van a partir de
+// Hojas de fotos del PDF (T033), iguales para cualquier planilla: van a partir de
 // la hoja 2, solo si el estudio tiene fotos. Son las mismas fotos que muestra la
-// ficha en "Fotos del electro", en el mismo orden (por fecha de carga).
+// ficha en su sección de fotos (en el ergométrico, "Fotos del electro"), en el
+// mismo orden (por fecha de carga). Son siempre hojas A4 verticales.
 //
 // Regla por hileras (en el orden de carga):
 //   1) Una hilera pone fotos una al lado de la otra: todas con la MISMA altura, y
@@ -145,7 +146,7 @@ const FotosPdf = (() => {
     const hojas = ubicar(fotos.map((f) => f.ancho / f.alto));
     hojas.forEach((hoja) => {
       doc.addPage('a4', 'portrait');
-      HerramientasPdf.encabezadoChico(doc, `${encabezado} · Fotos del electro`, FOTOS_PDF.margenMm);
+      HerramientasPdf.encabezadoChico(doc, `${encabezado} · ${PLANILLA.fotos.seccion}`, FOTOS_PDF.margenMm);
       hoja.forEach(({ indice, x, y, ancho, alto }) => {
         doc.addImage(fotos[indice].datos, 'JPEG', x, y, ancho, alto, `foto-${indice}`, 'NONE');
       });

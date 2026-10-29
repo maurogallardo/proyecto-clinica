@@ -135,8 +135,19 @@ const PLANILLA_ERGOMETRICO = {
     seccion: 'Fotos del electro',
   },
 
-  // La columna con el nombre del paciente (la usa el cartel de "Borrar")
+  // La columna con el nombre del paciente (la usan el cartel de "Borrar" y el PDF)
   columnaPaciente: 'nombre_paciente',
+
+  // PDF ("Imprimir" y "Descargar PDF"). La hoja la dibuja js/planillas/ergometrico-hoja.js
+  // (anotada en HOJAS_PDF, js/pdf/armado.js)
+  //   orientacion: 'vertical' u 'horizontal' (A4)
+  //   archivo / columnaFecha: el nombre del archivo es
+  //     <archivo>-<número>-<paciente>-<fecha>.pdf, con la fecha de esa columna
+  pdf: {
+    orientacion: 'vertical',
+    archivo: 'Ergometrico',
+    columnaFecha: 'fecha_estudio',
+  },
 
   // Datos mínimos para guardar (RF-023). soloCifras: cuenta como vacío si no tiene
   // ningún número (un DNI escrito solo con puntos o espacios)
@@ -213,6 +224,8 @@ const PLANILLA_ERGOMETRICO = {
     queSeHaciaRestaurar: 'restaurar el estudio',
     restaurarEtiqueta: 'Restaurar el estudio N° {numero}',   // lo que lee un lector de pantalla en cada botón
     restaurado: 'Estudio N° {numero} restaurado',
+    // PDF: la línea chica arriba de las hojas que no son la 1
+    pdfEncabezado: 'Estudio N° {numero} · {paciente}',
     // Carga (celular)
     botonConfirmar: 'Confirmar estudio',
     confirmarTitulo: '¿Confirmar estudio?',
