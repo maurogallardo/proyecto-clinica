@@ -16,18 +16,32 @@ import { esUsuarioLogueado, responder, respuestaPrevia } from '../_compartido/ht
 import { pedirAOpenAI } from '../_compartido/openai.ts';
 import { CORRECCIONES_SEGURAS, INSTRUCTIVO_GENERAL } from './instructivos/general.ts';
 import { INSTRUCTIVO_ERGOMETRICO, RESGUARDOS_ERGOMETRICO } from './instructivos/ergometrico.ts';
+import { INSTRUCTIVO_FORMULARIO5, RESGUARDOS_FORMULARIO5 } from './instructivos/formulario5.ts';
 import { type CifrasDichas, cifrasDichas, seDijeronLasCifras, seDijoElNumero } from './cifras.ts';
 
 // Instructivo de cada planilla. Sumar una planilla = sumar una línea acá.
 const INSTRUCTIVOS: Record<string, string> = {
   ergometrico: INSTRUCTIVO_ERGOMETRICO,
+  formulario5: INSTRUCTIVO_FORMULARIO5,
 };
 
-// Resguardos propios de cada planilla (palabras clave y valores máximos)
-type Resguardos = { palabrasClave: Record<string, RegExp[]>; maximos: Record<string, number> };
+// Resguardos propios de cada planilla (palabras clave y valores máximos). Una
+// planilla puede sumar una verificación propia con reglas fijas (el N° 5: el
+// horario de los casilleros de abajo, horarios.ts); el ergométrico no tiene.
+type Resguardos = {
+  palabrasClave: Record<string, RegExp[]>;
+  maximos: Record<string, number>;
+  verificar?: (columna: string, dictadoSinAcentos: string) => boolean;
+};
 const RESGUARDOS: Record<string, Resguardos> = {
   ergometrico: RESGUARDOS_ERGOMETRICO,
+  formulario5: RESGUARDOS_FORMULARIO5,
 };
+
+// Planillas SIN tabla de etapas: la app manda su lista de campos de etapas vacía
+// (y ninguna fila). Las demás tienen que mandar al menos un campo de etapa, como
+// siempre.
+const SIN_ETAPAS = new Set(['formulario5']);
 
 type Campo = { columna: string; etiqueta: string; tipo: string };
 type Valores = Record<string, unknown>;
@@ -37,9 +51,11 @@ const LARGO_MAXIMO_TEXTO = 20000;
 
 // --- Validar lo que manda la app ---------------------------------------------------
 
+// El nombre de una columna: minúsculas, números y guion bajo, empezando con una
+// letra ("diuresis_05_13", "control_manana_o2"), hasta 40 caracteres
 function camposValidos(lista: unknown, maximo: number): lista is Campo[] {
   return Array.isArray(lista) && lista.length > 0 && lista.length <= maximo && lista.every((c) =>
-    c && typeof c.columna === 'string' && /^[a-z_]{1,40}$/.test(c.columna)
+    c && typeof c.columna === 'string' && /^[a-z][a-z0-9_]{0,39}$/.test(c.columna)
     && typeof c.etiqueta === 'string' && c.etiqueta.length <= 80 && TIPOS.includes(c.tipo));
 }
 
@@ -86,9 +102,10 @@ function limpiarValor(valor: unknown, campo: Campo): unknown {
   if (texto === '') return null;
   if (campo.tipo === 'fecha') return /^\d{4}-\d{2}-\d{2}$/.test(texto) ? texto : null;
   if (campo.columna === 'documento') return texto.replace(/\D/g, '') || null;   // DNI: solo números
-  // ECG basal: un valor que es solo un número decimal va con coma, como en la
-  // planilla en papel ("0.16" queda "0,16")
-  if (campo.columna.startsWith('ecg_') && /^\d+\.\d+$/.test(texto)) return texto.replace('.', ',');
+  // ECG basal (ergométrico) y controles de enfermería (N° 5): un valor que es solo
+  // un número decimal va con coma, como en la planilla en papel ("0.16" queda
+  // "0,16"; "36.5" queda "36,5")
+  if (/^(ecg_|control_)/.test(campo.columna) && /^\d+\.\d+$/.test(texto)) return texto.replace('.', ',');
   return texto;
 }
 
@@ -141,11 +158,13 @@ type Descartado = { campo: string; valor: unknown };
 
 // Resguardos de la planilla: la palabra clave del campo se dijo y el valor no
 // pasa el máximo
+// (Object.hasOwn: una columna con un nombre como "constructor" no encuentra nada)
 function cumpleResguardos(columna: string, valor: unknown, resguardos: Resguardos, dictadoSinAcentos: string): boolean {
-  const claves = resguardos.palabrasClave[columna];
+  const claves = Object.hasOwn(resguardos.palabrasClave, columna) ? resguardos.palabrasClave[columna] : undefined;
   if (claves && !claves.some((clave) => clave.test(dictadoSinAcentos))) return false;
-  const maximo = resguardos.maximos[columna];
-  return !(maximo !== undefined && typeof valor === 'number' && valor > maximo);
+  const maximo = Object.hasOwn(resguardos.maximos, columna) ? resguardos.maximos[columna] : undefined;
+  if (maximo !== undefined && typeof valor === 'number' && valor > maximo) return false;
+  return !resguardos.verificar || resguardos.verificar(columna, dictadoSinAcentos);
 }
 
 // Palabras (ver arriba) y números (cifras.ts): un número entero o decimal, o las
@@ -188,13 +207,21 @@ Deno.serve(async (pedido) => {
     return responder(pedido, { error: 'pedido-invalido' }, 400);
   }
 
-  const instructivo = INSTRUCTIVOS[datos?.planilla];
+  // La planilla tiene que ser una de las de arriba (Object.hasOwn: un nombre como
+  // "constructor" no es una planilla)
+  const planilla = typeof datos?.planilla === 'string' && Object.hasOwn(INSTRUCTIVOS, datos.planilla) ? datos.planilla : null;
+  const instructivo = planilla ? INSTRUCTIVOS[planilla] : undefined;
+  const sinEtapas = planilla !== null && SIN_ETAPAS.has(planilla);
   const texto = typeof datos?.texto === 'string' ? datos.texto.trim() : '';
   const camposEstudio = datos?.campos?.estudio;
   const camposEtapa = datos?.campos?.etapas;
   const etapasActuales = Array.isArray(datos?.actual?.etapas) ? datos.actual.etapas : null;
+  // Sin etapas: la lista de campos de etapas y las filas tienen que venir vacías
+  const etapasBien = sinEtapas
+    ? Array.isArray(camposEtapa) && camposEtapa.length === 0 && etapasActuales !== null && etapasActuales.length === 0
+    : camposValidos(camposEtapa, 20);
   if (!instructivo || !texto || texto.length > LARGO_MAXIMO_TEXTO
-      || !camposValidos(camposEstudio, 80) || !camposValidos(camposEtapa, 20)
+      || !camposValidos(camposEstudio, 80) || !etapasBien
       || !etapasActuales || etapasActuales.length > 40) {
     return responder(pedido, { error: 'pedido-invalido' }, 400);
   }
@@ -205,11 +232,11 @@ Deno.serve(async (pedido) => {
     etapas: etapasActuales.map((etapa: unknown, fila: number) => ({ fila, ...limpiarObjeto(etapa, camposEtapa) })),
   };
 
+  // (una planilla sin etapas no lleva la parte de "etapas")
   const listaDeCampos = [
     'Campos de "estudio" (columna: nombre en la planilla):',
     ...camposEstudio.map((c) => `- ${c.columna}: ${c.etiqueta}`),
-    'Campos de cada fila de "etapas":',
-    ...camposEtapa.map((c) => `- ${c.columna}: ${c.etiqueta}`),
+    ...(sinEtapas ? [] : ['Campos de cada fila de "etapas":', ...camposEtapa.map((c) => `- ${c.columna}: ${c.etiqueta}`)]),
   ].join('\n');
 
   // Correcciones seguras (siempre iguales), antes de que lo lea el modelo
@@ -218,7 +245,7 @@ Deno.serve(async (pedido) => {
     palabras: palabrasDe(dictado),
     cifras: cifrasDichas(dictado),
     sinAcentos: sinAcentos(dictado),
-    resguardos: RESGUARDOS[datos.planilla] ?? { palabrasClave: {}, maximos: {} },
+    resguardos: Object.hasOwn(RESGUARDOS, planilla as string) ? RESGUARDOS[planilla as string] : { palabrasClave: {}, maximos: {} },
   };
 
   const mensaje = `${listaDeCampos}\n\nTranscripción de esta grabación:\n"""\n${dictado}\n"""\n\n`
