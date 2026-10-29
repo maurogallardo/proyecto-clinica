@@ -235,10 +235,14 @@ const Ficha = (() => {
 
   // Encabezado de la ficha: "Imprimir", "Descargar PDF", "Editar" (neutros) y
   // "Borrar" (en rojo). En modo edición van otros ("Cancelar" y "Guardar cambios").
+  // "Imprimir" y "Descargar PDF" solo si la planilla tiene PDF (el N° 5 todavía no:
+  // Fase 4).
   function ponerBotonesDeLaFicha() {
     el.acciones.replaceChildren(
-      boton('Imprimir', 'panel-boton panel-boton--fantasma', 'ficha-imprimir', () => hacerPdf('imprimir')),
-      boton('Descargar PDF', 'panel-boton panel-boton--fantasma', 'ficha-descargar', () => hacerPdf('descargar')),
+      ...(PLANILLA.pdf ? [
+        boton('Imprimir', 'panel-boton panel-boton--fantasma', 'ficha-imprimir', () => hacerPdf('imprimir')),
+        boton('Descargar PDF', 'panel-boton panel-boton--fantasma', 'ficha-descargar', () => hacerPdf('descargar')),
+      ] : []),
       botonEditar(),
       botonBorrar(estudioActual),
     );

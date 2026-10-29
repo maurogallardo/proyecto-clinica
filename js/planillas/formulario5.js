@@ -11,9 +11,10 @@
 // Columnas de la base: supabase/formulario5.sql y supabase/formulario5-turnos.sql
 // (tabla hojas_indicaciones; 40 campos del papel).
 //
-// Por ahora tiene lo de la carga y el guardado (Fase 2). La lista del dashboard,
-// la ficha, la Papelera y el PDF se suman en las Fases 3 y 4: hasta entonces el
-// interruptor PLANILLA_ACTIVA (js/config.js) sigue en 'ergometrico'.
+// Tiene la carga y el guardado (Fase 2) y el dashboard: lista, ficha, edición y
+// Papelera (Fase 3). Todavía sin PDF (Fase 4): por eso la ficha no muestra
+// "Imprimir" ni "Descargar PDF". El interruptor PLANILLA_ACTIVA (js/config.js)
+// sigue en 'ergometrico' hasta que Mauro diga.
 
 const PLANILLA_FORMULARIO5 = {
   id: 'formulario5',   // con este nombre "transcribir" y "estructurar" eligen lo suyo
@@ -158,9 +159,73 @@ const PLANILLA_FORMULARIO5 = {
     { columna: 'habitacion', falta: 'la habitación' },
   ],
 
-  // Textos de pantalla de la carga y el guardado (los huecos entre llaves los
-  // completa textoDePlanilla)
+  // Lista del dashboard (como en js/planillas/ergometrico.js): columnas en orden y
+  // en qué se busca. Fecha y hora de CARGA (creado_en): la misma fecha que usan los
+  // números, el calendario y el orden. Hab. usa el ancho y el estilo de la columna
+  // DNI del ergométrico (un valor corto, sin cortar el renglón).
+  lista: {
+    columnas: [
+      { columna: 'numero', titulo: 'N°', ancho: 'numero', estilo: 'numero' },
+      { columna: 'creado_en', titulo: 'Fecha y hora', forma: 'fechaHora', ancho: 'fecha', estilo: 'fecha' },
+      { columna: 'habitacion', titulo: 'Hab.', ancho: 'dni', estilo: 'dni' },
+      { columna: 'paciente', titulo: 'Paciente', estilo: 'paciente' },
+      { columna: 'doctor', titulo: 'Dr.' },
+      { columna: 'diagnostico', titulo: 'Diagnóstico', forma: 'resumen', estilo: 'conclusion' },
+      { titulo: 'Fotos', forma: 'fotos', ancho: 'fotos', estilo: 'fotos' },
+    ],
+    // Las dos como texto (la habitación puede ser "12 B")
+    buscar: [
+      { columna: 'paciente' },
+      { columna: 'habitacion' },
+    ],
+  },
+
+  // Papelera del dashboard: las columnas de la planilla (después van las de la
+  // Papelera, iguales en todas: "Borrado por", "Fecha y hora" y "Restaurar")
+  papelera: {
+    columnas: [
+      { columna: 'numero', titulo: 'N°', ancho: 'numero', estilo: 'numero' },
+      { columna: 'paciente', titulo: 'Paciente', estilo: 'paciente' },
+      { columna: 'habitacion', titulo: 'Hab.', ancho: 'dni', estilo: 'dni' },
+    ],
+  },
+
+  // Textos de pantalla (los huecos entre llaves los completa textoDePlanilla). Sin
+  // "sinEtapas" (no tiene etapas) ni "pdfEncabezado" (el PDF es de la Fase 4)
   textos: {
+    // Dashboard: la lista
+    antetitulo: 'Formulario N° 5',   // arriba del título de cada sección del dashboard
+    seccionLista: 'Hojas',           // el botón de la barra lateral
+    tituloLista: 'Hojas de indicaciones',
+    buscarAyuda: 'Buscar por paciente o habitación',
+    cargandoLista: 'Cargando hojas…',
+    errorLista: 'No se pudieron cargar las hojas. Probá de nuevo.',
+    listaVacia: 'Todavía no hay hojas cargadas.',
+    listaSinCoincidencias: 'Ninguna hoja coincide con los filtros.',
+    contadorUno: '1 hoja',
+    contadorVarios: '{cantidad} hojas',
+    enviadoAPapelera: 'Hoja N° {numero} enviada a la Papelera',
+    // Dashboard: la ficha (el título sin número es el de la planilla, PLANILLA.titulo)
+    tituloFicha: 'Hoja de indicaciones · N° {numero}',
+    tituloEditando: 'Editando · Hoja de indicaciones · N° {numero}',
+    cargandoFicha: 'Cargando hoja…',
+    errorFicha: 'No se pudo cargar la hoja. Probá de nuevo.',
+    noEncontrado: 'No se encontró la hoja (puede que no sea tuya o que ya no exista).',
+    fichaEnPapelera: 'Esta hoja está en la Papelera. Para verla, restaurala desde la Papelera.',
+    pieNumero: 'N° de hoja',
+    borrarTexto: 'La hoja N° {numero}{paciente} deja de verse en la lista y en los números. No se borra: se puede restaurar desde la Papelera.',
+    // Dashboard: editar
+    guardarCambiosTexto: 'Se van a guardar los cambios de la hoja N° {numero}.',
+    cambiosGuardados: 'Cambios guardados en la hoja N° {numero}',
+    edicionEnPapelera: 'Esta hoja está en la Papelera: no se puede editar.',
+    edicionCruzada: 'Esta hoja la modificó otra persona o se editó en otra pestaña mientras la editabas. No se guardó tu cambio. Si cargás la versión nueva, se pierde lo que escribiste acá.',
+    // Dashboard: la Papelera (los errores dicen "No se pudo {lo que se hacía}. Probá de nuevo.")
+    papeleraAyuda: 'Las hojas borradas quedan acá, con quién las borró y cuándo. No se ven en la lista ni en los números. Para verlas, restauralas.',
+    queSeHaciaAnular: 'mandar la hoja a la Papelera',
+    queSeHaciaRestaurar: 'restaurar la hoja',
+    restaurarEtiqueta: 'Restaurar la hoja N° {numero}',   // lo que lee un lector de pantalla en cada botón
+    restaurado: 'Hoja N° {numero} restaurada',
+    // Carga (celular)
     botonConfirmar: 'Confirmar hoja',
     confirmarTitulo: '¿Confirmar hoja?',
     confirmarTexto: 'Se va a guardar la hoja de {paciente}.',
