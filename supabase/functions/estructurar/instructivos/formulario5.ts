@@ -14,7 +14,8 @@
 //       · Trámite adm.: solo si se dijo "trámite".
 //       · Cada control de enfermería: solo si se dijo el nombre de SU turno
 //         ("mañana", "tarde" o "noche"). Un control dictado sin turno no se carga.
-//       · Diuresis: solo si se dijo "diuresis" u "orina" / "orinó".
+//       · Diuresis: solo si se dijo "diuresis", "orina" / "orinó", "sonda vesical"
+//         o "papagayo".
 //   - maximos: ninguno (todos los campos de la hoja son texto).
 //   - verificar: el horario de los casilleros de abajo (Diuresis, Drenajes, SNG /
 //     Vómitos y Deposiciones). El modelo propone el casillero y el código verifica
@@ -28,7 +29,7 @@ const TURNOS: Record<string, RegExp[]> = {
   noche: [/\bnoche\b/],
 };
 const DATOS_DE_CONTROL = ['fr', 'te', 'p', 'ta', 'o2'];
-const DIURESIS = [/diuresis/, /\borin/];
+const DIURESIS = [/diuresis/, /\borin/, /\bsonda vesical\b/, /\bpapagayo/];
 
 export const RESGUARDOS_FORMULARIO5 = {
   palabrasClave: {
