@@ -22,8 +22,10 @@ const PLANILLA_FORMULARIO5 = {
   secciones: [
     {
       // Encabezado del papel: Fecha (la pone la base), Hab., Mutual, Dr., Pte.,
-      // Trámite adm. y Diagnóstico
+      // Trámite adm. y Diagnóstico. En la ficha de la compu ("ficha"), en dos
+      // renglones: los cortos en una línea y el Diagnóstico abajo (js/ficha.js)
       titulo: 'Encabezado',
+      ficha: 'encabezado',
       campos: [
         { columna: 'habitacion', etiqueta: 'Hab.', tipo: 'texto' },
         { columna: 'mutual', etiqueta: 'Mutual', tipo: 'texto' },
@@ -101,8 +103,10 @@ const PLANILLA_FORMULARIO5 = {
       ],
     },
     {
-      // Por turno (Mañana, Tarde y Noche, como en el papel): F.R., Te., P., T.A. y O2
+      // Por turno (Mañana, Tarde y Noche, como en el papel): F.R., Te., P., T.A. y O2.
+      // En la ficha de la compu ("ficha"), un cuadro chico: un renglón por turno
       titulo: 'Controles de enfermería',
+      ficha: 'turnos',
       campos: [
         { subtitulo: 'Mañana' },
         { columna: 'control_manana_fr', etiqueta: 'F.R.', tipo: 'texto' },

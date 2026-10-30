@@ -757,6 +757,98 @@
   color: var(--texto-secundario);
 }
 
+/* --- Encabezado del N° 5 (sección con ficha: 'encabezado'): dos renglones. Arriba,
+       Hab., Mutual, Dr., Pte. y Trámite adm. en una línea (el paciente y el doctor
+       con más lugar); abajo, el Diagnóstico a lo ancho. Un dato muy largo baja de
+       renglón dentro de su lugar, sin correr a los demás. Si la ficha es angosta,
+       los datos cortos se acomodan de a tres o de a dos. --- */
+.ficha__seccion--encabezado {
+  container-type: inline-size;
+}
+
+.ficha__seccion--encabezado .ficha__grilla {
+  grid-template-columns: minmax(64px, 0.6fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2fr) minmax(104px, 0.7fr);
+  gap: 16px 24px;
+}
+
+.ficha__seccion--encabezado .ficha__campo--ancho {
+  grid-column: auto;
+}
+
+.ficha__seccion--encabezado .ficha__campo--ancho:last-child {
+  grid-column: 1 / -1;   /* el Diagnóstico */
+}
+
+@container (max-width: 760px) {
+  .ficha__seccion--encabezado .ficha__grilla {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 460px) {
+  .ficha__seccion--encabezado .ficha__grilla {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Controles de enfermería del N° 5 (ficha: 'turnos'): un cuadro chico, un
+       renglón por turno con sus 5 datos. No se estira más de 760 px (en una
+       pantalla grande queda compacto, a la izquierda). En una ficha angosta se
+       desplaza de costado (.tabla-desplazable). --- */
+.turnos-ficha {
+  width: 100%;
+  max-width: 760px;
+  min-width: 460px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 15px;
+}
+
+.turnos-ficha th[scope='col'] {
+  padding: 9px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--panel-texto-tenue);
+  background: var(--panel-cabecera-tabla);
+  border-bottom: 1px solid var(--panel-borde);
+}
+
+.turnos-ficha th.turnos-ficha__esquina {
+  width: 104px;
+}
+
+/* El turno, bien claro a la izquierda de su renglón */
+.turnos-ficha__turno {
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--texto);
+  border-bottom: 1px solid var(--panel-borde-tenue);
+}
+
+.turnos-ficha td {
+  padding: 10px 12px;
+  font-weight: 500;
+  color: var(--texto);
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--panel-borde-tenue);
+  border-left: 1px solid var(--panel-borde-tenue);
+}
+
+.turnos-ficha td.vacio {
+  color: var(--panel-texto-tenue);
+}
+
+.turnos-ficha tbody tr:last-child > * {
+  border-bottom: none;
+}
+
 /* --- Fotos del electro (miniaturas que se agrandan) --- */
 .adjuntos {
   display: grid;

@@ -111,6 +111,59 @@ const Ficha = (() => {
     return bloques;
   }
 
+  // Campos por turno (los Controles de enfermería del N° 5) como un cuadro chico: un
+  // renglón por turno (cada subtítulo de la planilla: "Mañana", "Tarde", "Noche") y
+  // una columna por dato (F.R., Te., P., T.A., O2). Lo de la base va como texto.
+  function nodoTurnos(campos, estudio) {
+    const turnos = [];
+    campos.forEach((campo) => {
+      if (campo.subtitulo) turnos.push({ nombre: campo.subtitulo, campos: [] });
+      else if (turnos.length) turnos[turnos.length - 1].campos.push(campo);
+    });
+    const tabla = document.createElement('table');
+    tabla.className = 'turnos-ficha';
+    const encabezado = document.createElement('tr');
+    const esquina = document.createElement('th');
+    esquina.scope = 'col';
+    esquina.className = 'turnos-ficha__esquina';
+    const textoEsquina = document.createElement('span');
+    textoEsquina.className = 'solo-lectores';
+    textoEsquina.textContent = 'Turno';
+    esquina.append(textoEsquina);
+    encabezado.append(esquina);
+    (turnos[0]?.campos || []).forEach((campo) => {
+      const th = document.createElement('th');
+      th.scope = 'col';
+      th.textContent = campo.etiqueta;
+      encabezado.append(th);
+    });
+    const thead = document.createElement('thead');
+    thead.append(encabezado);
+    const cuerpo = document.createElement('tbody');
+    turnos.forEach((turno) => {
+      const tr = document.createElement('tr');
+      const nombre = document.createElement('th');
+      nombre.scope = 'row';
+      nombre.className = 'turnos-ficha__turno';
+      nombre.textContent = turno.nombre;
+      tr.append(nombre);
+      turno.campos.forEach((campo) => {
+        const td = document.createElement('td');
+        const texto = textoDeValor(estudio[campo.columna], campo);
+        td.textContent = texto === null ? '—' : texto;
+        if (texto === null) td.classList.add('vacio');
+        tr.append(td);
+      });
+      cuerpo.append(tr);
+    });
+    tabla.append(thead, cuerpo);
+    // En una ficha angosta, el cuadro se desplaza de costado (como las etapas)
+    const envoltorio = document.createElement('div');
+    envoltorio.className = 'tabla-desplazable';
+    envoltorio.append(tabla);
+    return envoltorio;
+  }
+
   // Tabla de etapas ("Reposo y esfuerzo" en el ergométrico), con las columnas de la planilla
   function nodoEtapas(etapas) {
     if (etapas.length === 0) return nodoNota(textoDePlanilla('sinEtapas'));
@@ -217,7 +270,13 @@ const Ficha = (() => {
       // Grilla de horarios (N° 5): la tablita, solo si tiene algo (js/grilla.js), y
       // después los campos de la sección (la Dieta)
       const grilla = seccion.tipo === 'grilla' ? dibujarGrillaFicha(seccion, estudio[seccion.columna]) : null;
-      return nodoSeccion(seccion.titulo, ...(grilla ? [grilla] : []), ...nodoCampos(seccion.campos, estudio));
+      // Cómo se acomoda en la ficha, si la planilla lo dice ("ficha"; el N° 5):
+      // 'turnos' = un cuadro chico por turno; 'encabezado' = los datos cortos en una
+      // línea y el texto largo abajo (css/dashboard.css). Sin "ficha", como siempre
+      const campos = seccion.ficha === 'turnos' ? [nodoTurnos(seccion.campos, estudio)] : nodoCampos(seccion.campos, estudio);
+      const nodo = nodoSeccion(seccion.titulo, ...(grilla ? [grilla] : []), ...campos);
+      if (seccion.ficha) nodo.classList.add(`ficha__seccion--${seccion.ficha}`);
+      return nodo;
     });
     secciones.push(nodoSeccion(PLANILLA.fotos.seccion, nodoFotos(fotos)));
     const pie = document.createElement('div');
