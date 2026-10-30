@@ -43,6 +43,24 @@
   color: var(--texto);
 }
 
+/* Si la planilla lo tiene (el N° 5), un texto chico y tenue arriba del título
+   ("FORMULARIO N° 5"), como el antetítulo del dashboard */
+.encabezado__titulos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.encabezado__antetitulo {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+}
+
 .encabezado__derecha {
   display: flex;
   align-items: center;

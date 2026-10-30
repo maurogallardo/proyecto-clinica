@@ -235,6 +235,7 @@ const PLANILLA_FORMULARIO5 = {
     restaurarEtiqueta: 'Restaurar la hoja N° {numero}',   // lo que lee un lector de pantalla en cada botón
     restaurado: 'Hoja N° {numero} restaurada',
     // Carga (celular)
+    antetituloCarga: 'Formulario N° 5',   // chico y tenue, arriba de "HOJA DE INDICACIONES"
     botonConfirmar: 'Confirmar hoja',
     confirmarTitulo: '¿Confirmar hoja?',
     confirmarTexto: 'Se va a guardar la hoja de {paciente}.',

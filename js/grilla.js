@@ -1,11 +1,11 @@
 // Grilla de horarios (Formulario N° 5): las indicaciones médicas, renglón por
 // renglón, como en el papel. Cada renglón tiene su texto, sus 10 casillas (06 a 24)
-// y la nota "Sigue al día siguiente". La dibuja y la lee js/formulario.js cuando una
+// y la nota "Mañana sigue a las". La dibuja y la lee js/formulario.js cuando una
 // sección de la planilla es de tipo "grilla" (como hace con las etapas).
 //
 //   - Cada casilla tiene una cruz ("X") o la HORA REAL escrita ("7:30"). Un toque
 //     pone la X y otro la saca (también saca una hora).
-//   - La hora real se escribe en "Hora suelta" y se pone en su columna con la misma
+//   - La hora real se escribe en "Hora" y se pone en su columna con la misma
 //     regla que el control de la base (supabase/formulario5-grilla.sql): va en la
 //     columna de la hora par siguiente, más de dos horas antes y sin incluirla (7:30
 //     va en la "08"); las horas justas son una X; de 0:00 a 4:00 no hay columna.
@@ -120,21 +120,23 @@ function dibujarRenglon(indicacion, valores, prefijo) {
   texto.addEventListener('input', () => ajustarAltura(texto));
   texto.addEventListener('keydown', (evento) => { if (evento.key === 'Enter') evento.preventDefault(); });
 
-  // Las 10 columnas: arriba la hora, abajo la casilla que se toca
+  // Las 10 columnas, en dos filas de 5 (06 a 14 y 16 a 24): cada una con su hora
+  // arriba y la casilla que se toca abajo
   const horas = crear('div', 'renglon__horas');
-  GRILLA.columnas.forEach((c) => horas.append(crear('span', 'renglon__hora', dosCifras(c))));
   GRILLA.columnas.forEach((c) => {
+    const columna = crear('div', 'renglon__columna');
     const casilla = crear('button', 'renglon__casilla');
     casilla.type = 'button';
     casilla.dataset.hora = String(c);
     ponerEnCasilla(casilla, valores.casillas ? valores.casillas[String(c)] ?? '' : '');
     casilla.addEventListener('click', () => ponerEnCasilla(casilla, casilla.dataset.valor ? '' : 'X'));
-    horas.append(casilla);
+    columna.append(crear('span', 'renglon__hora', dosCifras(c)), casilla);
+    horas.append(columna);
   });
 
-  // Hora suelta: se escribe y se pone en su columna
+  // Hora: se escribe y se pone en su columna
   const suelta = crear('div', 'renglon__suelta');
-  const etiquetaSuelta = crear('label', 'renglon__etiqueta', 'Hora suelta');
+  const etiquetaSuelta = crear('label', 'renglon__etiqueta', 'Hora');
   const campoSuelta = document.createElement('input');
   campoSuelta.type = 'text';
   campoSuelta.inputMode = 'decimal';
@@ -150,9 +152,9 @@ function dibujarRenglon(indicacion, valores, prefijo) {
   });
   suelta.append(etiquetaSuelta, campoSuelta, poner);
 
-  // "Sigue al día siguiente": una hora, chica y tenue (solo informativa)
+  // "Mañana sigue a las": una hora, chica y tenue (solo informativa)
   const sigue = crear('div', 'renglon__sigue');
-  const etiquetaSigue = crear('label', 'renglon__etiqueta', 'Sigue al día siguiente');
+  const etiquetaSigue = crear('label', 'renglon__etiqueta', 'Mañana sigue a las');
   const campoSigue = document.createElement('input');
   campoSigue.type = 'text';
   campoSigue.inputMode = 'decimal';
@@ -209,7 +211,7 @@ function ponerHoraSuelta(tarjeta) {
     : `Quedó en la columna ${dosCifras(lugar.columna)}.`, 'info', 3000);
 }
 
-// ¿El renglón tiene algo cargado (texto, casillas, hora suelta o "sigue")?
+// ¿El renglón tiene algo cargado (texto, casillas, "Hora" o "sigue")?
 function renglonTieneDatos(tarjeta) {
   return [...tarjeta.querySelectorAll('textarea, input')].some((c) => c.value.trim() !== '')
     || [...tarjeta.querySelectorAll('.renglon__casilla')].some((c) => c.dataset.valor);
@@ -241,7 +243,7 @@ async function quitarRenglon(tarjeta, indicacion) {
 
 // La grilla como en el papel: una tablita con las 10 columnas (06 a 24), un título
 // por indicación y, en cada renglón, su texto y su X o su hora en cada columna. La
-// nota "Sigue al día siguiente" va abajo del renglón, chica y tenue. Las
+// nota "Mañana sigue a las" va abajo del renglón, chica y tenue. Las
 // indicaciones sin renglones no aparecen; si no hay ninguna, devuelve null (y la
 // ficha no muestra la tablita). Lo que viene de la base va siempre como texto.
 function dibujarGrillaFicha(seccion, valor) {
@@ -289,7 +291,7 @@ function dibujarGrillaFicha(seccion, valor) {
       grupo.append(fila);
       if (renglon.sigue) {
         const filaSigue = crear('tr', 'grilla-ficha__sigue');
-        const nota = crear('td', '', `Sigue al día siguiente: ${renglon.sigue}`);
+        const nota = crear('td', '', `Mañana sigue a las: ${renglon.sigue}`);
         nota.colSpan = GRILLA.columnas.length + 1;
         filaSigue.append(nota);
         grupo.append(filaSigue);
@@ -326,20 +328,20 @@ function leerGrilla(grilla) {
   return Object.keys(valor).length ? valor : null;
 }
 
-// Antes de guardar (la carga y la edición): una "Hora suelta" escrita sin tocar
-// "Poner" se perdería, y un "Sigue al día siguiente" que no es una hora la base lo
-// rechazaría. Se avisa cuál y se va a ese campo. Sin grilla (el ergométrico), nada.
+// Antes de guardar (la carga y la edición): una "Hora" escrita sin tocar "Poner" se
+// perdería, y un "Mañana sigue a las" que no es una hora la base lo rechazaría. Se
+// avisa cuál y se va a ese campo. Sin grilla (el ergométrico), nada.
 function hayGrillaMalEscrita(contenedor) {
   for (const tarjeta of contenedor.querySelectorAll('.grilla-horarios .renglon')) {
     const suelta = tarjeta.querySelector('.renglon__hora-suelta');
     if (suelta.value.trim() !== '') {
-      mostrarAviso(`En ${tarjeta.dataset.nombre} quedó una hora suelta sin poner: tocá "Poner" o borrala.`, 'error', 6000);
+      mostrarAviso(`En ${tarjeta.dataset.nombre} quedó una hora sin poner: tocá "Poner" o borrala.`, 'error', 6000);
       suelta.focus();
       return true;
     }
     const sigue = tarjeta.querySelector('.renglon__sigue-hora');
     if (sigue.value.trim() !== '' && minutosDeHora(sigue.value) === null) {
-      mostrarAviso(`"Sigue al día siguiente" en ${tarjeta.dataset.nombre} tiene que ser una hora (por ejemplo 08:00).`, 'error', 6000);
+      mostrarAviso(`"Mañana sigue a las" en ${tarjeta.dataset.nombre} tiene que ser una hora (por ejemplo 08:00).`, 'error', 6000);
       sigue.focus();
       return true;
     }

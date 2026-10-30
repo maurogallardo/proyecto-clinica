@@ -36,5 +36,13 @@ function abrirMenu(abrir) {
 }
 
 document.getElementById('carga-titulo').textContent = PLANILLA.titulo;   // en el ergométrico, "Estudio ergométrico"
+// Arriba del título, chico y tenue, si la planilla lo tiene (el N° 5: "Formulario N° 5";
+// el ergométrico no tiene)
+if (Object.hasOwn(PLANILLA.textos, 'antetituloCarga')) {
+  const titulo = document.getElementById('carga-titulo');
+  const titulos = crear('div', 'encabezado__titulos');
+  titulo.before(titulos);
+  titulos.append(crear('span', 'encabezado__antetitulo', textoDePlanilla('antetituloCarga')), titulo);
+}
 reiniciarCarga();
 prepararMenu();

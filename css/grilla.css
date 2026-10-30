@@ -1,6 +1,6 @@
 /* Grilla de horarios del Formulario N° 5 (js/grilla.js): un bloque por indicación,
-   una tarjeta por renglón (como las etapas del ergométrico), las 10 casillas en una
-   fila y la nota "Sigue al día siguiente" chica y tenue. Los colores salen de
+   una tarjeta por renglón (como las etapas del ergométrico), las 10 casillas en dos
+   filas de 5 y la nota "Mañana sigue a las" chica y tenue. Los colores salen de
    css/tokens.css (sirven para el modo claro y el oscuro). */
 
 .grilla-horarios {
@@ -111,45 +111,61 @@
   padding: 10px;
 }
 
-/* Las 10 columnas: arriba la hora, abajo la casilla que se toca */
+/* Las 10 columnas en dos filas de 5 (06 a 14 arriba, 16 a 24 abajo): cada una con
+   su hora arriba y la casilla que se toca abajo, grande para el dedo (48 px de alto) */
 .renglon__horas {
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  gap: 3px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px 8px;
+}
+
+.renglon__columna {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
 }
 
 .renglon__hora {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
   text-align: center;
   color: var(--texto-secundario);
 }
 
 .renglon__casilla {
   min-width: 0;
-  height: 36px;
-  padding: 0;
+  height: 48px;
+  padding: 0 2px;
   font: inherit;
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   color: var(--texto);
   background: var(--campo-fondo);
   border: 1px solid var(--borde-suave);
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color var(--duracion-corta) var(--curva);
+  transition: background-color var(--duracion-corta) var(--curva),
+              border-color var(--duracion-corta) var(--curva);
 }
 
 .renglon__casilla--cruz {
-  font-size: 16px;
+  font-size: 20px;
   color: var(--acento);
-  border-color: var(--acento);
+  border: 2px solid var(--acento);
 }
 
+/* Una hora real ("19:30"): entra entera; en pantallas muy angostas, un poco más chica */
 .renglon__casilla--hora {
-  color: var(--acento);
-  border-color: var(--acento);
+  font-size: clamp(12px, 3.6vw, 15px);
   letter-spacing: -0.02em;
+  color: var(--acento);
+  border: 2px solid var(--acento);
 }
 
 .renglon__casilla:focus-visible {
@@ -157,7 +173,7 @@
   box-shadow: var(--anillo-foco);
 }
 
-/* "Hora suelta" y "Sigue al día siguiente": rótulo, campo (y el botón "Poner") */
+/* "Hora" y "Mañana sigue a las": rótulo, campo (y el botón "Poner") */
 .renglon__suelta,
 .renglon__sigue {
   display: flex;
@@ -182,7 +198,7 @@
   min-height: 40px;
 }
 
-/* La nota "Sigue al día siguiente": chica y tenue (es solo informativa) */
+/* La nota "Mañana sigue a las": chica y tenue (es solo informativa) */
 .renglon__sigue {
   opacity: 0.75;
 }
@@ -260,7 +276,7 @@
   letter-spacing: -0.02em;
 }
 
-/* "Sigue al día siguiente: 08:00", abajo del renglón: chica y tenue */
+/* "Mañana sigue a las: 08:00", abajo del renglón: chica y tenue */
 .grilla-ficha__sigue td {
   padding: 2px 12px 10px;
   font-size: 12px;

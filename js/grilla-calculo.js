@@ -1,6 +1,6 @@
 // Cálculo de las cruces de la grilla de horarios (Formulario N° 5), con REGLAS FIJAS:
 // la IA nunca marca cruces (RF-005). Recibe lo que se dictó de UN renglón y devuelve
-// qué casillas marcar, la nota "sigue al día siguiente", qué columnas se calcularon
+// qué casillas marcar, la nota "Mañana sigue a las", qué columnas se calcularon
 // (para mostrarlas de otro color, como propuesta que la persona revisa) y los avisos.
 //
 // Usa las reglas de las horas de js/grilla.js (GRILLA, minutosDeHora,
