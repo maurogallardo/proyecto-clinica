@@ -22,14 +22,16 @@ const PALABRAS: Record<string, string> = {
     'extrasístoles, supradesnivel, infradesnivel, segmento ST, bloqueo de rama, hipertensión, ' +
     'dislipemia, tabaquismo.',
 
-  // Formulario N° 5 (aprobada por Mauro, texto exacto)
+  // Formulario N° 5 (aprobada por Mauro, texto exacto). Las mutuales son una lista
+  // PROVISIONAL, hasta que el sanatorio confirme cuáles atiende
   formulario5:
     'Formulario N° 5: hoja de indicaciones médicas y controles de enfermería de pacientes ' +
     'internados del Sanatorio de la Cañada, Río Tercero. Términos: habitación, mutual, paciente, ' +
     'trámite administrativo, diagnóstico, indicaciones médicas, C.S.V., tomografía, ' +
     'electrocardiograma, laboratorio, medicación, dieta, horarios, hidratación, diuresis, drenajes, ' +
     'SNG, vómitos, deposiciones, controles de enfermería, turno mañana, turno tarde, turno noche, ' +
-    'F.R., Te., P., T.A., O2.',
+    'F.R., Te., P., T.A., O2. ' +
+    'Mutuales: OSDE, APROSS, PAMI, Swiss Medical, Galeno, Sancor Salud, Medifé, Omint.',
 };
 
 // La de siempre, para cuando la app no avisa qué planilla es
