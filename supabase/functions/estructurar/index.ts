@@ -18,6 +18,7 @@ import { CORRECCIONES_SEGURAS, INSTRUCTIVO_GENERAL } from './instructivos/genera
 import { INSTRUCTIVO_ERGOMETRICO, RESGUARDOS_ERGOMETRICO } from './instructivos/ergometrico.ts';
 import { INSTRUCTIVO_FORMULARIO5, RESGUARDOS_FORMULARIO5 } from './instructivos/formulario5.ts';
 import { type CifrasDichas, cifrasDichas, seDijeronLasCifras, seDijoElNumero } from './cifras.ts';
+import { type Grilla, esquemaDeGrilla, grillaValida, horaArgentina, revisarGrilla } from './grilla.ts';
 
 // Instructivo de cada planilla. Sumar una planilla = sumar una línea acá.
 const INSTRUCTIVOS: Record<string, string> = {
@@ -45,6 +46,11 @@ const RESGUARDOS: Record<string, Resguardos> = {
 // (y ninguna fila). Las demás tienen que mandar al menos un campo de etapa, como
 // siempre.
 const SIN_ETAPAS = new Set(['formulario5']);
+
+// Planillas CON grilla de horarios (el N° 5: las indicaciones médicas, grilla.ts).
+// La app manda la descripción de su grilla ("grilla"); si no la manda (una versión
+// vieja de la app), todo sigue como antes, sin grilla. Las demás no pueden mandarla.
+const CON_GRILLA = new Set(['formulario5']);
 
 type Campo = { columna: string; etiqueta: string; tipo: string };
 type Valores = Record<string, unknown>;
@@ -79,8 +85,9 @@ function esquemaDeObjeto(campos: Campo[], extra: Record<string, unknown> = {}) {
 // "sin_ubicar": un lugar para los datos que el modelo no sabe dónde van. Si no lo
 // tiene, tiende a forzarlos en algún campo. Por ahora se DESCARTA (no se muestra
 // ni se guarda); queda preparado para la T021 (avisar datos no ubicados).
-function esquemaDePlanilla(camposEstudio: Campo[], camposEtapa: Campo[]) {
-  return {
+// Con grilla de horarios (el N° 5), suma "grilla" (grilla.ts); sin grilla, igual que siempre.
+function esquemaDePlanilla(camposEstudio: Campo[], camposEtapa: Campo[], grilla: Grilla | null) {
+  const esquema = {
     type: 'object',
     additionalProperties: false,
     required: ['estudio', 'etapas', 'sin_ubicar'],
@@ -91,8 +98,13 @@ function esquemaDePlanilla(camposEstudio: Campo[], camposEtapa: Campo[]) {
         type: 'array',
         items: esquemaDeObjeto(camposEtapa, { fila: { type: 'integer', description: 'Número interno de la fila: no se cambia' } }),
       },
-    },
+    } as Record<string, unknown>,
   };
+  if (grilla) {
+    esquema.required.push('grilla');
+    esquema.properties.grilla = esquemaDeGrilla(grilla);
+  }
+  return esquema;
 }
 
 // --- Limpiar lo que devuelve el modelo (por si se equivoca) --------------------------------
@@ -226,12 +238,15 @@ Deno.serve(async (pedido) => {
   const camposEstudio = datos?.campos?.estudio;
   const camposEtapa = datos?.campos?.etapas;
   const etapasActuales = Array.isArray(datos?.actual?.etapas) ? datos.actual.etapas : null;
+  // La grilla de horarios, si la manda la app: solo en una planilla con grilla y bien formada
+  const grilla: Grilla | null = datos?.grilla === undefined || datos?.grilla === null ? null : datos.grilla;
+  const grillaBien = grilla === null || (planilla !== null && CON_GRILLA.has(planilla) && grillaValida(grilla));
   // Sin etapas: la lista de campos de etapas y las filas tienen que venir vacías
   const etapasBien = sinEtapas
     ? Array.isArray(camposEtapa) && camposEtapa.length === 0 && etapasActuales !== null && etapasActuales.length === 0
     : camposValidos(camposEtapa, 20);
   if (!instructivo || !texto || texto.length > LARGO_MAXIMO_TEXTO
-      || !camposValidos(camposEstudio, 80) || !etapasBien
+      || !camposValidos(camposEstudio, 80) || !etapasBien || !grillaBien
       || !etapasActuales || etapasActuales.length > 40) {
     return responder(pedido, { error: 'pedido-invalido' }, 400);
   }
@@ -247,6 +262,7 @@ Deno.serve(async (pedido) => {
     'Campos de "estudio" (columna: nombre en la planilla):',
     ...camposEstudio.map((c) => `- ${c.columna}: ${c.etiqueta}`),
     ...(sinEtapas ? [] : ['Campos de cada fila de "etapas":', ...camposEtapa.map((c) => `- ${c.columna}: ${c.etiqueta}`)]),
+    ...(grilla ? ['Indicaciones de "grilla" (clave: nombre en la planilla):', ...grilla.indicaciones.map((i) => `- ${i.clave}: ${i.etiqueta}`)] : []),
   ].join('\n');
 
   // Correcciones seguras (siempre iguales), antes de que lo lea el modelo
@@ -268,7 +284,7 @@ Deno.serve(async (pedido) => {
       ...AJUSTES_ESTRUCTURACION,
       response_format: {
         type: 'json_schema',
-        json_schema: { name: 'planilla', strict: true, schema: esquemaDePlanilla(camposEstudio, camposEtapa) },
+        json_schema: { name: 'planilla', strict: true, schema: esquemaDePlanilla(camposEstudio, camposEtapa, grilla) },
       },
       messages: [
         { role: 'system', content: `${INSTRUCTIVO_GENERAL}\n\n${instructivo}` },
@@ -290,12 +306,25 @@ Deno.serve(async (pedido) => {
     const estudio = ponerEnSuForma(exigirQueSeHayaDicho(limpiarObjeto(devuelto.estudio, camposEstudio), camposEstudio, lodicho,
       actual.estudio, 'estudio', descartados), camposEstudio, lodicho.resguardos);
 
+    // La grilla de horarios (si la planilla la tiene): los renglones revisados con
+    // reglas fijas (grilla.ts) y la hora del reloj, para que la app calcule las cruces
+    const conGrilla = grilla
+      ? {
+        grilla: revisarGrilla(devuelto.grilla, grilla, {
+          texto: dictado,
+          cifras: lodicho.cifras,
+          textoDicho: (t) => seDijo(t, lodicho.palabras) && seDijeronLasCifras(t, lodicho.cifras, null),
+        }, descartados),
+        hora: horaArgentina(),
+      }
+      : {};
+
     // "sin_ubicar" se descarta a propósito (ver esquemaDePlanilla). "uso": solo la
     // cantidad de tokens (para saber el costo); la app no lo usa.
     const uso = respuesta?.usage
       ? { entrada: respuesta.usage.prompt_tokens, enCache: respuesta.usage.prompt_tokens_details?.cached_tokens ?? 0, salida: respuesta.usage.completion_tokens }
       : null;
-    return responder(pedido, { estudio, etapas, descartados, uso });
+    return responder(pedido, { estudio, etapas, descartados, uso, ...conGrilla });
   } catch {
     console.error('estructurar: no se pudo completar la planilla');
     return responder(pedido, { error: 'no-se-pudo-estructurar' }, 502);

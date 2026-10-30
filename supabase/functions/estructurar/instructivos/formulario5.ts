@@ -23,6 +23,8 @@
 //     horarios.ts. Si no, el dato no se carga.
 //   - ponerEnSuForma: después de los resguardos, las Deposiciones pasan a X o XX
 //     ("una X" es "X"; "dos X" es "XX"), con reglas fijas: ver deposiciones.ts.
+//   - La grilla de horarios (las indicaciones médicas) tiene sus propios
+//     resguardos, también con reglas fijas: ver grilla.ts.
 import { horarioVerificado } from '../horarios.ts';
 import { formaDeDeposiciones } from '../deposiciones.ts';
 
@@ -61,11 +63,20 @@ ENCABEZADO (objeto "estudio"):
 - tramite_administrativo (Trámite adm.): SOLO "SÍ" o "NO" (en mayúscula y con tilde en la Í), y SOLO si en la grabación se dice la palabra "trámite" ("trámite administrativo sí", "trámite: no"). Si se habla del trámite pero no queda claro si es sí o no, va en null y a "sin_ubicar".
 - diagnostico: tal cual se dicta.
 
-INDICACIONES MÉDICAS (texto tal cual se dicta, con sus dosis, frecuencias y horarios exactamente como se dijeron):
-- csv (C.S.V., control de signos vitales; también se dice "signos vitales" o "ce ese ve"): la indicación del control de signos vitales (por ejemplo, "cada 6 horas").
+INDICACIONES MÉDICAS (objeto "grilla"): en el papel, cada indicación tiene renglones y, a la derecha, una grilla de horarios. Por cada indicación va una lista de renglones, en el orden en que se dictan:
+- csv (C.S.V., control de signos vitales; también se dice "signos vitales" o "ce ese ve"): la indicación del control de signos vitales.
 - tomografia, electrocardiograma, laboratorio: lo que se indica de cada uno. Ojo: "electrocardiograma" acá es la INDICACIÓN de hacer uno.
-- medicacion: los medicamentos indicados, con su dosis y frecuencia, en el orden en que se dictan.
-- dieta: la dieta indicada.
+- medicacion: UN renglón por medicamento, con su dosis, vía y frecuencia.
+- Si en esta grabación no se dicta nada de una indicación, su lista va vacía ([]). No repitas renglones de la planilla actual.
+- En cada renglón:
+  - texto: la indicación tal cual se dicta, con sus dosis, frecuencias y horarios exactamente como se dijeron ("Ceftriaxona 1 g endovenoso cada 12 horas desde las 8 de la mañana").
+  - cada: SOLO si se dice "cada N horas", el número N ("cada ocho horas" es 8; "cada 6 horas" es 6). Si no se dice "cada", null.
+  - desde: SOLO si se dice desde qué hora arranca ("desde las 8 de la mañana", "a partir de las 22"), el pedacito de la transcripción con esa hora, COPIADO TAL CUAL, con su "de la mañana / de la tarde / de la noche" si se dijo ("8 de la mañana", "22"). Si no se dice, null: nunca lo completes con la hora actual ni con ninguna otra.
+  - horas: SOLO si se dicen horas una por una ("a las 8, 14 y 20"), cada hora como un pedacito COPIADO TAL CUAL de la transcripción (["8", "14", "20"]; "a las 7 y media de la tarde" es ["7 y media de la tarde"]). Si no, [].
+  - NUNCA conviertas ni completes una hora ("8 de la noche" queda "8 de la noche", no "20"; "las 8" queda "8", sin agregarle "de la mañana"). NUNCA calcules horarios ni pongas cruces: eso lo hace el sistema con reglas fijas.
+  - Ejemplo: "medicación: ceftriaxona 1 gramo endovenoso cada 12 horas desde las 8 de la mañana; paracetamol 1 gramo a las 8, 14 y 20" es medicacion [{"texto": "Ceftriaxona 1 g endovenoso cada 12 horas desde las 8 de la mañana", "cada": 12, "desde": "8 de la mañana", "horas": []}, {"texto": "Paracetamol 1 g a las 8, 14 y 20", "cada": null, "desde": null, "horas": ["8", "14", "20"]}].
+  - Ejemplo: "signos vitales cada 6 horas" es csv [{"texto": "Signos vitales cada 6 horas", "cada": 6, "desde": null, "horas": []}].
+- dieta (campo de "estudio", sin grilla): la dieta indicada.
 - REGLA CRÍTICA: "mañana" como día siguiente ("mañana pedir laboratorio", "mañana se repite la tomografía") es parte de la indicación: no es el turno mañana (ni de los controles ni de los casilleros de abajo).
 
 PARTE DE ABAJO DE LA HOJA:

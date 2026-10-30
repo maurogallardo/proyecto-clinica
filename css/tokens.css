@@ -99,6 +99,12 @@
   /* Tarjeta de etapa: un tono dentro de la tarjeta de la sección */
   --etapa-fondo: var(--menta-claro);
   --etapa-borde: #D5E3E1;
+  /* Grilla de horarios (N° 5): las cruces que puso el dictado (otro color, para
+     revisarlas) y sus avisos. Van sobre las casillas, que son claras en los dos
+     modos: el mismo azul sirve para el claro y el oscuro */
+  --dictada-texto: #1C5F93;
+  --dictada-fondo: #E4F0FA;
+  --dictada-borde: #4C95CF;
 
   /* --- Agregar / quitar etapas (T014), como "+ Agregar control" de LoMar --- */
   --tacho: var(--rojo-error);

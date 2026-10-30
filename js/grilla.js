@@ -57,6 +57,7 @@ function lugarDeLaHora(minutos, texto) {
 function dibujarGrilla(seccion, prefijo = '', valor) {
   const grilla = crear('div', 'grilla-horarios');
   grilla.dataset.grilla = seccion.columna;
+  grilla.dataset.prefijo = prefijo;   // para los renglones que suma el dictado
   seccion.indicaciones.forEach((indicacion) => {
     const bloque = crear('div', 'grilla__indicacion');
     bloque.dataset.indicacion = indicacion.clave;
@@ -169,21 +170,26 @@ function dibujarRenglon(indicacion, valores, prefijo) {
   return tarjeta;
 }
 
-// Lo que muestra una casilla: nada, una X o la hora real
-function ponerEnCasilla(casilla, valor) {
+// Lo que muestra una casilla: nada, una X o la hora real. "delDictado": la puso el
+// dictado (calculada con reglas fijas): se ve de otro color hasta que la persona la
+// toca (cualquier cambio a mano la deja como una casilla más)
+function ponerEnCasilla(casilla, valor, delDictado = false) {
   casilla.dataset.valor = valor;
   casilla.textContent = valor;
   casilla.classList.toggle('renglon__casilla--cruz', valor === 'X');
   casilla.classList.toggle('renglon__casilla--hora', valor !== '' && valor !== 'X');
+  casilla.classList.toggle('renglon__casilla--dictada', delDictado && valor !== '');
   nombrarCasilla(casilla);
 }
 
-// Lo que lee un lector de pantalla: "C.S.V., renglón 1, 06: con cruz"
+// Lo que lee un lector de pantalla: "C.S.V., renglón 1, 06: con cruz" (y, si la puso
+// el dictado, "puesta por el dictado, revisala")
 function nombrarCasilla(casilla) {
   const tarjeta = casilla.closest('.renglon');
   const valor = casilla.dataset.valor;
   const estado = valor === '' ? 'vacía' : valor === 'X' ? 'con cruz' : `hora ${valor}`;
-  casilla.setAttribute('aria-label', `${tarjeta && tarjeta.dataset.nombre ? `${tarjeta.dataset.nombre}, ` : ''}${dosCifras(casilla.dataset.hora)}: ${estado}`);
+  const dictada = casilla.classList.contains('renglon__casilla--dictada') ? ', puesta por el dictado, revisala' : '';
+  casilla.setAttribute('aria-label', `${tarjeta && tarjeta.dataset.nombre ? `${tarjeta.dataset.nombre}, ` : ''}${dosCifras(casilla.dataset.hora)}: ${estado}${dictada}`);
 }
 
 function ponerHoraSuelta(tarjeta) {
@@ -237,6 +243,92 @@ async function quitarRenglon(tarjeta, indicacion) {
   tarjeta.remove();
   ordenarRenglones(bloque, indicacion);
   bloque.querySelector('.agregar-renglon').focus();   // el foco no se pierde en la pantalla
+}
+
+// --- El dictado (el celular) ---------------------------------------------------------------
+
+// Lo que se le manda a "estructurar" para que entienda la grilla: su columna y sus
+// indicaciones, con el tope de renglones de cada una. null si la planilla no tiene
+// grilla (el ergométrico): entonces el pedido queda como siempre.
+function grillaDePlanilla(planilla) {
+  const seccion = planilla.secciones.find((s) => s.tipo === 'grilla');
+  if (!seccion) return null;
+  return { columna: seccion.columna, indicaciones: seccion.indicaciones.map(({ clave, etiqueta, maximo }) => ({ clave, etiqueta, maximo })) };
+}
+
+// Los renglones dictados (los que devolvió "estructurar", ya revisados) se SUMAN a la
+// grilla: nunca pisan lo que ya está. Van al final de cada indicación: primero en las
+// tarjetas vacías que haya después de la última con algo cargado (la que trae una
+// hoja nueva) y después en tarjetas nuevas, hasta el tope. Lo que no entra, se avisa.
+// Las cruces las calcula GrillaCalculo (js/grilla-calculo.js, reglas fijas) con la
+// hora del reloj que mandó "estructurar" ("hora"); se ven de otro color, con el aviso
+// "revisalas", y se confirman con "Confirmar hoja".
+function agregarRenglonesDictados(grilla, dictada, hora) {
+  const seccion = PLANILLA.secciones.find((s) => s.tipo === 'grilla' && s.columna === grilla.dataset.grilla);
+  if (!seccion || !dictada || typeof dictada !== 'object') return;
+  seccion.indicaciones.forEach((indicacion) => {
+    const renglones = Object.hasOwn(dictada, indicacion.clave) && Array.isArray(dictada[indicacion.clave]) ? dictada[indicacion.clave] : [];
+    if (renglones.length === 0) return;
+    const bloque = grilla.querySelector(`.grilla__indicacion[data-indicacion="${indicacion.clave}"]`);
+    const lista = bloque.querySelector('.renglones');
+    const tarjetas = [...lista.querySelectorAll('.renglon')];
+    const libres = tarjetas.slice(tarjetas.map(renglonTieneDatos).lastIndexOf(true) + 1);
+    const noEntraron = [];
+    renglones.forEach((renglon) => {
+      let tarjeta = libres.shift();
+      if (!tarjeta) {
+        if (lista.querySelectorAll('.renglon').length >= indicacion.maximo) {
+          noEntraron.push(renglon.texto);
+          return;
+        }
+        tarjeta = dibujarRenglon(indicacion, {}, grilla.dataset.prefijo || '');
+        tarjeta.classList.add('renglon--nuevo');
+        lista.append(tarjeta);
+      }
+      ordenarRenglones(bloque, indicacion);   // su nombre ("Medicación, remedio 2"), antes de llenarla
+      llenarRenglonDictado(tarjeta, renglon, hora);
+    });
+    avisarLoQueNoEntro(bloque, indicacion, noEntraron);
+  });
+  ajustarTodasLasAlturas(grilla);
+}
+
+// Un renglón dictado: su texto, sus cruces (reglas fijas), "Mañana sigue a las" si
+// corresponde, y sus avisos
+function llenarRenglonDictado(tarjeta, renglon, hora) {
+  escribirValor(tarjeta.querySelector('.renglon__texto'), String(renglon.texto ?? ''));
+  const calculo = GrillaCalculo.calcularRenglon({
+    cada: renglon.cada ?? null, desde: renglon.desde ?? null, horas: renglon.horas ?? null,
+    ambigua: renglon.ambigua === true, ilegible: renglon.ilegible === true, ahora: hora ?? null,
+  });
+  Object.entries(calculo.casillas).forEach(([columna, valor]) => {
+    const casilla = tarjeta.querySelector(`.renglon__casilla[data-hora="${columna}"]`);
+    if (casilla) ponerEnCasilla(casilla, valor, true);
+  });
+  if (calculo.sigue) escribirValor(tarjeta.querySelector('.renglon__sigue-hora'), calculo.sigue);
+  const avisos = Object.keys(calculo.casillas).length
+    ? ['Cruces puestas por el dictado (en otro color): revisalas.', ...calculo.avisos]
+    : calculo.avisos;
+  mostrarAvisosDelRenglon(tarjeta, avisos);
+}
+
+// Los avisos de un renglón, arriba de su texto (si no hay, no se ve nada)
+function mostrarAvisosDelRenglon(tarjeta, avisos) {
+  tarjeta.querySelector('.renglon__avisos')?.remove();
+  if (avisos.length === 0) return;
+  const lista = crear('ul', 'renglon__avisos');
+  avisos.forEach((aviso) => lista.append(crear('li', '', aviso)));
+  tarjeta.querySelector('.renglon__encabezado').after(lista);
+}
+
+// Lo dictado que no entró (la indicación ya estaba en su tope), debajo del título
+function avisarLoQueNoEntro(bloque, indicacion, noEntraron) {
+  bloque.querySelector('.grilla__aviso')?.remove();
+  if (noEntraron.length === 0) return;
+  const cuantos = noEntraron.length === 1 ? 'No entró 1 renglón dictado' : `No entraron ${noEntraron.length} renglones dictados`;
+  const aviso = crear('p', 'grilla__aviso',
+    `${cuantos}: ${indicacion.etiqueta} tiene como máximo ${indicacion.maximo}. ${noEntraron.length === 1 ? 'Quedó afuera' : 'Quedaron afuera'}: ${noEntraron.map((t) => `"${t}"`).join(', ')}.`);
+  bloque.querySelector('.grilla__titulo').after(aviso);
 }
 
 // --- La ficha del dashboard (solo para leer) ----------------------------------------------

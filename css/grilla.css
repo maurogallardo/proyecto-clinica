@@ -168,6 +168,40 @@
   border: 2px solid var(--acento);
 }
 
+/* Una casilla que puso el dictado (calculada con reglas fijas): azul, con el fondo
+   celeste y el borde punteado, hasta que la persona la toca o la confirma */
+.renglon__casilla--dictada {
+  color: var(--dictada-texto);
+  background: var(--dictada-fondo);
+  border: 2px dashed var(--dictada-borde);
+}
+
+/* Los avisos de un renglón dictado ("revisalas", "marcá las cruces a mano") y lo
+   que no entró en una indicación: una cajita celeste con letra chica */
+.renglon__avisos,
+.grilla__aviso {
+  margin: 0;
+  padding: 8px 10px 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--dictada-texto);
+  background: var(--dictada-fondo);
+  border-left: 3px solid var(--dictada-borde);
+  border-radius: 8px;
+}
+
+.renglon__avisos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+}
+
+.grilla__aviso {
+  margin-bottom: 8px;
+}
+
 .renglon__casilla:focus-visible {
   outline: none;
   box-shadow: var(--anillo-foco);

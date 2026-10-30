@@ -73,14 +73,23 @@ async function completarPlanillaConTexto(texto) {
   const contenedor = document.getElementById('carga-formulario');
   const foto = tomarFotoPlanilla(contenedor);
   const antes = leerPlanilla(contenedor);
+  // La grilla de horarios, si la planilla tiene (el N° 5): "estructurar" también
+  // devuelve sus renglones dictados. Sin grilla (el ergométrico), el pedido es el de siempre
+  const grilla = contenedor.querySelector('.grilla-horarios');
+  const descripcionDeGrilla = grilla ? grillaDePlanilla(PLANILLA) : null;
 
   const planillaNueva = await llamarFuncion('estructurar', {
     planilla: PLANILLA.id,
     texto,
     campos: camposDePlanilla(PLANILLA),
     actual: antes,
+    ...(descripcionDeGrilla ? { grilla: descripcionDeGrilla } : {}),
   });
-  return aplicarDictado(foto, antes, planillaNueva);
+  const aplicado = aplicarDictado(foto, antes, planillaNueva);
+  // Los renglones dictados se suman a la grilla, con sus cruces calculadas con reglas
+  // fijas (js/grilla.js y js/grilla-calculo.js)
+  if (aplicado && grilla && grilla.isConnected && planillaNueva.grilla) agregarRenglonesDictados(grilla, planillaNueva.grilla, planillaNueva.hora);
+  return aplicado;
 }
 
 // Escribe en pantalla solo lo que el dictado cambió. Reglas que asegura el código:
