@@ -212,9 +212,13 @@ const Ficha = (() => {
 
   function render(estudio, fotos) {
     el.titulo.textContent = tituloConNumero('tituloFicha', estudio);
-    const secciones = PLANILLA.secciones.map((seccion) => (seccion.tipo === 'etapas'
-      ? nodoSeccion(seccion.titulo, nodoEtapas(estudio[PLANILLA.etapas.tabla]))
-      : nodoSeccion(seccion.titulo, ...nodoCampos(seccion.campos, estudio))));
+    const secciones = PLANILLA.secciones.map((seccion) => {
+      if (seccion.tipo === 'etapas') return nodoSeccion(seccion.titulo, nodoEtapas(estudio[PLANILLA.etapas.tabla]));
+      // Grilla de horarios (N° 5): la tablita, solo si tiene algo (js/grilla.js), y
+      // después los campos de la sección (la Dieta)
+      const grilla = seccion.tipo === 'grilla' ? dibujarGrillaFicha(seccion, estudio[seccion.columna]) : null;
+      return nodoSeccion(seccion.titulo, ...(grilla ? [grilla] : []), ...nodoCampos(seccion.campos, estudio));
+    });
     secciones.push(nodoSeccion(PLANILLA.fotos.seccion, nodoFotos(fotos)));
     const pie = document.createElement('div');
     pie.className = 'ficha__grilla';

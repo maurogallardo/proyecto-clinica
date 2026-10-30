@@ -237,6 +237,73 @@ async function quitarRenglon(tarjeta, indicacion) {
   bloque.querySelector('.agregar-renglon').focus();   // el foco no se pierde en la pantalla
 }
 
+// --- La ficha del dashboard (solo para leer) ----------------------------------------------
+
+// La grilla como en el papel: una tablita con las 10 columnas (06 a 24), un título
+// por indicación y, en cada renglón, su texto y su X o su hora en cada columna. La
+// nota "Sigue al día siguiente" va abajo del renglón, chica y tenue. Las
+// indicaciones sin renglones no aparecen; si no hay ninguna, devuelve null (y la
+// ficha no muestra la tablita). Lo que viene de la base va siempre como texto.
+function dibujarGrillaFicha(seccion, valor) {
+  const conRenglones = seccion.indicaciones.filter((i) => valor && Array.isArray(valor[i.clave]) && valor[i.clave].length > 0);
+  if (conRenglones.length === 0) return null;
+
+  const tabla = crear('table', 'grilla-ficha');
+  const encabezado = crear('tr');
+  const primera = crear('th', 'grilla-ficha__indicacion-titulo');
+  primera.scope = 'col';
+  primera.append(crear('span', 'solo-lectores', 'Indicación'));
+  encabezado.append(primera, ...GRILLA.columnas.map((c) => {
+    const th = crear('th', 'grilla-ficha__hora', dosCifras(c));
+    th.scope = 'col';
+    return th;
+  }));
+  const thead = crear('thead');
+  thead.append(encabezado);
+  tabla.append(thead);
+
+  conRenglones.forEach((indicacion) => {
+    // Un grupo por indicación: su título y sus renglones
+    const grupo = crear('tbody', 'grilla-ficha__grupo');
+    const filaTitulo = crear('tr');
+    const titulo = crear('th', 'grilla-ficha__titulo', indicacion.etiqueta);
+    titulo.scope = 'rowgroup';
+    titulo.colSpan = GRILLA.columnas.length + 1;
+    filaTitulo.append(titulo);
+    grupo.append(filaTitulo);
+
+    valor[indicacion.clave].forEach((renglon) => {
+      const fila = crear('tr', 'grilla-ficha__renglon');
+      const texto = crear('td', 'grilla-ficha__texto');
+      if (renglon.texto) texto.textContent = renglon.texto;
+      else { texto.textContent = '—'; texto.classList.add('vacio'); }
+      fila.append(texto, ...GRILLA.columnas.map((c) => {
+        const marca = renglon.casillas ? renglon.casillas[String(c)] : undefined;
+        const td = crear('td', 'grilla-ficha__casilla');
+        if (marca) {
+          td.textContent = marca;
+          td.classList.add(marca === 'X' ? 'grilla-ficha__casilla--cruz' : 'grilla-ficha__casilla--hora');
+        }
+        return td;
+      }));
+      grupo.append(fila);
+      if (renglon.sigue) {
+        const filaSigue = crear('tr', 'grilla-ficha__sigue');
+        const nota = crear('td', '', `Sigue al día siguiente: ${renglon.sigue}`);
+        nota.colSpan = GRILLA.columnas.length + 1;
+        filaSigue.append(nota);
+        grupo.append(filaSigue);
+      }
+    });
+    tabla.append(grupo);
+  });
+
+  // En pantalla angosta, la tablita se desplaza de costado (como las etapas)
+  const envoltorio = crear('div', 'tabla-desplazable grilla-ficha__envoltorio');
+  envoltorio.append(tabla);
+  return envoltorio;
+}
+
 // --- Leer lo cargado ---------------------------------------------------------------------
 
 // { csv: [ { texto, casillas, sigue } ], ... } sin renglones vacíos; null si no hay nada

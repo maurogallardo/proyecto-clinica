@@ -190,3 +190,80 @@
 .renglon__sigue .renglon__etiqueta {
   font-weight: 500;
 }
+
+/* --- La grilla en la ficha del dashboard (solo para leer), como en el papel --------
+   Una tablita: el texto de cada renglón a la izquierda y las 10 columnas de horas.
+   Con los colores del dashboard (css/tokens.css: claro y oscuro). En pantalla
+   angosta se desplaza de costado (.tabla-desplazable). */
+.grilla-ficha__envoltorio {
+  margin-bottom: 18px;
+}
+
+.grilla-ficha {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+}
+
+/* La primera columna (el texto) se lleva todo el ancho que sobra */
+.grilla-ficha__indicacion-titulo {
+  width: auto;
+}
+
+.grilla-ficha__hora {
+  width: 52px;
+  padding: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--texto-secundario);
+}
+
+/* El nombre de la indicación ("C.S.V.", "Medicación"), arriba de sus renglones */
+.grilla-ficha__titulo {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  color: var(--texto);
+  background: var(--panel-cabecera-tabla);
+  border-top: 1px solid var(--panel-borde);
+}
+
+.grilla-ficha__texto {
+  padding: 10px 12px;
+  color: var(--texto);
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--panel-borde-tenue);
+}
+
+.grilla-ficha__casilla {
+  height: 38px;
+  padding: 0 2px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--panel-borde-tenue);
+  border-left: 1px solid var(--panel-borde-tenue);
+}
+
+.grilla-ficha__casilla--cruz {
+  font-size: 15px;
+  color: var(--acento);
+}
+
+.grilla-ficha__casilla--hora {
+  color: var(--acento);
+  letter-spacing: -0.02em;
+}
+
+/* "Sigue al día siguiente: 08:00", abajo del renglón: chica y tenue */
+.grilla-ficha__sigue td {
+  padding: 2px 12px 10px;
+  font-size: 12px;
+  color: var(--panel-texto-tenue);
+  border-bottom: 1px solid var(--panel-borde-tenue);
+}
