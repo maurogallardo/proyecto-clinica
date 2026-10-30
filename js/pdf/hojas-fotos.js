@@ -1,7 +1,8 @@
 // Hojas de fotos del PDF (T033), iguales para cualquier planilla: van a partir de
 // la hoja 2, solo si el estudio tiene fotos. Son las mismas fotos que muestra la
 // ficha en su sección de fotos (en el ergométrico, "Fotos del electro"), en el
-// mismo orden (por fecha de carga). Son siempre hojas A4 verticales.
+// mismo orden (por fecha de carga). Son hojas A4 con la orientación de la planilla:
+// verticales (210 x 297) en el ergométrico, horizontales (297 x 210) en el N° 5.
 //
 // Regla por hileras (en el orden de carga):
 //   1) Una hilera pone fotos una al lado de la otra: todas con la MISMA altura, y
@@ -18,8 +19,9 @@
 // Los números están juntos acá para ajustarlos después de imprimir en la Epson.
 
 const FOTOS_PDF = {
-  alturaMinimaMm: 80,    // una hilera no baja de esta altura
-  alturaMaximaMm: 120,   // una foto sola no pasa de esta altura
+  alturaMinimaMm: 80,    // una hilera no baja de esta altura (en las dos orientaciones)
+  alturaMaximaMm: 120,   // una foto sola no pasa de esta altura (hoja vertical)
+  alturaMaximaHorizontalMm: 160,   // ídem en hoja horizontal (tiene 180 mm útiles de alto)
   separacionMm: 4,       // entre fotos y entre hileras
   margenMm: 12,          // alrededor de la hoja (la impresora no llega al borde)
   ladoMaximoPx: 2000,    // las fotos se achican a este lado largo (el PDF no pesa de más)
@@ -28,7 +30,7 @@ const FOTOS_PDF = {
 };
 
 const FotosPdf = (() => {
-  const HOJA = { ancho: 210, alto: 297 };
+  const HOJAS = { vertical: { ancho: 210, alto: 297 }, horizontal: { ancho: 297, alto: 210 } };
   const ALTO_ENCABEZADO = 6;   // la línea chica de arriba y un poco de aire
 
   // --- Traer las fotos --------------------------------------------------------------
@@ -87,8 +89,12 @@ const FotosPdf = (() => {
   // --- La regla de las hileras (sin dibujar: solo calcula dónde va cada foto) ----------
 
   // proporciones: ancho / alto de cada foto. Devuelve las hojas, cada una con sus
-  // fotos: { indice, x, y, ancho, alto } en milímetros.
-  function ubicar(proporciones, config = FOTOS_PDF) {
+  // fotos: { indice, x, y, ancho, alto } en milímetros. orientacion: la de la hoja
+  // ('vertical' u 'horizontal')
+  function ubicar(proporciones, config = FOTOS_PDF, orientacion = 'vertical') {
+    if (!Object.hasOwn(HOJAS, orientacion)) throw new Error(`Orientación de hoja desconocida: '${orientacion}'`);
+    const HOJA = HOJAS[orientacion];
+    const alturaMaxima = orientacion === 'horizontal' ? config.alturaMaximaHorizontalMm ?? config.alturaMaximaMm : config.alturaMaximaMm;
     const anchoUtil = HOJA.ancho - 2 * config.margenMm;
     const arriba = config.margenMm + ALTO_ENCABEZADO;
     const abajo = HOJA.alto - config.margenMm;
@@ -111,7 +117,7 @@ const FotosPdf = (() => {
     // 3) La altura de cada hilera (y que nunca sea más alta que la hoja)
     const medidas = hileras.map((grupo) => {
       let alto = alturaDe(grupo);
-      if (grupo.length === 1) alto = Math.min(alto, config.alturaMaximaMm);
+      if (grupo.length === 1) alto = Math.min(alto, alturaMaxima);
       alto = Math.min(alto, altoUtil);
       const anchos = grupo.map((i) => proporciones[i] * alto);
       const anchoTotal = anchos.reduce((a, b) => a + b, 0) + config.separacionMm * (grupo.length - 1);
@@ -142,10 +148,13 @@ const FotosPdf = (() => {
   // --- Dibujar ------------------------------------------------------------------------
 
   // encabezado: "Estudio N° X · Paciente" (va arriba de cada hoja de fotos)
-  function dibujar(doc, fotos, encabezado) {
-    const hojas = ubicar(fotos.map((f) => f.ancho / f.alto));
+  // orientacion: la de la planilla. fondo: lo que la planilla dibuja de fondo en
+  // cada hoja, antes que todo (el N° 5: su marca de agua); sin fondo, nada
+  function dibujar(doc, fotos, encabezado, { orientacion = 'vertical', fondo = null } = {}) {
+    const hojas = ubicar(fotos.map((f) => f.ancho / f.alto), FOTOS_PDF, orientacion);
     hojas.forEach((hoja) => {
-      doc.addPage('a4', 'portrait');
+      doc.addPage('a4', orientacion === 'horizontal' ? 'landscape' : 'portrait');
+      if (fondo) fondo();
       HerramientasPdf.encabezadoChico(doc, `${encabezado} · ${PLANILLA.fotos.seccion}`, FOTOS_PDF.margenMm);
       hoja.forEach(({ indice, x, y, ancho, alto }) => {
         doc.addImage(fotos[indice].datos, 'JPEG', x, y, ancho, alto, `foto-${indice}`, 'NONE');

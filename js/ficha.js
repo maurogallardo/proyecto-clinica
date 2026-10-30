@@ -298,8 +298,7 @@ const Ficha = (() => {
 
   // Encabezado de la ficha: "Imprimir", "Descargar PDF", "Editar" (neutros) y
   // "Borrar" (en rojo). En modo edición van otros ("Cancelar" y "Guardar cambios").
-  // "Imprimir" y "Descargar PDF" solo si la planilla tiene PDF (el N° 5 todavía no:
-  // Fase 4).
+  // "Imprimir" y "Descargar PDF" solo si la planilla tiene PDF (PLANILLA.pdf).
   function ponerBotonesDeLaFicha() {
     el.acciones.replaceChildren(
       ...(PLANILLA.pdf ? [

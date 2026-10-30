@@ -330,11 +330,7 @@ const HOJA_ERGOMETRICO = (() => {
 
   // Lo fijo de la hoja 1: marca de agua, banda, logo, título y pie
   function dibujarFondo(doc, recursos) {
-    const iso = recursos.logos.isologo;
-    const m = D.marcaDeAgua;
-    doc.setGState(new doc.GState({ opacity: m.opacidad }));
-    doc.addImage(iso.datos, 'PNG', m.x, m.y, m.ancho, m.ancho * iso.alto / iso.ancho, 'isologo', 'SLOW');
-    doc.setGState(new doc.GState({ opacity: 1 }));
+    H.marcaDeAgua(doc, recursos.logos.isologo, D.marcaDeAgua);
 
     const b = D.banda;
     doc.setFillColor(0, 0, 0);

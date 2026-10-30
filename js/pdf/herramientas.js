@@ -213,6 +213,18 @@ const HerramientasPdf = (() => {
     return w <= ancho ? maximo : maximo * ancho / w;
   }
 
+  // Marca de agua: el isologo de la clínica, tenue y de fondo. Se dibuja ANTES que el
+  // contenido de la hoja (así queda detrás). x, y y ancho en mm; sin x ni y, va
+  // centrada en la hoja en la que está (210 x 297 vertical o 297 x 210 horizontal)
+  function marcaDeAgua(doc, isologo, { x, y, ancho, opacidad }) {
+    const alto = ancho * isologo.alto / isologo.ancho;
+    const izquierda = x ?? (Math.round(doc.internal.pageSize.getWidth()) - ancho) / 2;
+    const arriba = y ?? (Math.round(doc.internal.pageSize.getHeight()) - alto) / 2;
+    doc.setGState(new doc.GState({ opacity: opacidad }));
+    doc.addImage(isologo.datos, 'PNG', izquierda, arriba, ancho, alto, 'isologo', 'SLOW');
+    doc.setGState(new doc.GState({ opacity: 1 }));
+  }
+
   // --- Formatos (iguales a los de la ficha) ------------------------------------------
 
   function fecha(valor) {
@@ -244,6 +256,6 @@ const HerramientasPdf = (() => {
 
   return {
     preparar, nuevoDocumento, controlarCaracteres, partirEnRenglones, renglonDePuntos,
-    tamanoParaAncho, textoDeValor, encabezadoChico, ptAMm,
+    tamanoParaAncho, marcaDeAgua, textoDeValor, encabezadoChico, ptAMm,
   };
 })();

@@ -226,6 +226,8 @@ const PLANILLA_ERGOMETRICO = {
     restaurado: 'Estudio N° {numero} restaurado',
     // PDF: la línea chica arriba de las hojas que no son la 1
     pdfEncabezado: 'Estudio N° {numero} · {paciente}',
+    // PDF: un símbolo que la fuente no tiene (no se arma el PDF)
+    pdfSimbolo: 'El estudio tiene un símbolo que no se puede poner en el PDF ("{simbolo}"). Cambialo con "Editar" y probá de nuevo.',
     // Carga (celular)
     botonConfirmar: 'Confirmar estudio',
     confirmarTitulo: '¿Confirmar estudio?',

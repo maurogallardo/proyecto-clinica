@@ -11,9 +11,8 @@
 // Columnas de la base: supabase/formulario5.sql, formulario5-turnos.sql y
 // formulario5-grilla.sql (tabla hojas_indicaciones; la grilla, en "indicaciones").
 //
-// Tiene la carga y el guardado (Fase 2) y el dashboard: lista, ficha, edición y
-// Papelera (Fase 3). Todavía sin PDF (Fase 4): por eso la ficha no muestra
-// "Imprimir" ni "Descargar PDF".
+// Tiene la carga y el guardado (Fase 2), el dashboard: lista, ficha, edición y
+// Papelera (Fase 3), y el PDF horizontal (Fase 4: js/planillas/formulario5-hoja.js).
 
 const PLANILLA_FORMULARIO5 = {
   id: 'formulario5',   // con este nombre "transcribir" y "estructurar" eligen lo suyo
@@ -165,6 +164,16 @@ const PLANILLA_FORMULARIO5 = {
   // La columna con el nombre del paciente (la usan el cartel de "Borrar" y el PDF)
   columnaPaciente: 'paciente',
 
+  // PDF ("Imprimir" y "Descargar PDF"), como en el ergométrico. La hoja la dibuja
+  // js/planillas/formulario5-hoja.js (anotada en HOJAS_PDF, js/pdf/armado.js). A4
+  // horizontal, como el papel. Archivo: Formulario5-<número>-<paciente>-<fecha>.pdf,
+  // con la fecha de la hoja ("fecha", la pone la base al guardar)
+  pdf: {
+    orientacion: 'horizontal',
+    archivo: 'Formulario5',
+    columnaFecha: 'fecha',
+  },
+
   // Datos mínimos para guardar (decidido por Mauro): paciente y habitación. Los
   // controla la app; la base no
   datosMinimos: [
@@ -204,7 +213,7 @@ const PLANILLA_FORMULARIO5 = {
   },
 
   // Textos de pantalla (los huecos entre llaves los completa textoDePlanilla). Sin
-  // "sinEtapas" (no tiene etapas) ni "pdfEncabezado" (el PDF es de la Fase 4)
+  // "sinEtapas" (no tiene etapas)
   textos: {
     // Dashboard: la lista
     antetitulo: 'Formulario N° 5',   // arriba del título de cada sección del dashboard
@@ -238,6 +247,10 @@ const PLANILLA_FORMULARIO5 = {
     queSeHaciaRestaurar: 'restaurar la hoja',
     restaurarEtiqueta: 'Restaurar la hoja N° {numero}',   // lo que lee un lector de pantalla en cada botón
     restaurado: 'Hoja N° {numero} restaurada',
+    // PDF: la línea chica arriba de las hojas que no son la 1
+    pdfEncabezado: 'Hoja N° {numero} · {paciente}',
+    // PDF: un símbolo que la fuente no tiene (no se arma el PDF)
+    pdfSimbolo: 'La hoja tiene un símbolo que no se puede poner en el PDF ("{simbolo}"). Cambialo con "Editar" y probá de nuevo.',
     // Carga (celular)
     antetituloCarga: 'Formulario N° 5',   // chico y tenue, arriba de "HOJA DE INDICACIONES"
     botonConfirmar: 'Confirmar hoja',

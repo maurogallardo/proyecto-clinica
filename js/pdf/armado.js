@@ -22,6 +22,7 @@ const PDF_ARMADO = { tiempoMaximoMs: 120000, duracionEnlaceMs: 120000 };
 // La hoja 1 de cada planilla, por su id (para sumar otra, se agrega acá)
 const HOJAS_PDF = {
   ergometrico: () => HOJA_ERGOMETRICO,
+  formulario5: () => HOJA_FORMULARIO5,
 };
 
 const Pdf = (() => {
@@ -77,7 +78,10 @@ const Pdf = (() => {
       doc.setDocumentProperties({ title: nombreDeArchivo(estudio).replace(/\.pdf$/, ''), creator: 'Sanatorio de la Cañada' });
       doc.viewerPreferences({ PrintScaling: 'None' });   // al 100 %, sin "ajustar a la página"
       const hoja = hojaPdf.dibujar(doc, estudio, recursos, encabezado);
-      const hojasDeFotos = listas.length ? FotosPdf.dibujar(doc, listas, encabezado) : 0;
+      // Las hojas de fotos, con la orientación de la planilla y, si la hoja lo pide, su
+      // fondo en cada una (el N° 5: la marca de agua; el ergométrico no tiene)
+      const fondo = hojaPdf.fondoDeOtrasHojas ? () => hojaPdf.fondoDeOtrasHojas(doc, recursos) : null;
+      const hojasDeFotos = listas.length ? FotosPdf.dibujar(doc, listas, encabezado, { orientacion: PLANILLA.pdf.orientacion, fondo }) : 0;
       if (paraImprimir) doc.autoPrint();
       const blob = doc.output('blob');
       return { blob, nombre: nombreDeArchivo(estudio), hoja, hojasDeFotos, paginas: doc.getNumberOfPages() };
@@ -133,7 +137,7 @@ const Pdf = (() => {
   function mensajeDeError(error) {
     const tipo = error && error.tipo;
     if (tipo === 'foto') return 'No se pudo cargar una de las fotos. Probá de nuevo.';
-    if (tipo === 'caracter') return `El estudio tiene un símbolo que no se puede poner en el PDF ("${error.detalle}"). Cambialo con "Editar" y probá de nuevo.`;
+    if (tipo === 'caracter') return textoDePlanilla('pdfSimbolo', { simbolo: error.detalle });   // "El estudio…" / "La hoja…", según la planilla
     if (tipo === 'tiempo') return 'Armar el PDF tardó demasiado. Revisá la conexión y probá de nuevo.';
     if (tipo === 'ventana') return 'El navegador no dejó abrir la pestaña para imprimir. Permití las ventanas emergentes de esta página y probá de nuevo.';
     if (tipo === 'recursos' || !navigator.onLine) return 'No se pudo preparar el PDF. Revisá la conexión y probá de nuevo.';
