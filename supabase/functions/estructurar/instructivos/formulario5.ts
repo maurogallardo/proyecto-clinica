@@ -21,7 +21,10 @@
 //     Vómitos y Deposiciones). El modelo propone el casillero y el código verifica
 //     que lo dictado nombre ESE horario (un turno, un rango o una hora): ver
 //     horarios.ts. Si no, el dato no se carga.
+//   - ponerEnSuForma: después de los resguardos, las Deposiciones pasan a X o XX
+//     ("una X" es "X"; "dos X" es "XX"), con reglas fijas: ver deposiciones.ts.
 import { horarioVerificado } from '../horarios.ts';
+import { formaDeDeposiciones } from '../deposiciones.ts';
 
 const TURNOS: Record<string, RegExp[]> = {
   manana: [/\bmanana\b/],   // "mañana", sin la tilde de la ñ
@@ -42,6 +45,7 @@ export const RESGUARDOS_FORMULARIO5 = {
   } as Record<string, RegExp[]>,
   maximos: {} as Record<string, number>,
   verificar: horarioVerificado,
+  ponerEnSuForma: formaDeDeposiciones,
 };
 
 export const INSTRUCTIVO_FORMULARIO5 = `

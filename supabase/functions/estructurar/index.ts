@@ -27,11 +27,14 @@ const INSTRUCTIVOS: Record<string, string> = {
 
 // Resguardos propios de cada planilla (palabras clave y valores máximos). Una
 // planilla puede sumar una verificación propia con reglas fijas (el N° 5: el
-// horario de los casilleros de abajo, horarios.ts); el ergométrico no tiene.
+// horario de los casilleros de abajo, horarios.ts) y una forma fija para algunos
+// valores, que se aplica después de los resguardos (el N° 5: las Deposiciones en
+// X o XX, deposiciones.ts); el ergométrico no tiene ninguna de las dos.
 type Resguardos = {
   palabrasClave: Record<string, RegExp[]>;
   maximos: Record<string, number>;
   verificar?: (columna: string, dictadoSinAcentos: string) => boolean;
+  ponerEnSuForma?: (columna: string, valor: unknown) => unknown;
 };
 const RESGUARDOS: Record<string, Resguardos> = {
   ergometrico: RESGUARDOS_ERGOMETRICO,
@@ -193,6 +196,13 @@ function exigirQueSeHayaDicho(
   return objeto;
 }
 
+// La forma fija de la planilla (si tiene), sobre lo que ya pasó los resguardos
+function ponerEnSuForma(objeto: Valores, campos: Campo[], resguardos: Resguardos): Valores {
+  if (!resguardos.ponerEnSuForma) return objeto;
+  campos.forEach((campo) => { objeto[campo.columna] = resguardos.ponerEnSuForma!(campo.columna, objeto[campo.columna]); });
+  return objeto;
+}
+
 // --- La función ------------------------------------------------------------------------
 
 Deno.serve(async (pedido) => {
@@ -273,12 +283,12 @@ Deno.serve(async (pedido) => {
     (Array.isArray(devuelto.etapas) ? devuelto.etapas : []).forEach((etapa: any) => {
       const fila = etapa?.fila;
       if (Number.isInteger(fila) && fila >= 0 && fila < actual.etapas.length && !etapas.some((e) => e.fila === fila)) {
-        etapas.push({ fila, ...exigirQueSeHayaDicho(limpiarObjeto(etapa, camposEtapa), camposEtapa, lodicho,
-          actual.etapas[fila], `etapas.${fila}`, descartados) });
+        etapas.push({ fila, ...ponerEnSuForma(exigirQueSeHayaDicho(limpiarObjeto(etapa, camposEtapa), camposEtapa, lodicho,
+          actual.etapas[fila], `etapas.${fila}`, descartados), camposEtapa, lodicho.resguardos) });
       }
     });
-    const estudio = exigirQueSeHayaDicho(limpiarObjeto(devuelto.estudio, camposEstudio), camposEstudio, lodicho,
-      actual.estudio, 'estudio', descartados);
+    const estudio = ponerEnSuForma(exigirQueSeHayaDicho(limpiarObjeto(devuelto.estudio, camposEstudio), camposEstudio, lodicho,
+      actual.estudio, 'estudio', descartados), camposEstudio, lodicho.resguardos);
 
     // "sin_ubicar" se descarta a propósito (ver esquemaDePlanilla). "uso": solo la
     // cantidad de tokens (para saber el costo); la app no lo usa.
