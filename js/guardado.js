@@ -1,7 +1,8 @@
 // Guardado del estudio (T023 y T024, con las fotos de T027 y T028).
 //   1) Revisa: datos mínimos (en el ergométrico, DNI y nombre), números bien
-//      escritos, campos de valores fijos (en el N° 5, Trámite adm.: SÍ o NO), que
-//      no haya un dictado a medias ni fotos preparándose.
+//      escritos, campos de valores fijos (en el N° 5, Trámite adm.: SÍ o NO), la
+//      grilla de horarios del N° 5 (js/grilla.js), que no haya un dictado a medias
+//      ni fotos preparándose.
 //   2) Cartel "¿Confirmar estudio?".
 //   3) Guarda estudio + etapas de una sola vez (función guardar_estudio de la base:
 //      todo o nada). Después, cada foto: el archivo al depósito y su fila en
@@ -136,7 +137,7 @@ async function confirmarEstudio() {
     ponerOpcionesEnSuFormaEn(contenedorCarga, PLANILLA);
     const datos = datosParaGuardar();
     if (faltanDatosMinimos(datos.estudio) || hayNumeroMalEscrito(contenedorCarga)
-        || hayOpcionNoPermitida(contenedorCarga, PLANILLA)) return;
+        || hayOpcionNoPermitida(contenedorCarga, PLANILLA) || hayGrillaMalEscrita(contenedorCarga)) return;
     const confirma = await preguntar({
       titulo: textoDePlanilla('confirmarTitulo'),
       texto: textoDePlanilla('confirmarTexto', datos.estudio),

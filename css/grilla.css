@@ -1,0 +1,192 @@
+/* Grilla de horarios del Formulario N° 5 (js/grilla.js): un bloque por indicación,
+   una tarjeta por renglón (como las etapas del ergométrico), las 10 casillas en una
+   fila y la nota "Sigue al día siguiente" chica y tenue. Los colores salen de
+   css/tokens.css (sirven para el modo claro y el oscuro). */
+
+.grilla-horarios {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+/* El nombre de la indicación ("C.S.V.", "Medicación"), arriba de sus renglones */
+.grilla__titulo {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.renglones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* La tarjeta del renglón: igual que la de una etapa */
+.renglon {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--etapa-fondo);
+  border: 1px solid var(--etapa-borde);
+  border-radius: 12px;
+}
+
+/* Un renglón recién agregado aparece con el mismo movimiento que una etapa */
+.renglon--nuevo {
+  animation: etapa-aparece var(--duracion-media) var(--curva);
+}
+
+/* Renglón de arriba: rótulo ("RENGLÓN 1", "REMEDIO 2") y tacho, como en las etapas */
+.renglon__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -4px -4px -6px 0;
+}
+
+.renglon__rotulo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+}
+
+.renglon__quitar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--tacho);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--duracion-corta) var(--curva);
+}
+
+.renglon__quitar:hover,
+.renglon__quitar:active {
+  background: var(--tacho-fondo-activo);
+}
+
+.renglon__quitar:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
+/* "+ Agregar renglón" / "+ Agregar remedio": con borde punteado, como "+ Agregar etapa" */
+.agregar-renglon {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  padding: 10px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--texto);
+  background: var(--agregar-fondo);
+  border: 1.5px dashed var(--agregar-borde);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color var(--duracion-corta) var(--curva);
+}
+
+.agregar-renglon:hover,
+.agregar-renglon:active {
+  background: var(--agregar-fondo-activo);
+}
+
+.agregar-renglon:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
+.renglon .campo {
+  padding: 10px;
+}
+
+/* Las 10 columnas: arriba la hora, abajo la casilla que se toca */
+.renglon__horas {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.renglon__hora {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--texto-secundario);
+}
+
+.renglon__casilla {
+  min-width: 0;
+  height: 36px;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto);
+  background: var(--campo-fondo);
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color var(--duracion-corta) var(--curva);
+}
+
+.renglon__casilla--cruz {
+  font-size: 16px;
+  color: var(--acento);
+  border-color: var(--acento);
+}
+
+.renglon__casilla--hora {
+  color: var(--acento);
+  border-color: var(--acento);
+  letter-spacing: -0.02em;
+}
+
+.renglon__casilla:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
+/* "Hora suelta" y "Sigue al día siguiente": rótulo, campo (y el botón "Poner") */
+.renglon__suelta,
+.renglon__sigue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.renglon__etiqueta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-secundario);
+}
+
+.renglon__suelta .campo,
+.renglon__sigue .campo {
+  width: 96px;
+  min-height: 40px;
+  padding: 8px 10px;
+}
+
+.renglon__poner {
+  min-height: 40px;
+}
+
+/* La nota "Sigue al día siguiente": chica y tenue (es solo informativa) */
+.renglon__sigue {
+  opacity: 0.75;
+}
+
+.renglon__sigue .renglon__etiqueta {
+  font-weight: 500;
+}

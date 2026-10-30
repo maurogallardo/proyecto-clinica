@@ -4,17 +4,16 @@
 //
 // LA HOJA ES EL CONTRATO: mismos campos, mismos nombres y mismo orden que el papel
 // (specs/002-formulario-5/spec.md, "La hoja en papel"). Las abreviaturas van como
-// en el papel. Sin DNI (el papel no lo tiene), sin campo de fecha (la pone la base
-// con el reloj al guardar) y sin la grilla de horarios (bloqueada hasta definir
-// (i) y (ii)). Los campos que dependen de [A DEFINIR] (vi) son texto libre.
+// en el papel. Sin DNI (el papel no lo tiene) y sin campo de fecha (la pone la base
+// con el reloj al guardar). Las indicaciones médicas van en la grilla de horarios
+// (js/grilla.js). Los campos que dependen de [A DEFINIR] (vi) son texto libre.
 //
-// Columnas de la base: supabase/formulario5.sql y supabase/formulario5-turnos.sql
-// (tabla hojas_indicaciones; 40 campos del papel).
+// Columnas de la base: supabase/formulario5.sql, formulario5-turnos.sql y
+// formulario5-grilla.sql (tabla hojas_indicaciones; la grilla, en "indicaciones").
 //
 // Tiene la carga y el guardado (Fase 2) y el dashboard: lista, ficha, edición y
 // Papelera (Fase 3). Todavía sin PDF (Fase 4): por eso la ficha no muestra
-// "Imprimir" ni "Descargar PDF". El interruptor PLANILLA_ACTIVA (js/config.js)
-// sigue en 'ergometrico' hasta que Mauro diga.
+// "Imprimir" ni "Descargar PDF".
 
 const PLANILLA_FORMULARIO5 = {
   id: 'formulario5',   // con este nombre "transcribir" y "estructurar" eligen lo suyo
@@ -37,15 +36,25 @@ const PLANILLA_FORMULARIO5 = {
       ],
     },
     {
-      // Columna izquierda del papel (cuántos renglones tiene cada una en el papel)
+      // Columna izquierda del papel con la grilla de HORARIOS a la derecha: cada
+      // renglón con su texto y sus casillas (06 a 24). La dibuja js/grilla.js y se
+      // guarda toda junta en la columna "indicaciones" (supabase/formulario5-grilla.sql).
+      // "maximo": los renglones del papel. "inicial": con cuántas tarjetas arranca
+      // (si no se indica, 1): Tomografía, Electrocardiograma y Laboratorio arrancan
+      // sin ninguna, solo con "+ Agregar renglón". Dieta, sin grilla.
       titulo: 'Indicaciones médicas',
+      tipo: 'grilla',
+      columna: 'indicaciones',
+      indicaciones: [
+        { clave: 'csv', etiqueta: 'C.S.V.', maximo: 2 },
+        { clave: 'tomografia', etiqueta: 'Tomografía', maximo: 2, inicial: 0 },
+        { clave: 'electrocardiograma', etiqueta: 'Electrocardiograma', maximo: 2, inicial: 0 },
+        { clave: 'laboratorio', etiqueta: 'Laboratorio', maximo: 2, inicial: 0 },
+        { clave: 'medicacion', etiqueta: 'Medicación', maximo: 5, rotulo: 'Remedio', agregar: '+ Agregar remedio' },
+      ],
       campos: [
-        { columna: 'csv', etiqueta: 'C.S.V.', tipo: 'texto-largo', ancho: 'completo', mayusculaInicial: true },                         // 2
-        { columna: 'tomografia', etiqueta: 'Tomografía', tipo: 'texto-largo', ancho: 'completo', mayusculaInicial: true },               // 2
-        { columna: 'electrocardiograma', etiqueta: 'Electrocardiograma', tipo: 'texto-largo', ancho: 'completo', mayusculaInicial: true }, // 2
-        { columna: 'laboratorio', etiqueta: 'Laboratorio', tipo: 'texto-largo', ancho: 'completo', mayusculaInicial: true },             // 2
-        { columna: 'medicacion', etiqueta: 'Medicación', tipo: 'texto-largo', ancho: 'completo', mayusculaInicial: true },               // 5
-        { columna: 'dieta', etiqueta: 'Dieta', tipo: 'texto', ancho: 'completo', mayusculaInicial: true },                               // 1
+        // Caja de varias líneas, de unas 4 de alto, que crece hacia abajo
+        { columna: 'dieta', etiqueta: 'Dieta', tipo: 'texto-largo', renglones: 4, ancho: 'completo', mayusculaInicial: true },
       ],
     },
     {

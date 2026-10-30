@@ -32,6 +32,12 @@ function dibujarSeccion(seccion, planilla, prefijo, valores) {
     return tarjeta;
   }
 
+  // Grilla de horarios (Formulario N° 5): la dibuja js/grilla.js; después van los
+  // campos comunes de la sección, si tiene (la Dieta)
+  if (seccion.tipo === 'grilla') {
+    tarjeta.append(dibujarGrilla(seccion, prefijo, valores ? valores.estudio[seccion.columna] : undefined));
+  }
+
   const grilla = crear('div', 'grilla-campos');
   seccion.campos.forEach((campo) => {
     grilla.append(campo.subtitulo
@@ -150,7 +156,8 @@ function crearControl(campo) {
   if (campo.tipo === 'texto' || campo.tipo === 'texto-largo') {
     // Caja que crece con lo que se escribe o dicta (como en LoMar)
     control = document.createElement('textarea');
-    control.rows = campo.tipo === 'texto-largo' ? 2 : 1;
+    // Alto inicial: el que pida el campo ("renglones", como la Dieta del N° 5) o 2 / 1
+    control.rows = campo.renglones || (campo.tipo === 'texto-largo' ? 2 : 1);
     control.addEventListener('input', () => ajustarAltura(control));
     if (campo.tipo === 'texto') {
       // Un campo corto no lleva "Enter" (no tiene renglones)
@@ -203,6 +210,11 @@ function leerPlanilla(contenedor) {
   const estudio = {};
   contenedor.querySelectorAll('[data-columna]').forEach((control) => {
     if (!control.closest('.etapa')) estudio[control.dataset.columna] = leerValor(control);
+  });
+  // La grilla de horarios, si la planilla tiene: un solo valor con todos sus
+  // renglones, o null (js/grilla.js)
+  contenedor.querySelectorAll('.grilla-horarios').forEach((grilla) => {
+    estudio[grilla.dataset.grilla] = leerGrilla(grilla);
   });
 
   const etapas = [...contenedor.querySelectorAll('.etapa')].map((tarjeta) => {
@@ -298,6 +310,8 @@ function ponerMayusculaInicialEn(contenedor, planilla) {
     const nuevo = texto.slice(0, primera) + texto.charAt(primera).toLocaleUpperCase('es') + texto.slice(primera + 1);
     if (nuevo !== texto) escribirValor(control, nuevo);
   });
+  // Y el texto de cada renglón de la grilla de horarios, si la planilla tiene
+  contenedor.querySelectorAll('.grilla-horarios').forEach(ponerMayusculaInicialGrilla);
 }
 
 // --- Ayudante ------------------------------------------------------------------

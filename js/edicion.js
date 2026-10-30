@@ -75,7 +75,7 @@ const Edicion = (() => {
     ponerOpcionesEnSuFormaEn(el.formulario, PLANILLA);  // en el N° 5, Trámite adm. (js/guardado.js)
     const nuevos = datos();
     if (faltanDatosMinimos(nuevos.estudio, el.formulario) || hayNumeroMalEscrito(el.formulario)
-        || hayOpcionNoPermitida(el.formulario, PLANILLA)) return null;
+        || hayOpcionNoPermitida(el.formulario, PLANILLA) || hayGrillaMalEscrita(el.formulario)) return null;
     const esta = vuelta;
     const si = await preguntar({
       titulo: '¿Guardar los cambios?',
