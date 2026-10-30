@@ -164,6 +164,11 @@ const PLANILLA_FORMULARIO5 = {
   // La columna con el nombre del paciente (la usan el cartel de "Borrar" y el PDF)
   columnaPaciente: 'paciente',
 
+  // Tiempo real (T023): con el dashboard abierto, la lista se pone al día sola y la
+  // ficha avisa si hay una versión nueva (js/tiempo-real.js). La tabla está en la
+  // publicación de Realtime (supabase/formulario5.sql)
+  tiempoReal: true,
+
   // PDF ("Imprimir" y "Descargar PDF"), como en el ergométrico. La hoja la dibuja
   // js/planillas/formulario5-hoja.js (anotada en HOJAS_PDF, js/pdf/armado.js). A4
   // horizontal, como el papel. Archivo: Formulario5-<número>-<paciente>-<fecha>.pdf,
@@ -240,6 +245,12 @@ const PLANILLA_FORMULARIO5 = {
     guardarCambiosTexto: 'Se van a guardar los cambios de la hoja N° {numero}.',
     cambiosGuardados: 'Cambios guardados en la hoja N° {numero}',
     edicionEnPapelera: 'Esta hoja está en la Papelera: no se puede editar.',
+    // Dashboard: tiempo real (js/tiempo-real.js)
+    versionNueva: 'Hay una versión nueva de esta hoja: se cambió en otra pestaña o en otro dispositivo.',
+    versionNuevaBoton: 'Cargar la versión nueva',
+    enVivoCortado: 'Se cortó la conexión: la lista puede no estar al día. Se reconecta sola.',
+    enVivoVolvio: 'Volvió la conexión: la lista está al día.',
+    enVivoSinPonerAlDia: 'No se pudo poner al día la lista. Tocá "Actualizar".',
     edicionCruzada: 'Esta hoja la modificó otra persona o se editó en otra pestaña mientras la editabas. No se guardó tu cambio. Si cargás la versión nueva, se pierde lo que escribiste acá.',
     // Dashboard: la Papelera (los errores dicen "No se pudo {lo que se hacía}. Probá de nuevo.")
     papeleraAyuda: 'Las hojas borradas quedan acá, con quién las borró y cuándo. No se ven en la lista ni en los números. Para verlas, restauralas.',

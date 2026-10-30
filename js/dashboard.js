@@ -10,6 +10,11 @@
 // Los estudios que están en la Papelera (T059, js/papelera.js) no se piden: no
 // aparecen en la tabla, ni en los números, ni en la búsqueda.
 //
+// Tiempo real (T023 del N° 5, solo si la planilla lo pide: PLANILLA.tiempoReal):
+// mientras el dashboard está abierto, cuando cambia una hoja la lista se vuelve a
+// pedir sola y en silencio (sin "Cargando…", sin perder los filtros ni el lugar de la
+// pantalla), y la ficha abierta avisa si hay una versión nueva (js/tiempo-real.js).
+//
 // Las columnas de la tabla, en qué se busca, la tabla de la base y los textos
 // salen de la planilla activa (PLANILLA y textoDePlanilla, js/planillas/activa.js).
 
@@ -237,6 +242,35 @@ const Dashboard = (() => {
 
   // --- Cargar los estudios --------------------------------------------------------------
 
+  // La consulta de la lista (la misma para "Actualizar" y para el tiempo real)
+  async function pedirLista() {
+    if (!navigator.onLine) throw new Error('sin conexión');
+    const cortar = new AbortController();
+    const reloj = setTimeout(() => cortar.abort(), PANEL.tiempoMaximoMs);
+    try {
+      const { data, error } = await clienteSupabase.from(PLANILLA.base.tabla)
+        .select(pedidoDeLaLista)
+        .eq('en_papelera', false)
+        .order('creado_en', { ascending: false })
+        .abortSignal(cortar.signal);
+      if (error) throw error;
+      return data;
+    } finally {
+      clearTimeout(reloj);
+    }
+  }
+
+  // La lista que llegó: números, filtros y tabla
+  function mostrarLista(data) {
+    estudios = data;
+    // Los filtros y los números aparecen si hay algo que mostrar, y los filtros
+    // quedan aunque dejen la lista en cero (si no, "Limpiar" no se alcanzaría)
+    el.filtros.hidden = estudios.length === 0;
+    el.numeros.hidden = estudios.length === 0;
+    mostrarNumeros();
+    aplicarFiltros();   // respeta los filtros que ya estaban puestos
+  }
+
   async function cargar() {
     const este = ++pedido;
     yaCargo = true;
@@ -246,24 +280,9 @@ const Dashboard = (() => {
     el.filtros.hidden = true;
     el.numeros.hidden = true;
     try {
-      if (!navigator.onLine) throw new Error('sin conexión');
-      const cortar = new AbortController();
-      const reloj = setTimeout(() => cortar.abort(), PANEL.tiempoMaximoMs);
-      const { data, error } = await clienteSupabase.from(PLANILLA.base.tabla)
-        .select(pedidoDeLaLista)
-        .eq('en_papelera', false)
-        .order('creado_en', { ascending: false })
-        .abortSignal(cortar.signal);
-      clearTimeout(reloj);
+      const data = await pedirLista();
       if (este !== pedido) return;
-      if (error) throw error;
-      estudios = data;
-      // Los filtros y los números aparecen si hay algo que mostrar, y los filtros
-      // quedan aunque dejen la lista en cero (si no, "Limpiar" no se alcanzaría)
-      el.filtros.hidden = estudios.length === 0;
-      el.numeros.hidden = estudios.length === 0;
-      mostrarNumeros();
-      aplicarFiltros();   // "Actualizar" respeta los filtros que ya estaban puestos
+      mostrarLista(data);
     } catch (error) {
       if (este !== pedido) return;
       const sinConexion = !navigator.onLine || /fetch|network|abort|sin conexión/i.test(String(error && error.message));
@@ -272,6 +291,48 @@ const Dashboard = (() => {
         : textoDePlanilla('errorLista'));
       console.error('No se pudieron cargar los estudios');
     }
+  }
+
+  // --- Tiempo real (T023): poner la lista al día en silencio ------------------------------------
+
+  // Sin "Cargando…": la lista que se ve queda hasta que llega la nueva, con los mismos
+  // filtros y en el mismo lugar de la pantalla. Si la lista estaba en error, se carga
+  // de nuevo como siempre (así el error no queda para siempre).
+  async function ponerAlDiaEnSilencio() {
+    if (!yaCargo) return;
+    if (!el.error.hidden) { cargar(); return; }
+    const este = ++pedido;
+    try {
+      const data = await pedirLista();
+      if (este !== pedido) return;
+      const desplazable = el.tabla.querySelector('.tabla-desplazable') || el.tabla;
+      const lugar = { x: window.scrollX, y: window.scrollY, costado: desplazable.scrollLeft };
+      mostrarLista(data);
+      desplazable.scrollLeft = lugar.costado;
+      window.scrollTo(lugar.x, lugar.y);
+    } catch {
+      if (este !== pedido) return;
+      mostrarAviso(textoDePlanilla('enVivoSinPonerAlDia'), 'error', 5000);
+    }
+  }
+
+  // Hubo cambios: la lista al día y, si hay una ficha abierta, ver si cambió
+  function hayCambios() {
+    ponerAlDiaEnSilencio();
+    Ficha.revisarSiCambio();
+  }
+
+  function empezarTiempoReal() {
+    if (!PLANILLA.tiempoReal || TiempoReal.activo()) return;
+    TiempoReal.iniciar({
+      tabla: PLANILLA.base.tabla,
+      alCambiar: hayCambios,
+      alCortarse: () => mostrarAviso(textoDePlanilla('enVivoCortado'), 'error', 6000),
+      alVolver: () => {
+        mostrarAviso(textoDePlanilla('enVivoVolvio'), 'info', 4000);
+        hayCambios();   // lo que haya cambiado mientras estuvo cortado
+      },
+    });
   }
 
   // --- Secciones: Estudios (lista o ficha), Configuración y Papelera --------------------------
@@ -297,9 +358,12 @@ const Dashboard = (() => {
     Ficha.abrir(id);
   }
 
-  // Al volver a entrar al dashboard (o la primera vez), se cargan los estudios
+  // Al volver a entrar al dashboard (o la primera vez), se cargan los estudios (y, si
+  // la planilla lo pide, empieza el tiempo real)
   document.addEventListener('pantallamostrada', (evento) => {
-    if (evento.detail.id === 'dashboard' && !yaCargo) cargar();
+    if (evento.detail.id !== 'dashboard') return;
+    if (!yaCargo) cargar();
+    empezarTiempoReal();
   });
 
   el.navegacion.forEach((boton) => boton.addEventListener('click', async () => {
@@ -389,8 +453,10 @@ const Dashboard = (() => {
     mostrarAviso(problema || 'Foto de perfil actualizada.', problema ? 'error' : 'exito', 4000);
   });
 
-  // Al cerrar sesión: nada de los estudios queda en la pantalla
+  // Al cerrar sesión (o si la sesión vence): nada de los estudios queda en la pantalla,
+  // y se cierra el tiempo real
   function reiniciar() {
+    TiempoReal.detener();
     pedido++;
     estudios = [];
     yaCargo = false;

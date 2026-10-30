@@ -520,6 +520,7 @@ const Ficha = (() => {
     estudioActual = null;
     fotosActuales = [];
     editando = false;
+    ocultarVersionNueva();
     Edicion.cerrar();
     el.titulo.textContent = PLANILLA.titulo;
     el.cuerpo.replaceChildren();
@@ -565,6 +566,58 @@ const Ficha = (() => {
       const sinConexion = !navigator.onLine || /fetch|network|abort|sin conexión/i.test(String(error && error.message));
       mostrarError(sinConexion ? 'Sin conexión. Revisá internet y probá de nuevo.' : textoDePlanilla('errorFicha'));
       console.error('No se pudo cargar la ficha');
+    }
+  }
+
+  // --- Tiempo real (T023 del N° 5): "Hay una versión nueva" ------------------------------
+  // Cuando llega un aviso de cambios (js/tiempo-real.js), se vuelve a preguntar a la
+  // base por la hoja que se está mirando (la consulta normal; lo que trae el aviso no
+  // se usa). Si cambió, NO se reemplaza sola: aparece un aviso con un botón para
+  // cargarla. Mientras se edita, no se avisa: al guardar vale la edición cruzada
+  // (CL409, js/edicion.js). El aviso se arma recién la primera vez que hace falta.
+
+  let avisoVersion = null;
+
+  function ocultarVersionNueva() {
+    if (avisoVersion) avisoVersion.hidden = true;
+  }
+
+  function mostrarVersionNueva() {
+    if (!avisoVersion) {
+      avisoVersion = document.createElement('div');
+      avisoVersion.className = 'ficha__version-nueva';
+      avisoVersion.setAttribute('role', 'status');
+      const texto = document.createElement('p');
+      texto.className = 'ficha__version-nueva-texto';
+      const cargarla = document.createElement('button');
+      cargarla.type = 'button';
+      cargarla.className = 'panel-boton';
+      cargarla.id = 'ficha-version-nueva';
+      cargarla.addEventListener('click', async () => {
+        if (idActual && (await puedeSalir())) abrir(idActual);   // editando con cambios: pregunta antes
+      });
+      avisoVersion.append(texto, cargarla);
+      el.vista.querySelector('.ficha__cabecera').after(avisoVersion);
+    }
+    avisoVersion.querySelector('.ficha__version-nueva-texto').textContent = textoDePlanilla('versionNueva');
+    avisoVersion.querySelector('button').textContent = textoDePlanilla('versionNuevaBoton');
+    avisoVersion.hidden = false;
+  }
+
+  async function revisarSiCambio() {
+    const id = idActual;
+    const vista = estudioActual;
+    if (!id || !vista || editando || (avisoVersion && !avisoVersion.hidden)) return;
+    try {
+      const { data, error } = await clienteSupabase.from(PLANILLA.base.tabla)
+        .select('id, modificado_en, en_papelera')
+        .eq('id', id)
+        .maybeSingle();
+      if (error || idActual !== id || estudioActual !== vista || editando) return;
+      const cambio = !data || data.en_papelera || String(data.modificado_en ?? '') !== String(vista.modificado_en ?? '');
+      if (cambio) mostrarVersionNueva();
+    } catch {
+      // sin conexión: se vuelve a revisar con el próximo aviso
     }
   }
 
@@ -643,6 +696,7 @@ const Ficha = (() => {
     estudioActual = null;
     fotosActuales = [];
     editando = false;
+    ocultarVersionNueva();
     Edicion.cerrar();              // tampoco la planilla de edición
     el.cuerpo.replaceChildren();   // los datos del paciente no quedan en la pantalla
     el.acciones.replaceChildren();
@@ -664,5 +718,6 @@ const Ficha = (() => {
     alGuardarCambios: (funcion) => { alGuardarCambios = funcion; },
     puedeSalir,
     fechaHora,
+    revisarSiCambio,
   };
 })();

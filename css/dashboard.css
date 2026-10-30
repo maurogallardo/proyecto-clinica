@@ -666,6 +666,32 @@
   gap: 16px;
 }
 
+/* Tiempo real (N° 5): "Hay una versión nueva" con su botón, debajo del encabezado de
+   la ficha. El mismo celeste de los avisos para revisar (se lee en claro y en oscuro) */
+.ficha__version-nueva {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  color: var(--dictada-texto);
+  background: var(--dictada-fondo);
+  border-left: 4px solid var(--dictada-borde);
+  border-radius: 12px;
+}
+
+.ficha__version-nueva[hidden] {
+  display: none;
+}
+
+.ficha__version-nueva-texto {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .ficha__seccion {
   padding: 18px 20px 20px;
 }
