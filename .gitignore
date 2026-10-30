@@ -6,3 +6,9 @@ supabase/.temp/
 # Archivos donde se suelen guardar claves: nunca al repo
 .env
 .env.*
+
+# La carpeta de pruebas (audios, dictados, capturas, copias de la app): nunca al repo
+proyecto-clinica-pruebas/
+
+# Paquetes de Node (se instalan, no se suben)
+node_modules/
